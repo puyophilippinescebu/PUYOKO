@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { BlogPost, EventPost } from '../contexts/MediaContext';
 
@@ -89,7 +90,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
   const labelClass = "block text-[10px] font-mono uppercase tracking-widest text-on-surface-variant mb-1";
   const selectClass = "w-full border-b border-outline/30 bg-transparent py-2.5 focus:border-primary outline-none transition-colors text-sm font-sans cursor-pointer";
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-jade-deep/40 backdrop-blur-sm" onClick={onClose} />
       
@@ -98,7 +99,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
           <h2 className="font-display text-2xl font-light text-primary tracking-wide">
             {initialData ? (type === 'blog' ? "Edit Blog Post" : "Edit Event Details") : (type === 'blog' ? "Publish Blog Post" : "Publish Expo & Event")}
           </h2>
-          <button onClick={onClose} className="text-outline hover:text-primary transition-colors active:scale-95">
+          <button onClick={onClose} className="text-outline hover:text-primary transition-colors active:scale-95 border-0 bg-transparent cursor-pointer">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -302,26 +303,28 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
               </div>
             </div>
 
-            {/* Footer controls */}
-            <div className="flex gap-4 border-t border-outline/10 pt-6 justify-end">
-              <button 
-                type="button" 
-                onClick={onClose}
-                className="px-6 py-3.5 border border-outline/30 font-mono text-[9px] uppercase tracking-widest text-on-surface-variant hover:bg-outline/5 transition-all active:scale-95 cursor-pointer rounded-sm"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="px-8 py-3.5 bg-primary text-white font-mono text-[9px] uppercase tracking-widest hover:bg-primary-light transition-all active:scale-95 cursor-pointer rounded-sm shadow-md"
-              >
-                {initialData ? "Save Changes" : (type === 'blog' ? "Publish Article" : "Create Event")}
-              </button>
-            </div>
-
           </form>
         </div>
+
+        {/* Footer controls - static and locked at bottom */}
+        <div className="border-t border-outline/10 p-6 flex justify-end gap-4 bg-background-warm/50">
+          <button 
+            type="button" 
+            onClick={onClose}
+            className="px-6 py-3 border border-outline/30 font-mono text-[9px] uppercase tracking-widest text-on-surface-variant hover:bg-outline/5 transition-all active:scale-95 cursor-pointer rounded-sm bg-transparent outline-none"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            form="media-form"
+            className="px-8 py-3 bg-primary text-white font-mono text-[9px] uppercase tracking-widest hover:bg-primary-light transition-all active:scale-95 cursor-pointer rounded-sm shadow-md border-0 outline-none"
+          >
+            {initialData ? "Save Changes" : (type === 'blog' ? "Publish Article" : "Create Event")}
+          </button>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
