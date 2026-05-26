@@ -59,6 +59,14 @@ export const Navigation: React.FC = () => {
   const publicLinks: NavLink[] = [
     { name: 'Home', path: '/' },
     { name: 'Properties', path: '/properties' },
+    {
+      name: 'About Us',
+      path: '/about',
+      dropdown: [
+        { name: 'Company Profile', path: '/about' },
+        { name: 'Our Services', path: '/about/services' },
+      ],
+    },
     { name: 'Projects', path: '/projects' },
     {
       name: 'Media & Insights',
@@ -66,14 +74,6 @@ export const Navigation: React.FC = () => {
       dropdown: [
         { name: 'Blogs', path: '/media?tab=blogs' },
         { name: 'Expos & Events', path: '/media?tab=events' },
-      ],
-    },
-    {
-      name: 'About Us',
-      path: '/about',
-      dropdown: [
-        { name: 'Company Profile', path: '/about' },
-        { name: 'Our Services', path: '/about/services' },
       ],
     },
     { name: 'Contact Us', path: '/contact' },
