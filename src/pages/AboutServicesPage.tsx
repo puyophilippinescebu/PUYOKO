@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Award, Paintbrush, Megaphone, ShieldCheck, Building2, CheckCircle2, ChevronRight, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import puyokoLogo from '../../Puyoko Logo/Puyoko Animated Logo.svg';
 
 interface ServiceItem {
   id: string;
@@ -104,9 +103,9 @@ export const AboutServicesPage: React.FC = () => {
       <section className="mb-20 text-center max-w-3xl mx-auto">
         <div className="mb-6 flex flex-col items-center justify-center gap-3">
           <img 
-            src={puyokoLogo} 
-            alt="Puyoko Animated Logo" 
-            className="h-32 w-auto object-contain mix-blend-multiply drop-shadow-sm transition-all duration-700 ease-in-out hover:scale-105" 
+            src="/puyoko-logo.png" 
+            alt="PUYOKO Logo" 
+            className="h-32 w-auto object-contain transition-all duration-700 ease-in-out hover:scale-105" 
           />
           <span className="text-primary-light text-xs font-mono tracking-widest uppercase">Our Offerings / 服务</span>
         </div>

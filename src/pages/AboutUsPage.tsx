@@ -3,7 +3,6 @@ import React from 'react';
 import janEricImg from '../../Puyoko Team Pictures/Jan Eric.jpg';
 import malouJansonImg from '../../Puyoko Team Pictures/Malou Janson.png';
 import janeClaireImg from '../../Puyoko Team Pictures/Jane Claire.jpg';
-import puyokoLogo from '../../Puyoko Logo/Puyoko Animated Logo.svg';
 
 export const AboutUsPage: React.FC = () => {
   return (
@@ -11,7 +10,7 @@ export const AboutUsPage: React.FC = () => {
       {/* Vision & Mission */}
       <section className="mb-32 text-center max-w-3xl mx-auto">
         <div className="mb-6 flex flex-col items-center justify-center gap-3">
-          <img src={puyokoLogo} alt="Puyoko Animated Logo" className="h-32 w-auto object-contain mix-blend-multiply drop-shadow-sm transition-all duration-700 ease-in-out hover:scale-105" />
+          <img src="/puyoko-logo.png" alt="PUYOKO Logo" className="h-32 w-auto object-contain transition-all duration-700 ease-in-out hover:scale-105" />
           <span className="text-primary-light text-xs font-mono tracking-widest uppercase">Our Purpose / 目的</span>
         </div>
         <h1 className="font-display text-5xl font-light text-primary mb-12">

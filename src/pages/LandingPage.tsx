@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { ContactForm } from '../components/ContactForm';
 import { cn } from '../lib/utils';
 import janEricImg from '../../Puyoko Team Pictures/Jan Eric.jpg';
-import puyokoLogo from '../../Puyoko Logo/Puyoko Animated Logo.svg';
 import mainPhotoImg from '../../Puyo Main Photo.jpg';
 
 // Helper to parse YouTube, TikTok, Facebook URLs
@@ -76,7 +75,7 @@ export const LandingPage: React.FC = () => {
           {/* Left Column (Content) */}
           <div className="w-[62%] md:w-auto flex-shrink-0">
             <div className="mb-4 md:mb-8 flex flex-col items-start gap-2 md:gap-4">
-              <img src={puyokoLogo} alt="Puyoko Animated Logo" className="h-10 md:h-28 w-auto object-contain mix-blend-multiply drop-shadow-sm transition-all duration-700 ease-in-out hover:scale-105" />
+              <img src="/puyoko-logo.png" alt="PUYOKO Logo" className="h-12 md:h-28 w-auto object-contain transition-all duration-700 ease-in-out hover:scale-105" />
               <div className="flex items-center gap-2 md:gap-4">
                 <span className="text-primary-light text-[8px] md:text-xs font-mono tracking-[0.4em] uppercase">Selection / 祥安</span>
                 <div className="h-[1px] w-8 md:w-20 bg-primary/20"></div>
