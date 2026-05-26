@@ -81,9 +81,9 @@ export const LandingPage: React.FC = () => {
                 <div className="h-[1px] w-20 bg-primary/20"></div>
               </div>
             </div>
-            <h1 className="mb-8 font-display text-7xl font-light leading-[1.1] text-primary md:text-8xl">
+            <h1 className="mb-8 font-display text-5xl font-light leading-[1.15] text-primary md:text-7xl tracking-tight">
               The Art of <br/>
-              <span className="italic-serif text-primary-light">Bahay na Bato</span>
+              <span className="font-display font-extrabold tracking-tight text-primary-light block mt-1">Bahay na Bato</span>
             </h1>
             <p className="mb-12 max-w-md font-sans text-lg text-on-surface-variant leading-relaxed">
               Experience the architectural beauty of local housing & real estate with the soft, ethereal brushstrokes of modern minimalist design.

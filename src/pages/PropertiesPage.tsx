@@ -94,6 +94,7 @@ export const PropertiesPage: React.FC = () => {
   const [listingType, setListingType] = useState<string>('All Properties');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
   const [videoUrlInput, setVideoUrlInput] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
 
@@ -150,12 +151,14 @@ export const PropertiesPage: React.FC = () => {
         </div>
       )}
 
+
+
       {/* Filter Engine */}
       <section className="mb-16">
-        <div className="border border-outline/30 bg-white shadow-sm p-4 lg:p-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-center">
-            {/* Search */}
-            <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[22px]">
+        <div className="border border-outline/30 bg-white shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-4 items-center">
+            {/* Search (Always visible, spans 1 grid column on desktop) */}
+            <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[22px] md:col-span-1">
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-outline z-10" />
               <input
                 type="text"
@@ -166,32 +169,49 @@ export const PropertiesPage: React.FC = () => {
               />
             </div>
 
-            {/* City */}
-            <FilterDropdown
-              label="City"
-              value={selectedCity}
-              options={cities}
-              onChange={setSelectedCity}
-              className="border-b md:border-b-0 lg:border-r border-outline/10"
-            />
-
-            {/* Type */}
-            <FilterDropdown
-              label="Type"
-              value={listingType}
-              options={types}
-              onChange={setListingType}
-              className="border-b md:border-b-0 md:border-r border-outline/10"
-            />
-
-            {/* Reset */}
-            <div className="px-4 py-2">
+            {/* Mobile Filter Toggle Button (Hidden on desktop) */}
+            <div className="flex md:hidden items-center justify-between px-6 py-4 border-b border-outline/10 bg-surface-muted/30">
               <button
-                onClick={() => { setSearchQuery(''); setSelectedCity('All Cities'); setListingType('All Properties'); }}
-                className="w-full bg-primary text-white py-4 font-mono text-[10px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-primary-light active:scale-95"
+                onClick={() => setShowFiltersMobile(s => !s)}
+                className="w-full flex items-center justify-between text-left font-mono text-[10px] font-bold uppercase tracking-widest text-primary"
               >
-                Reset Filters
+                <span>{showFiltersMobile ? "Hide Filter Options" : "Show Filter Options (City, Type)"}</span>
+                <ChevronDown className={cn("h-4 w-4 text-outline transition-transform duration-300", showFiltersMobile && "rotate-180")} />
               </button>
+            </div>
+
+            {/* Collapsible Filters Container (City, Type, Reset) */}
+            <div className={cn(
+              "grid grid-cols-1 md:grid-cols-3 md:col-span-3 items-center",
+              !showFiltersMobile && "hidden md:grid"
+            )}>
+              {/* City */}
+              <FilterDropdown
+                label="City"
+                value={selectedCity}
+                options={cities}
+                onChange={setSelectedCity}
+                className="border-b md:border-b-0 md:border-r border-outline/10"
+              />
+
+              {/* Type */}
+              <FilterDropdown
+                label="Type"
+                value={listingType}
+                options={types}
+                onChange={setListingType}
+                className="border-b md:border-b-0 md:border-r border-outline/10"
+              />
+
+              {/* Reset */}
+              <div className="px-6 py-4 md:py-0">
+                <button
+                  onClick={() => { setSearchQuery(''); setSelectedCity('All Cities'); setListingType('All Properties'); }}
+                  className="w-full bg-primary text-white py-4 font-mono text-[10px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-primary-light active:scale-95"
+                >
+                  Reset Filters
+                </button>
+              </div>
             </div>
           </div>
         </div>

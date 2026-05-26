@@ -104,30 +104,56 @@ export const PropertyDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Collage */}
-        <div className="mb-6 grid h-[35vh] min-h-[260px] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl bg-surface-muted">
-          {property.images.length >= 5 ? (
-            <>
-              <img onClick={() => { setCurrentImage(0); setIsLightboxOpen(true); }} src={property.images[0]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-              <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); }} src={property.images[1]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-              <img onClick={() => { setCurrentImage(2); setIsLightboxOpen(true); }} src={property.images[2]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-              <img onClick={() => { setCurrentImage(3); setIsLightboxOpen(true); }} src={property.images[3]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-              <img onClick={() => { setCurrentImage(4); setIsLightboxOpen(true); }} src={property.images[4]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-            </>
-          ) : property.images.length >= 3 ? (
-            <>
-              <img onClick={() => { setCurrentImage(0); setIsLightboxOpen(true); }} src={property.images[0]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-              <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); }} src={property.images[1]} alt={property.title} className="col-span-2 row-span-1 h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-              <img onClick={() => { setCurrentImage(2); setIsLightboxOpen(true); }} src={property.images[2]} alt={property.title} className="col-span-2 row-span-1 h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-            </>
-          ) : property.images.length === 2 ? (
-            <>
-              <img onClick={() => { setCurrentImage(0); setIsLightboxOpen(true); }} src={property.images[0]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-              <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); }} src={property.images[1]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-            </>
-          ) : (
-            <img onClick={() => { setCurrentImage(0); setIsLightboxOpen(true); }} src={property.images[0] || ''} alt={property.title} className="col-span-4 row-span-2 h-full w-full object-cover transition-transform hover:scale-105 cursor-pointer" />
-          )}
+        {/* Photos Section */}
+        <div className="mb-6 animate-fade-in">
+          {/* Mobile Swipeable Gallery */}
+          <div className="md:hidden relative w-full h-[35vh] min-h-[260px] bg-surface-muted rounded-2xl overflow-hidden shadow-sm">
+            <div className="flex h-full overflow-x-auto snap-x snap-mandatory scrollbar-none">
+              {property.images.map((img, idx) => (
+                <div 
+                  key={idx} 
+                  className="w-full h-full flex-shrink-0 snap-start cursor-pointer"
+                  onClick={() => { setCurrentImage(idx); setIsLightboxOpen(true); }}
+                >
+                  <img 
+                    src={img} 
+                    alt={`${property.title} - ${idx + 1}`} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+            {/* Gallery Indicator */}
+            <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full font-mono text-[9px] font-bold uppercase tracking-wider">
+              {property.images.length} Photos (Tap to Zoom)
+            </div>
+          </div>
+
+          {/* Desktop/Tablet Grid Collage */}
+          <div className="hidden md:grid h-[35vh] min-h-[260px] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-2xl bg-surface-muted shadow-sm">
+            {property.images.length >= 5 ? (
+              <>
+                <img onClick={() => { setCurrentImage(0); setIsLightboxOpen(true); }} src={property.images[0]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); }} src={property.images[1]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                <img onClick={() => { setCurrentImage(2); setIsLightboxOpen(true); }} src={property.images[2]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                <img onClick={() => { setCurrentImage(3); setIsLightboxOpen(true); }} src={property.images[3]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                <img onClick={() => { setCurrentImage(4); setIsLightboxOpen(true); }} src={property.images[4]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+              </>
+            ) : property.images.length >= 3 ? (
+              <>
+                <img onClick={() => { setCurrentImage(0); setIsLightboxOpen(true); }} src={property.images[0]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); }} src={property.images[1]} alt={property.title} className="col-span-2 row-span-1 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                <img onClick={() => { setCurrentImage(2); setIsLightboxOpen(true); }} src={property.images[2]} alt={property.title} className="col-span-2 row-span-1 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+              </>
+            ) : property.images.length === 2 ? (
+              <>
+                <img onClick={() => { setCurrentImage(0); setIsLightboxOpen(true); }} src={property.images[0]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); }} src={property.images[1]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+              </>
+            ) : (
+              <img onClick={() => { setCurrentImage(0); setIsLightboxOpen(true); }} src={property.images[0] || ''} alt={property.title} className="col-span-4 row-span-2 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+            )}
+          </div>
         </div>
 
         {/* Info Layout */}
@@ -256,38 +282,60 @@ export const PropertyDetailsPage: React.FC = () => {
 
       {/* Lightbox Modal */}
       {isLightboxOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm" onClick={() => setIsLightboxOpen(false)}>
+        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#0c1a14]/95 backdrop-blur-md transition-all duration-300" onClick={() => setIsLightboxOpen(false)}>
           <button
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute right-6 top-6 z-10 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+            className="absolute right-6 top-6 z-10 rounded-full bg-white/10 p-2.5 text-white hover:bg-white/20 transition-colors cursor-pointer"
           >
             <X className="h-6 w-6" />
           </button>
 
-          <img
-            src={property.images[currentImage]}
-            alt={property.title}
-            className="max-h-[90vh] max-w-[90vw] object-contain select-none"
-            onClick={(e) => e.stopPropagation()}
-          />
+          <div className="relative max-h-[75vh] max-w-[95vw] md:max-h-[80vh] md:max-w-[85vw] flex items-center justify-center p-1 rounded-sm border border-white/5 bg-black/20 shadow-2xl select-none" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={property.images[currentImage]}
+              alt={property.title}
+              className="max-h-[73vh] max-w-[93vw] md:max-h-[78vh] md:max-w-[83vw] object-contain rounded-sm"
+            />
+          </div>
 
           {property.images.length > 1 && (
             <>
+              {/* Desktop Side Navigation Arrows */}
               <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors"
+                className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors cursor-pointer"
               >
                 <ChevronLeft className="h-8 w-8" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors"
+                className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors cursor-pointer"
               >
                 <ChevronRight className="h-8 w-8" />
               </button>
               
-              <div className="absolute bottom-6 font-mono text-sm tracking-widest text-white/70">
+              {/* Desktop Indicator */}
+              <div className="hidden md:block absolute bottom-8 font-mono text-xs tracking-widest text-white/70">
                 {currentImage + 1} / {property.images.length}
+              </div>
+
+              {/* Mobile Controller Toolbar */}
+              <div className="absolute bottom-8 flex md:hidden items-center gap-6 bg-black/50 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/10 shadow-lg" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                  className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 active:scale-95 transition-all"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <span className="font-mono text-xs font-bold tracking-widest text-white/90 min-w-[40px] text-center">
+                  {currentImage + 1} / {property.images.length}
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                  className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 active:scale-95 transition-all"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
               </div>
             </>
           )}

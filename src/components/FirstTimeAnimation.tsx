@@ -28,17 +28,12 @@ export const FirstTimeAnimation: React.FC<{ children: React.ReactNode }> = ({ ch
             className="fixed inset-0 z-[100] flex items-center justify-center bg-white flex-col gap-6"
           >
             <motion.img 
-              src="/Puyoko Animated Logo.svg" 
+              src="/puyoko-logo.png" 
               alt="PUYOKO" 
-              className="w-32 h-32 md:w-48 md:h-48"
+              className="w-32 h-32 md:w-48 md:h-48 object-contain p-1"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              onError={(e) => {
-                // Fallback if SVG is missing (and prevent infinite loop)
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = "/puyoko-logo.png";
-              }}
             />
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
