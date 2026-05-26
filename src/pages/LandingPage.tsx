@@ -75,7 +75,7 @@ export const LandingPage: React.FC = () => {
         <div className="mx-auto max-w-container-max px-gutter relative z-10 grid grid-cols-[1.25fr_0.75fr] md:grid-cols-2 gap-4 md:gap-20 items-center py-6 md:py-0">
           <div>
             <div className="mb-4 md:mb-8 flex flex-col items-start gap-2 md:gap-4">
-              <img src={puyokoLogo} alt="Puyoko Animated Logo" className="h-14 md:h-28 w-auto object-contain mix-blend-multiply drop-shadow-sm transition-all duration-700 ease-in-out hover:scale-105" />
+              <img src={puyokoLogo} alt="Puyoko Animated Logo" className="h-10 md:h-28 w-auto object-contain mix-blend-multiply drop-shadow-sm transition-all duration-700 ease-in-out hover:scale-105" />
               <div className="flex items-center gap-2 md:gap-4">
                 <span className="text-primary-light text-[8px] md:text-xs font-mono tracking-[0.4em] uppercase">Selection / 祥安</span>
                 <div className="h-[1px] w-10 md:w-20 bg-primary/20"></div>

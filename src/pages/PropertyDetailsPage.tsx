@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, ExternalLink, Link as LinkIcon, Check, X } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
@@ -281,20 +282,22 @@ export const PropertyDetailsPage: React.FC = () => {
       </div>
 
       {/* Lightbox Modal */}
-      {isLightboxOpen && (
-        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#0c1a14]/95 backdrop-blur-md transition-all duration-300" onClick={() => setIsLightboxOpen(false)}>
+      {isLightboxOpen && createPortal(
+        <div className="fixed inset-0 z-[250] flex flex-col items-center justify-center bg-[#07090e]/95 backdrop-blur-md transition-all duration-300" onClick={() => setIsLightboxOpen(false)}>
+          {/* Close button at top-left, matching clean Messenger layout */}
           <button
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute right-6 top-6 z-10 rounded-full bg-white/10 p-2.5 text-white hover:bg-white/20 transition-colors cursor-pointer"
+            className="absolute left-6 top-6 z-10 rounded-full bg-white/10 p-2.5 text-white hover:bg-white/20 transition-all cursor-pointer active:scale-90"
           >
             <X className="h-6 w-6" />
           </button>
 
-          <div className="relative max-h-[75vh] max-w-[95vw] md:max-h-[80vh] md:max-w-[85vw] flex items-center justify-center p-1 rounded-sm border border-white/5 bg-black/20 shadow-2xl select-none" onClick={(e) => e.stopPropagation()}>
+          {/* Centered Image with beautiful rounded-2xl corners & subtle borders */}
+          <div className="relative max-h-[75vh] max-w-[95vw] md:max-h-[80vh] md:max-w-[85vw] flex items-center justify-center p-1 rounded-2xl border border-white/10 bg-black/40 shadow-2xl select-none" onClick={(e) => e.stopPropagation()}>
             <img
               src={property.images[currentImage]}
               alt={property.title}
-              className="max-h-[73vh] max-w-[93vw] md:max-h-[78vh] md:max-w-[83vw] object-contain rounded-sm"
+              className="max-h-[73vh] max-w-[93vw] md:max-h-[78vh] md:max-w-[83vw] object-contain rounded-xl"
             />
           </div>
 
@@ -339,7 +342,8 @@ export const PropertyDetailsPage: React.FC = () => {
               </div>
             </>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
