@@ -87,9 +87,11 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     persistState([propertyToInsert, ...properties]);
 
     try {
-      await supabase.from('properties').insert([propertyToInsert]);
+      const { error } = await supabase.from('properties').insert([propertyToInsert]);
+      if (error) throw error;
     } catch (err) {
-      console.warn("Supabase add failed, stored locally.");
+      console.error("Supabase add failed! The listing is kept in your browser local storage but was not saved to the cloud database:", err);
+      alert("Warning: Could not save to cloud database. Please make sure your Supabase schema is up-to-date (has 'currency' and other columns). Your changes are saved locally for now but will be lost if you reload.");
     }
   };
 
@@ -98,9 +100,11 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     persistState(updated);
 
     try {
-      await supabase.from('properties').update(updatedProp).eq('id', updatedProp.id);
+      const { error } = await supabase.from('properties').update(updatedProp).eq('id', updatedProp.id);
+      if (error) throw error;
     } catch (err) {
-      console.warn("Supabase update failed, stored locally.");
+      console.error("Supabase update failed! The update is kept in your browser local storage but was not saved to the cloud database:", err);
+      alert("Warning: Could not save updates to cloud database. Your changes are saved locally for now but will be lost if you reload.");
     }
   };
 
@@ -109,9 +113,11 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     persistState(filtered);
 
     try {
-      await supabase.from('properties').delete().eq('id', id);
+      const { error } = await supabase.from('properties').delete().eq('id', id);
+      if (error) throw error;
     } catch (err) {
-      console.warn("Supabase delete failed, stored locally.");
+      console.error("Supabase delete failed! The deletion is kept in your browser local storage but was not saved to the cloud database:", err);
+      alert("Warning: Could not save deletion to cloud database. Your changes are saved locally for now but will be lost if you reload.");
     }
   };
 

@@ -22,6 +22,8 @@ import { ContactForm } from './components/ContactForm';
 import { AuthProvider } from './contexts/AuthContext';
 import { PropertiesProvider } from './contexts/PropertiesContext';
 import { useAuth } from './contexts/AuthContext';
+import { ProjectsPage } from './pages/ProjectsPage';
+import { MediaPage } from './pages/MediaPage';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -85,6 +87,8 @@ function PublicLayout() {
             <Routes>
               <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
               <Route path="/properties" element={<PageTransition><PropertiesPage /></PageTransition>} />
+              <Route path="/projects" element={<PageTransition><ProjectsPage /></PageTransition>} />
+              <Route path="/media" element={<PageTransition><MediaPage /></PageTransition>} />
               <Route path="/property/:id" element={<PageTransition><PropertyDetailsPage /></PageTransition>} />
               <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
               <Route path="/about" element={<PageTransition><AboutUsPage /></PageTransition>} />

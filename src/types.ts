@@ -1,4 +1,4 @@
-export type PropertyStatus = "Active" | "Pending" | "Sold" | "Archived";
+export type PropertyStatus = "Active" | "Pending" | "Sold" | "Archived" | "Under Construction" | "Preselling";
 
 export interface Property {
   id: string;

@@ -24,7 +24,7 @@ export const Navigation: React.FC = () => {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(displayName);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -47,7 +47,7 @@ export const Navigation: React.FC = () => {
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
-    setMobileAboutOpen(false);
+    setMobileDropdownOpen(null);
   }, [location.pathname]);
 
   const handleSaveName = () => {
@@ -59,6 +59,15 @@ export const Navigation: React.FC = () => {
   const publicLinks: NavLink[] = [
     { name: 'Home', path: '/' },
     { name: 'Properties', path: '/properties' },
+    { name: 'Projects', path: '/projects' },
+    {
+      name: 'Media & Insights',
+      path: '/media',
+      dropdown: [
+        { name: 'Blogs', path: '/media?tab=blogs' },
+        { name: 'Expos & Events', path: '/media?tab=events' },
+      ],
+    },
     {
       name: 'About Us',
       path: '/about',
@@ -72,6 +81,15 @@ export const Navigation: React.FC = () => {
 
   const adminLinks: NavLink[] = [
     { name: 'Properties', path: '/properties' },
+    { name: 'Projects', path: '/projects' },
+    {
+      name: 'Media & Insights',
+      path: '/media',
+      dropdown: [
+        { name: 'Blogs', path: '/media?tab=blogs' },
+        { name: 'Expos & Events', path: '/media?tab=events' },
+      ],
+    },
     {
       name: 'About Us',
       path: '/about',
@@ -99,7 +117,9 @@ export const Navigation: React.FC = () => {
         <div className="hidden md:flex items-center gap-10">
           {navLinks.map((link) => {
             if (link.dropdown) {
-              const isDropdownActive = location.pathname === '/about' || location.pathname === '/about/services';
+              const isAboutActive = link.name === 'About Us' && (location.pathname === '/about' || location.pathname === '/about/services');
+              const isMediaActive = link.name === 'Media & Insights' && location.pathname === '/media';
+              const isDropdownActive = isAboutActive || isMediaActive;
               return (
                 <div key={link.name} className="relative group py-2">
                   <button
@@ -260,34 +280,44 @@ export const Navigation: React.FC = () => {
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => {
                 if (link.dropdown) {
-                  const isDropdownActive = location.pathname === '/about' || location.pathname === '/about/services';
+                  const isAboutActive = link.name === 'About Us' && (location.pathname === '/about' || location.pathname === '/about/services');
+                  const isMediaActive = link.name === 'Media & Insights' && location.pathname === '/media';
+                  const isDropdownActive = isAboutActive || isMediaActive;
+                  const isDrawerOpen = mobileDropdownOpen === link.name;
+                  
                   return (
                     <div key={link.name} className="flex flex-col gap-2">
                       <button
-                        onClick={() => setMobileAboutOpen(o => !o)}
+                        onClick={() => setMobileDropdownOpen(isDrawerOpen ? null : link.name)}
                         className={cn(
-                          'flex items-center justify-between w-full font-sans text-xs font-bold uppercase tracking-widest py-2 text-left bg-transparent border-0 outline-none',
+                          'flex items-center justify-between w-full font-sans text-xs font-bold uppercase tracking-widest py-2 text-left bg-transparent border-0 outline-none cursor-pointer',
                           isDropdownActive ? 'text-primary' : 'text-on-surface-variant/70'
                         )}
                       >
                         <span>{link.name}</span>
-                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-200 text-on-surface-variant/70", mobileAboutOpen && "rotate-180")} />
+                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-200 text-on-surface-variant/70", isDrawerOpen && "rotate-180")} />
                       </button>
-                      {mobileAboutOpen && (
+                      {isDrawerOpen && (
                         <div className="flex flex-col gap-3 pl-4 border-l border-outline/20 mt-1 py-1">
-                          {link.dropdown.map((subItem) => (
-                            <Link
-                              key={subItem.name}
-                              to={subItem.path}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className={cn(
-                                'font-sans text-[10px] font-bold uppercase tracking-widest transition-all block',
-                                location.pathname === subItem.path ? 'text-primary font-black' : 'text-on-surface-variant/60'
-                              )}
-                            >
-                              {subItem.name}
-                            </Link>
-                          ))}
+                          {link.dropdown.map((subItem) => {
+                            const isSubActive = location.pathname === subItem.path.split('?')[0] && (
+                              !subItem.path.includes('tab=') || 
+                              location.search.includes(subItem.path.split('?')[1])
+                            );
+                            return (
+                              <Link
+                                key={subItem.name}
+                                to={subItem.path}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={cn(
+                                  'font-sans text-[10px] font-bold uppercase tracking-widest transition-all block',
+                                  isSubActive ? 'text-primary font-black' : 'text-on-surface-variant/60'
+                                )}
+                              >
+                                {subItem.name}
+                              </Link>
+                            );
+                          })}
                         </div>
                       )}
                     </div>

@@ -7,7 +7,7 @@ import { Property } from '../types';
 import { cn } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, ChevronDown } from 'lucide-react';
+import { Plus, ChevronDown, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // ── Custom Dropdown ──────────────────────────────────────────────────────────
@@ -95,6 +95,15 @@ export const PropertiesPage: React.FC = () => {
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [videoUrlInput, setVideoUrlInput] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
+
+  const handleSaveVideoUrl = () => {
+    localStorage.setItem('puyoko_homepage_video_url', videoUrlInput.trim());
+    // Dispatch storage event so LandingPage (same window) can react immediately if opened
+    window.dispatchEvent(new Event('storage'));
+    alert('Homepage video URL successfully updated!');
+  };
+
   const filteredProperties = useMemo(() => {
     return properties.filter(p => {
       if (!isAuthenticated && p.status === 'Archived') return false;
@@ -112,6 +121,35 @@ export const PropertiesPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-container-max px-gutter py-20">
+      {/* Admin Video URL Configuration Card */}
+      {isAuthenticated && (
+        <div className="mb-10 rounded-sm border border-outline/30 bg-white/95 frosted-jade p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <h3 className="font-display text-sm font-bold text-primary uppercase tracking-wider">Homepage Video Showcase Config</h3>
+          </div>
+          <p className="font-sans text-xs text-on-surface-variant mb-4 leading-relaxed">
+            Paste a video URL from **YouTube**, **TikTok**, or **Facebook** to dynamically feature a video player on your homepage. 
+            Leave the field completely empty to hide the homepage video section.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="url"
+              placeholder="e.g. https://www.youtube.com/watch?v=... or https://www.tiktok.com/@user/video/..."
+              value={videoUrlInput}
+              onChange={e => setVideoUrlInput(e.target.value)}
+              className="flex-grow border-b border-outline/30 bg-transparent py-2.5 px-3 focus:border-primary outline-none text-xs font-sans transition-colors"
+            />
+            <button
+              onClick={handleSaveVideoUrl}
+              className="bg-primary text-white px-8 py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-primary-light active:scale-95 shrink-0"
+            >
+              Update Video URL
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Filter Engine */}
       <section className="mb-16">
         <div className="border border-outline/30 bg-white shadow-sm p-4 lg:p-1">

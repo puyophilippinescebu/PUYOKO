@@ -13,6 +13,17 @@ interface ListingModalProps {
 export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, onClose }) => {
   const [currentImage, setCurrentImage] = React.useState(0);
 
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const nextImage = () => setCurrentImage((prev) => (prev + 1) % property.images.length);
   const prevImage = () => setCurrentImage((prev) => (prev - 1 + property.images.length) % property.images.length);
 
@@ -96,38 +107,51 @@ export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, on
                 <div className="mb-6">
                   <div className="mb-4 flex flex-wrap gap-2">
                     {property.tags.map(tag => (
-                      <span key={tag} className="bg-primary/10 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-primary rounded">
+                      <span key={tag} className="bg-primary/10 px-3 py-1 font-display text-[9px] font-extrabold uppercase tracking-widest text-primary rounded">
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <h2 className="mb-2 font-display text-3xl lg:text-4xl font-black text-primary leading-tight">{property.title}</h2>
-                  <p className="font-display text-2xl lg:text-3xl font-bold text-on-surface">{formattedPrice}</p>
+                  <h2 className="mb-2 font-serif text-3xl lg:text-4xl font-bold text-primary leading-tight tracking-wide">{property.title}</h2>
+                  <p className="font-display text-2xl lg:text-3xl font-extrabold text-on-surface tracking-tight">{formattedPrice}</p>
                 </div>
 
-                <div className="mb-8 grid grid-cols-3 gap-4 lg:gap-6 rounded-xl border border-outline-variant/30 bg-surface-muted p-4 lg:p-6">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-on-surface-variant/60">Bedrooms</span>
-                    <div className="flex items-center gap-2">
-                      <Bed className="h-4 w-4 text-primary" />
-                      <span className="font-sans font-bold">{property.bedrooms}</span>
+                {/* Dynamic Grid Columns */}
+                {(() => {
+                  const hasBed = property.bedrooms > 0;
+                  const hasBath = property.bathrooms > 0;
+                  const colSpanClass = (hasBed && hasBath) ? "grid-cols-3" : (hasBed || hasBath) ? "grid-cols-2" : "grid-cols-1";
+
+                  return (
+                    <div className={`mb-8 grid ${colSpanClass} gap-4 lg:gap-6 rounded-xl border border-outline-variant/30 bg-surface-muted p-4 lg:p-6`}>
+                      {hasBed && (
+                        <div className="flex flex-col gap-1">
+                          <span className="font-display text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant/50">Bedrooms</span>
+                          <div className="flex items-center gap-2">
+                            <Bed className="h-4.5 w-4.5 text-primary/70" />
+                            <span className="font-sans font-extrabold text-base text-on-surface">{property.bedrooms}</span>
+                          </div>
+                        </div>
+                      )}
+                      {hasBath && (
+                        <div className="flex flex-col gap-1">
+                          <span className="font-display text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant/50">Bathrooms</span>
+                          <div className="flex items-center gap-2">
+                            <Bath className="h-4.5 w-4.5 text-primary/70" />
+                            <span className="font-sans font-extrabold text-base text-on-surface">{property.bathrooms}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-1">
+                        <span className="font-display text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant/50">Area</span>
+                        <div className="flex items-center gap-2">
+                          <Square className="h-4 w-4 text-primary/70" />
+                          <span className="font-sans font-extrabold text-base text-on-surface">{property.area} sqm</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-on-surface-variant/60">Bathrooms</span>
-                    <div className="flex items-center gap-2">
-                      <Bath className="h-4 w-4 text-primary" />
-                      <span className="font-sans font-bold">{property.bathrooms}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-on-surface-variant/60">Area</span>
-                    <div className="flex items-center gap-2">
-                      <Square className="h-4 w-4 text-primary" />
-                      <span className="font-sans font-bold">{property.area} sqm</span>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 <div className="mb-10">
                   <h4 className="mb-4 font-mono text-[10px] font-bold uppercase tracking-widest text-on-surface">Location</h4>
@@ -150,7 +174,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, on
                   <div className="group relative aspect-video w-full overflow-hidden rounded-xl bg-surface-muted border border-outline-variant/30">
                     <iframe 
                       title="Google Maps"
-                      className="h-full w-full border-0 grayscale transition-all group-hover:grayscale-0"
+                      className="h-full w-full border-0"
                       src={`https://maps.google.com/maps?q=${encodeURIComponent(property.address + " " + property.city)}&t=m&z=15&output=embed&iwloc=near`}
                       loading="lazy"
                     ></iframe>

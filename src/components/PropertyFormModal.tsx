@@ -162,6 +162,8 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                   <option>Pending</option>
                   <option>Sold</option>
                   <option>Archived</option>
+                  <option>Under Construction</option>
+                  <option>Preselling</option>
                 </select>
               </div>
 

@@ -30,18 +30,18 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
       className="group cursor-pointer overflow-hidden rounded-sm border border-outline/30 bg-white shadow-sm transition-all duration-500 hover:shadow-2xl hover:border-primary/20"
       onClick={() => onClick?.(property)}
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-[16/10] overflow-hidden">
         <img
           src={property.images[0]}
           alt={property.title}
           className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
         />
-        <div className="absolute left-6 top-6 bg-white/80 backdrop-blur-md px-3 py-1 font-mono text-[9px] font-bold text-primary uppercase tracking-[0.2em] border border-outline/20">
-          {property.type} / {property.city.split(' ')[0]}
+        <div className="absolute left-6 top-6 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm">
+          {property.type} / {property.city}
         </div>
 
         {property.status === 'Archived' && (
-          <div className="absolute left-6 top-14 bg-red-500/90 backdrop-blur-md px-3 py-1 font-mono text-[9px] font-bold text-white uppercase tracking-[0.2em] shadow-lg">
+          <div className="absolute left-6 top-14 bg-red-600/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg">
             Archived
           </div>
         )}
@@ -71,37 +71,43 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
         )}
       </div>
 
-      <div className="p-8">
-        <div className="mb-6 flex items-start justify-between">
+      <div className="p-5">
+        <div className="mb-3 flex items-start justify-between">
           <div>
-            <h3 className="font-serif italic text-2xl text-primary leading-none mb-2">
+            <h3 className="font-serif text-xl font-bold text-primary leading-tight tracking-wide mb-1">
               {property.title}
             </h3>
-            <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant/60">Property ID: {property.id}</p>
+            <p className="font-display text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/40">ID: {property.id}</p>
           </div>
           <button className="text-outline transition-colors hover:text-primary">
             <Heart className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="mb-8 font-display text-2xl font-light text-primary">
+        <div className="mb-4 font-display text-[22px] font-extrabold text-primary tracking-tight">
           {formattedPrice}{property.type === 'For Rent' ? '/mo' : ''}
         </div>
 
-        <div className="flex items-center justify-between border-t border-outline/10 pt-6 font-mono text-[9px] uppercase tracking-widest text-on-surface-variant/60">
-          <div className="flex items-center gap-2">
-            <Bed className="h-3.5 w-3.5 opacity-40" />
-            <span>{property.bedrooms}</span>
+        <div className="flex items-center justify-between border-t border-outline/10 pt-4 font-sans text-xs font-bold tracking-wide text-on-surface-variant/80">
+          <div className="flex items-center gap-4">
+            {property.bedrooms > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Bed className="h-4 w-4 text-primary/60" />
+                <span>{property.bedrooms} Bed</span>
+              </div>
+            )}
+            {property.bathrooms > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Bath className="h-4 w-4 text-primary/60" />
+                <span>{property.bathrooms} Bath</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5">
+              <Square className="h-3.5 w-3.5 text-primary/60" />
+              <span>{property.area} m²</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Bath className="h-3.5 w-3.5 opacity-40" />
-            <span>{property.bathrooms}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Square className="h-3.5 w-3.5 opacity-40" />
-            <span>{property.area} m²</span>
-          </div>
-          <div className="flex items-center gap-1 text-primary italic font-serif normal-case tracking-normal">
+          <div className="flex items-center gap-1 font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary-light/90">
             Heritage
           </div>
         </div>

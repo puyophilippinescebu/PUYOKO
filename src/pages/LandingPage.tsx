@@ -1,12 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContactForm } from '../components/ContactForm';
+import { cn } from '../lib/utils';
 import janEricImg from '../../Puyoko Team Pictures/Jan Eric.jpg';
 import puyokoLogo from '../../Puyoko Logo/Puyoko Animated Logo.svg';
 import mainPhotoImg from '../../Puyo Main Photo.jpg';
 
+// Helper to parse YouTube, TikTok, Facebook URLs
+function getVideoEmbedUrl(url: string) {
+  if (!url) return null;
+  const trimmed = url.trim();
+
+  // 1. YouTube
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+    let videoId = '';
+    if (trimmed.includes('watch?v=')) {
+      videoId = trimmed.split('watch?v=')[1]?.split('&')[0];
+    } else if (trimmed.includes('youtu.be/')) {
+      videoId = trimmed.split('youtu.be/')[1]?.split('?')[0];
+    } else if (trimmed.includes('embed/')) {
+      videoId = trimmed.split('embed/')[1]?.split('?')[0];
+    } else if (trimmed.includes('shorts/')) {
+      videoId = trimmed.split('shorts/')[1]?.split('?')[0];
+    }
+    return videoId ? { type: 'youtube', embedUrl: `https://www.youtube.com/embed/${videoId}`, isVertical: trimmed.includes('shorts/') } : null;
+  }
+
+  // 2. TikTok
+  if (trimmed.includes('tiktok.com')) {
+    let videoId = '';
+    if (trimmed.includes('/video/')) {
+      videoId = trimmed.split('/video/')[1]?.split('?')[0];
+    }
+    return { 
+      type: 'tiktok', 
+      embedUrl: videoId ? `https://www.tiktok.com/embed/v2/${videoId}` : `https://www.tiktok.com/embed/v2/test`,
+      isVertical: true 
+    };
+  }
+
+  // 3. Facebook
+  if (trimmed.includes('facebook.com') || trimmed.includes('fb.watch')) {
+    return {
+      type: 'facebook',
+      embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=0&mute=0`,
+      isVertical: false
+    };
+  }
+
+  return null;
+}
+
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [videoUrl, setVideoUrl] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setVideoUrl(localStorage.getItem('puyoko_homepage_video_url') || '');
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  const videoEmbedData = getVideoEmbedUrl(videoUrl);
 
   return (
     <div className="relative">
@@ -111,6 +168,30 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Dynamic Video Showcase */}
+      {videoEmbedData && (
+        <section className="py-20 px-gutter bg-[#e8f3ef]/30 border-t border-b border-outline/10 mt-16 md:mt-24">
+          <div className="mx-auto max-w-4xl text-center">
+            <span className="text-primary-light text-xs font-mono tracking-widest uppercase mb-4 block">Featured Showcase / 视频</span>
+            <h2 className="font-display text-4xl font-light text-primary mb-12">
+              Experience the Puyoko <span className="italic-serif text-primary-light">Vibe</span>
+            </h2>
+            <div className={cn(
+              "mx-auto overflow-hidden rounded-2xl border border-outline/20 shadow-2xl bg-black relative",
+              videoEmbedData.isVertical ? "max-w-[340px] aspect-[9/16]" : "w-full aspect-video"
+            )}>
+              <iframe
+                src={videoEmbedData.embedUrl}
+                title="Puyoko Video Showcase"
+                className="w-full h-full border-0 absolute inset-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="mx-auto max-w-container-max px-gutter py-24">
