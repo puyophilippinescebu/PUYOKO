@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Hanken+Grotesk:wght@400;500;600&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1b4332;
+  --color-primary-light: #40916c;
+  --color-primary-neon: #95d5b2;
+  --color-jade-deep: #081c15;
+  --color-background-warm: #f2f5f1;
+  --color-surface-muted: #e8f3ef;
+  --color-on-surface: #2d4a3e;
+  --color-on-surface-variant: #52796f;
+  --color-outline: #a5c1b5;
+  --color-outline-variant: #b7d1c1;
+
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --radius-soft: 2px;
+  --spacing-gutter: 1.5rem;
+  --spacing-container-max: 80rem;
+}
+
+@layer base {
+  body {
+    @apply text-on-surface font-sans antialiased selection:bg-primary-neon/30;
+    background: linear-gradient(135deg, #e8f3ef 0%, #f2f5f1 40%, #cce3d8 100%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold tracking-tight text-primary;
+  }
+
+  .italic-serif {
+    @apply font-serif italic;
+  }
+}
+
+.heritage-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='800' height='600' viewBox='0 0 800 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 500 Q 150 400 300 450 T 600 400 T 800 450 L 800 600 L 0 600 Z' fill='none' stroke='%2340916c' stroke-width='1' opacity='0.06'/%3E%3Cpath d='M100 480 Q 250 350 400 420 T 700 380 T 800 400 L 800 600 L 0 600 Z' fill='none' stroke='%231b4332' stroke-width='1' opacity='0.04'/%3E%3C!-- Bahay Kubo --%3E%3Cpath d='M500 430 L 530 390 L 560 430 Z' fill='none' stroke='%2340916c' stroke-width='1.5' opacity='0.06'/%3E%3Crect x='515' y='430' width='30' height='30' fill='none' stroke='%2340916c' stroke-width='1.5' opacity='0.06'/%3E%3Cpath d='M530 460 L 530 440' stroke='%2340916c' stroke-width='1' opacity='0.06'/%3E%3C!-- Palm Tree --%3E%3Cpath d='M200 460 Q 210 400 215 350' fill='none' stroke='%231b4332' stroke-width='1.5' opacity='0.05'/%3E%3Cpath d='M215 350 Q 180 360 160 390' fill='none' stroke='%231b4332' stroke-width='1.5' opacity='0.05'/%3E%3Cpath d='M215 350 Q 250 360 270 390' fill='none' stroke='%231b4332' stroke-width='1.5' opacity='0.05'/%3E%3Cpath d='M215 350 Q 190 330 170 340' fill='none' stroke='%231b4332' stroke-width='1.5' opacity='0.05'/%3E%3Cpath d='M215 350 Q 240 330 260 340' fill='none' stroke='%231b4332' stroke-width='1.5' opacity='0.05'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  pointer-events: none;
+}
+
+.frosted-jade {
+  backdrop-filter: blur(20px);
+  background-color: rgba(252, 249, 248, 0.82);
+}
+
+.btn-press:active {
+  transform: translateY(2px);
+}
+
+/* ── Page Transition ── */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition-wrapper {
+  animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
