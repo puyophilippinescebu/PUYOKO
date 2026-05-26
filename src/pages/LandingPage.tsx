@@ -72,46 +72,48 @@ export const LandingPage: React.FC = () => {
         <div className="absolute inset-0 bg-[#E8F3EF] opacity-40" />
         <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/5 clip-path-polygon lg:block hidden" />
         
-        <div className="mx-auto max-w-container-max px-gutter relative z-10 grid grid-cols-[1.25fr_0.75fr] md:grid-cols-2 gap-4 md:gap-20 items-center py-6 md:py-0">
-          <div>
+        <div className="mx-auto max-w-container-max px-gutter relative z-10 flex md:grid md:grid-cols-2 gap-4 md:gap-20 items-center py-6 md:py-0 w-full overflow-hidden">
+          {/* Left Column (Content) */}
+          <div className="w-[62%] md:w-auto flex-shrink-0">
             <div className="mb-4 md:mb-8 flex flex-col items-start gap-2 md:gap-4">
               <img src={puyokoLogo} alt="Puyoko Animated Logo" className="h-10 md:h-28 w-auto object-contain mix-blend-multiply drop-shadow-sm transition-all duration-700 ease-in-out hover:scale-105" />
               <div className="flex items-center gap-2 md:gap-4">
                 <span className="text-primary-light text-[8px] md:text-xs font-mono tracking-[0.4em] uppercase">Selection / 祥安</span>
-                <div className="h-[1px] w-10 md:w-20 bg-primary/20"></div>
+                <div className="h-[1px] w-8 md:w-20 bg-primary/20"></div>
               </div>
             </div>
-            <h1 className="mb-4 md:mb-8 font-display text-2xl md:text-8xl font-light leading-[1.1] text-primary">
+            <h1 className="mb-4 md:mb-8 font-display text-xl md:text-8xl font-light leading-[1.15] text-primary whitespace-nowrap md:whitespace-normal">
               The Art of <br/>
-              <span className="italic-serif text-primary-light text-3xl md:text-8xl">Bahay na Bato</span>
+              <span className="italic-serif text-primary-light text-2xl md:text-8xl block mt-0.5 md:mt-0">Bahay na Bato</span>
             </h1>
-            <p className="mb-6 md:mb-12 max-w-md font-sans text-[10px] md:text-lg text-on-surface-variant leading-relaxed">
+            <p className="mb-6 md:mb-12 max-w-xs md:max-w-md font-sans text-[9px] md:text-lg text-on-surface-variant leading-relaxed">
               Experience the architectural beauty of local housing & real estate with the soft, ethereal brushstrokes of modern minimalist design.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-6">
+            <div className="flex flex-col sm:flex-row gap-2.5 md:gap-6 w-full">
               <button 
                 onClick={() => navigate('/properties')}
-                className="group relative overflow-hidden bg-primary text-white px-6 md:px-12 py-3.5 md:py-5 font-mono text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press text-center shrink-0"
+                className="group relative overflow-hidden bg-primary text-white px-4 md:px-12 py-3 md:py-5 font-mono text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press text-center shrink-0 w-full md:w-auto"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-light via-primary to-primary-light opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 bg-[length:200%_auto] group-hover:animate-gradient-x" />
                 <span className="relative z-10">Check Properties</span>
               </button>
               <button 
                 onClick={() => navigate('/about')}
-                className="px-4 md:px-8 py-3.5 md:py-5 border border-primary/20 font-mono text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] text-primary hover:bg-primary/5 transition-all active:scale-95 text-center shrink-0"
+                className="px-3 md:px-8 py-3 md:py-5 border border-primary/20 font-mono text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-primary hover:bg-primary/5 transition-all active:scale-95 text-center shrink-0 w-full md:w-auto"
               >
                 The Story
               </button>
             </div>
           </div>
           
-          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-sm border border-outline shadow-xl md:shadow-2xl group">
+          {/* Right Column (Hero Photo) */}
+          <div className="w-[38%] md:w-auto flex-shrink-0 relative aspect-[4/5] overflow-hidden rounded-sm border border-outline shadow-xl md:shadow-2xl group">
             <img 
               src={mainPhotoImg} 
               alt="Cebu Luxury Estate" 
               className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
-            <div className="absolute bottom-3 right-3 md:bottom-6 md:right-6 text-2xl md:text-5xl text-white/40 font-serif leading-none italic select-none">山水</div>
+            <div className="absolute bottom-2 right-2 md:bottom-6 md:right-6 text-lg md:text-5xl text-white/40 font-serif leading-none italic select-none">山水</div>
           </div>
         </div>
       </section>
