@@ -25,7 +25,7 @@ export const FirstTimeAnimation: React.FC<{ children: React.ReactNode }> = ({ ch
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-jade-deep flex-col gap-6"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-white flex-col gap-6"
           >
             <motion.img 
               src="/Puyoko Animated Logo.svg" 
@@ -44,7 +44,7 @@ export const FirstTimeAnimation: React.FC<{ children: React.ReactNode }> = ({ ch
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-              className="text-primary-neon font-display text-2xl tracking-[0.3em] uppercase font-light"
+              className="text-primary font-display text-2xl tracking-[0.3em] uppercase font-light"
             >
               PUYOKO
             </motion.h1>
