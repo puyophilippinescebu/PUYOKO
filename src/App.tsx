@@ -21,6 +21,7 @@ import { FirstTimeAnimation } from './components/FirstTimeAnimation';
 import { ContactForm } from './components/ContactForm';
 import { AuthProvider } from './contexts/AuthContext';
 import { PropertiesProvider } from './contexts/PropertiesContext';
+import { MediaProvider } from './contexts/MediaContext';
 import { useAuth } from './contexts/AuthContext';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { MediaPage } from './pages/MediaPage';
@@ -42,32 +43,34 @@ export default function App() {
   return (
     <AuthProvider>
       <PropertiesProvider>
-        <Router>
-          <ScrollToTop />
-          <Routes>
-            {/* ── Login (no layout) ── */}
-            <Route path="/login" element={<LoginPage />} />
+        <MediaProvider>
+          <Router>
+            <ScrollToTop />
+            <Routes>
+              {/* ── Login (no layout) ── */}
+              <Route path="/login" element={<LoginPage />} />
 
-            {/* ── Admin Portal (protected, own layout) ── */}
-            <Route
-              path="/admin/*"
-              element={
-                <RequireAuth>
-                  <AdminLayout>
-                    <Routes>
-                      <Route path="properties" element={<PageTransition><PropertiesPage /></PageTransition>} />
-                      <Route path="" element={<Navigate to="properties" replace />} />
-                      <Route path="*" element={<Navigate to="properties" replace />} />
-                    </Routes>
-                  </AdminLayout>
-                </RequireAuth>
-              }
-            />
+              {/* ── Admin Portal (protected, own layout) ── */}
+              <Route
+                path="/admin/*"
+                element={
+                  <RequireAuth>
+                    <AdminLayout>
+                      <Routes>
+                        <Route path="properties" element={<PageTransition><PropertiesPage /></PageTransition>} />
+                        <Route path="" element={<Navigate to="properties" replace />} />
+                        <Route path="*" element={<Navigate to="properties" replace />} />
+                      </Routes>
+                    </AdminLayout>
+                  </RequireAuth>
+                }
+              />
 
-            {/* ── Public Site (always public, own layout) ── */}
-            <Route path="*" element={<PublicLayout />} />
-          </Routes>
-        </Router>
+              {/* ── Public Site (always public, own layout) ── */}
+              <Route path="*" element={<PublicLayout />} />
+            </Routes>
+          </Router>
+        </MediaProvider>
       </PropertiesProvider>
     </AuthProvider>
   );

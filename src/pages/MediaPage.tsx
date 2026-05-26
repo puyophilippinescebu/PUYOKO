@@ -1,112 +1,36 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { BookOpen, Calendar, Search, ArrowRight, User, Clock, MapPin, Tag } from 'lucide-react';
+import { BookOpen, Calendar, Search, ArrowRight, User, Clock, MapPin, Tag, Plus, Edit2, Trash2 } from 'lucide-react';
 import { cn } from '../lib/utils';
-
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  category: string;
-  author: string;
-  date: string;
-  readTime: string;
-  image: string;
-  tags: string[];
-}
-
-interface EventPost {
-  id: string;
-  title: string;
-  description: string;
-  category: "Grand Launch" | "Open House" | "Property Expo" | "CSR Activity";
-  location: string;
-  date: string;
-  time: string;
-  image: string;
-  highlights: string[];
-}
-
-const MOCK_BLOGS: BlogPost[] = [
-  {
-    id: "blog-1",
-    title: "5 Crucial Tips for First-Time Homebuyers in Cebu",
-    excerpt: "Navigating Cebu's real estate market can be challenging. Here is your ultimate checklist to buy your first home with confidence.",
-    content: "Cebu's rapid economic development has made it one of the most attractive real estate markets in the Philippines. However, for first-time buyers, the process can feel overwhelming. From choosing between a condominium and a house and lot to understanding payment schemes, accents, and dynamic bank rates, there are several variables to evaluate. Firstly, define your long-term goals. Are you purchasing a property for personal stay, or as an active investment? Secondly, set a firm budget that takes into account not just the selling price but secondary expenses like transfer taxes, association fees, and utility deposits...",
-    category: "Buying Guides",
-    author: "Jan Eric Saladaga",
-    date: "May 20, 2026",
-    readTime: "5 min read",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80",
-    tags: ["Real Estate", "First Time Buyer", "Cebu Guide"]
-  },
-  {
-    id: "blog-2",
-    title: "Why Mactan Island is the Next Hub for Premium Estates",
-    excerpt: "With the new Cebu-Cordova Link Expressway (CCLEX), Mactan is seeing an architectural renaissance. Here is why luxury investors are shifting focus.",
-    content: "Mactan Island has always been celebrated for its beautiful luxury beach resorts and international airport. But today, it is undergoing an architectural and investment renaissance. The completion of the state-of-the-art CCLEX bridge has completely altered Cebu's transportation network, turning what used to be a long commute into a scenic 15-minute drive from the city. As a result, premium residential developments, master-planned townships, and heritage-style homes are rising across Mactan. Investors are realizing that Mactan offers a unique blend of cosmopolitan convenience and marine tranquility that is hard to find anywhere else in Southeast Asia...",
-    category: "Market Insights",
-    author: "Ryaih Mae Saladaga",
-    date: "April 28, 2026",
-    readTime: "7 min read",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-    tags: ["CCLEX", "Luxury Living", "Investment Trends"]
-  },
-  {
-    id: "blog-3",
-    title: "Bahay na Bato: Integrating Filipino Heritage in Modern Architecture",
-    excerpt: "How Puyoko is leading a design movement that honors Visayan structural heritage while employing contemporary minimalist layouts.",
-    content: "True architecture does not delete the past—it reinterprets it. At Puyoko, we are deeply inspired by the classic Bahay na Bato. Originally constructed with adobe bases and light wood/capiz upper structures, these homes were perfectly suited to the tropical Philippine climate. Today, we are working with Cebu's top designers to integrate Narra woodwork, local limestone, and Capiz window geometries into minimalist, glass-filled estates. The result is a premium home that feels ethereal and contemporary, yet carries the solid weight and heritage of a traditional Visayan estate...",
-    category: "Architecture & Design",
-    author: "Puyoko Design Team",
-    date: "March 15, 2026",
-    readTime: "4 min read",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-    tags: ["Heritage", "Minimalism", "Local Architecture"]
-  }
-];
-
-const MOCK_EVENTS: EventPost[] = [
-  {
-    id: "event-1",
-    title: "Puyoko Consolacion Premium Estates Grand Open House",
-    description: "Join us for an exclusive guided walk through our latest premium lots and showhouses in Consolacion, featuring live music and Visayan delicacies.",
-    category: "Open House",
-    location: "Yanessa Country Homes Phase 1, Consolacion, Cebu",
-    date: "June 6, 2026",
-    time: "9:00 AM - 4:00 PM",
-    image: "https://images.unsplash.com/photo-1511520790967-6880c858b0a1?auto=format&fit=crop&w=800&q=80",
-    highlights: ["Interactive guided tour", "Introductory payment consultation", "Complimentary cocktail buffet"]
-  },
-  {
-    id: "event-2",
-    title: "Cebu Real Estate & Investment Expo 2026",
-    description: "Puyoko will be showcasing our latest pre-selling and under-construction estates at the SM Seaside Sky Hall. Visit our booth for special event discounts.",
-    category: "Property Expo",
-    location: "Sky Hall, SM Seaside City Cebu",
-    date: "July 11-12, 2026",
-    time: "10:00 AM - 9:00 PM",
-    image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=800&q=80",
-    highlights: ["Exclusive event-only 5% reservation discounts", "Founder's keynote panel on Cebu Investment", "Free structural consultations"]
-  },
-  {
-    id: "event-3",
-    title: "Puyoko Balay Rebuilding Project: Community CSR",
-    description: "Our quarterly corporate social responsibility project where we collaborate with local carpenters to restore traditional timber homes in rural Consolacion.",
-    category: "CSR Activity",
-    location: "Barangay Tolo-Tolo, Consolacion, Cebu",
-    date: "May 2, 2026",
-    time: "8:00 AM - 5:00 PM",
-    image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=800&q=80",
-    highlights: ["Sourced eco-friendly Narra and timber materials", "Restored 3 historical family homes", "Funded neighborhood toolkits"]
-  }
-];
+import { useMedia, BlogPost, EventPost } from '../contexts/MediaContext';
+import { useAuth } from '../contexts/AuthContext';
+import { MediaFormModal } from '../components/MediaFormModal';
+import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
 
 export const MediaPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Auth & Media Context
+  const { isAuthenticated } = useAuth();
+  const { 
+    blogs, 
+    events, 
+    loading, 
+    addBlog, 
+    updateBlog, 
+    deleteBlog, 
+    addEvent, 
+    updateEvent, 
+    deleteEvent 
+  } = useMedia();
+
+  // Modals state
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formType, setFormType] = useState<'blog' | 'event'>('blog');
+  const [editingItem, setEditingItem] = useState<any | undefined>();
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; title: string; type: 'blog' | 'event' } | null>(null);
+
   // Tabs: 'blogs' or 'events'
   const activeTab = searchParams.get('tab') === 'events' ? 'events' : 'blogs';
 
@@ -115,27 +39,63 @@ export const MediaPage: React.FC = () => {
     setSearchQuery('');
   };
 
+  // Lock background scrolling when form modal is open
+  useEffect(() => {
+    if (isFormOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isFormOpen]);
+
   // Filter Blogs based on search
   const filteredBlogs = useMemo(() => {
-    if (!searchQuery) return MOCK_BLOGS;
-    return MOCK_BLOGS.filter(blog => 
+    if (!searchQuery) return blogs;
+    return blogs.filter(blog => 
       blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blog.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blog.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      blog.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      (blog.tags || []).some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
     );
-  }, [searchQuery]);
+  }, [blogs, searchQuery]);
 
   // Filter Events based on search
   const filteredEvents = useMemo(() => {
-    if (!searchQuery) return MOCK_EVENTS;
-    return MOCK_EVENTS.filter(event => 
+    if (!searchQuery) return events;
+    return events.filter(event => 
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [events, searchQuery]);
+
+  const handleSave = async (data: any) => {
+    if (formType === 'blog') {
+      if (editingItem) {
+        await updateBlog({ ...editingItem, ...data });
+      } else {
+        await addBlog(data);
+      }
+    } else {
+      if (editingItem) {
+        await updateEvent({ ...editingItem, ...data });
+      } else {
+        await addEvent(data);
+      }
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+    if (itemToDelete.type === 'blog') {
+      await deleteBlog(itemToDelete.id);
+    } else {
+      await deleteEvent(itemToDelete.id);
+    }
+    setItemToDelete(null);
+  };
 
   return (
     <div className="mx-auto max-w-container-max px-gutter py-16">
@@ -159,7 +119,7 @@ export const MediaPage: React.FC = () => {
             className={cn(
               "flex items-center gap-2 px-5 py-2.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer border-0 outline-none",
               activeTab === 'blogs'
-                ? "bg-primary text-white shadow-md"
+                ? "bg-primary text-white shadow-md animate-fade-in"
                 : "text-on-surface-variant/70 hover:bg-primary/5 hover:text-primary"
             )}
           >
@@ -171,7 +131,7 @@ export const MediaPage: React.FC = () => {
             className={cn(
               "flex items-center gap-2 px-5 py-2.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer border-0 outline-none",
               activeTab === 'events'
-                ? "bg-primary text-white shadow-md"
+                ? "bg-primary text-white shadow-md animate-fade-in"
                 : "text-on-surface-variant/70 hover:bg-primary/5 hover:text-primary"
             )}
           >
@@ -193,8 +153,32 @@ export const MediaPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Results Header & Add Button */}
+      <div className="mb-10 flex items-center justify-between border-b border-outline/10 pb-6">
+        <h3 className="font-display text-2xl font-bold text-primary">
+          {loading ? 'Loading...' : (activeTab === 'blogs' ? `${filteredBlogs.length} Articles Published` : `${filteredEvents.length} Events Scheduled`)}
+        </h3>
+        {isAuthenticated && (
+          <button
+            onClick={() => {
+              setEditingItem(undefined);
+              setFormType(activeTab === 'blogs' ? 'blog' : 'event');
+              setIsFormOpen(true);
+            }}
+            className="flex items-center gap-2 rounded-sm bg-primary px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-white hover:bg-primary-light transition-all active:scale-95 cursor-pointer shadow-md border-0 outline-none"
+          >
+            <Plus className="h-4 w-4" />
+            {activeTab === 'blogs' ? 'Add Blog Post' : 'Add Expo & Event'}
+          </button>
+        )}
+      </div>
+
       {/* Content Rendering */}
-      {activeTab === 'blogs' ? (
+      {loading ? (
+        <div className="flex h-64 items-center justify-center">
+          <div className="font-mono text-xs uppercase tracking-widest text-primary animate-pulse">Loading listings...</div>
+        </div>
+      ) : activeTab === 'blogs' ? (
         filteredBlogs.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant/30 text-center p-8 bg-white/50">
             <p className="font-display text-lg font-bold text-on-surface-variant">No articles found matching "{searchQuery}"</p>
@@ -204,7 +188,7 @@ export const MediaPage: React.FC = () => {
             {filteredBlogs.map(blog => (
               <article 
                 key={blog.id} 
-                className="bg-white border border-outline/25 rounded-sm overflow-hidden flex flex-col group hover:shadow-2xl hover:border-primary/20 transition-all duration-500"
+                className="bg-white border border-outline/25 rounded-sm overflow-hidden flex flex-col group hover:shadow-2xl hover:border-primary/20 transition-all duration-500 relative"
               >
                 {/* Image */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-surface-muted">
@@ -212,6 +196,36 @@ export const MediaPage: React.FC = () => {
                   <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-2.5 py-1 text-[9px] font-extrabold uppercase font-display tracking-widest text-primary shadow-sm border border-outline/10">
                     {blog.category}
                   </span>
+
+                  {/* Admin Controls Overlay */}
+                  {isAuthenticated && (
+                    <div className="absolute right-4 top-4 flex gap-2 z-20">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setEditingItem(blog);
+                          setFormType('blog');
+                          setIsFormOpen(true);
+                        }}
+                        title="Edit Blog"
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-primary hover:bg-primary hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer border-0 outline-none"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setItemToDelete({ id: blog.id, title: blog.title, type: 'blog' });
+                        }}
+                        title="Delete Blog"
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer border-0 outline-none"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Body */}
@@ -231,7 +245,7 @@ export const MediaPage: React.FC = () => {
 
                   <div className="border-t border-outline/10 pt-4 flex justify-between items-center mt-auto">
                     <span className="text-[10px] font-mono text-primary/50 uppercase tracking-widest">{blog.date}</span>
-                    <button className="flex items-center gap-1 font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary hover:text-primary-light transition-all hover:pl-2 active:scale-95">
+                    <button className="flex items-center gap-1 font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary hover:text-primary-light transition-all hover:pl-2 active:scale-95 border-0 bg-transparent outline-none cursor-pointer">
                       Read Article <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
@@ -250,7 +264,7 @@ export const MediaPage: React.FC = () => {
             {filteredEvents.map(event => (
               <div 
                 key={event.id} 
-                className="bg-white border border-outline/25 rounded-sm overflow-hidden flex flex-col group hover:shadow-2xl hover:border-primary/20 transition-all duration-500"
+                className="bg-white border border-outline/25 rounded-sm overflow-hidden flex flex-col group hover:shadow-2xl hover:border-primary/20 transition-all duration-500 relative"
               >
                 {/* Image */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-surface-muted">
@@ -258,6 +272,36 @@ export const MediaPage: React.FC = () => {
                   <span className="absolute top-4 left-4 bg-primary text-white px-2.5 py-1 text-[9px] font-extrabold uppercase font-display tracking-widest shadow-sm">
                     {event.category}
                   </span>
+
+                  {/* Admin Controls Overlay */}
+                  {isAuthenticated && (
+                    <div className="absolute right-4 top-4 flex gap-2 z-20">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setEditingItem(event);
+                          setFormType('event');
+                          setIsFormOpen(true);
+                        }}
+                        title="Edit Event"
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-primary hover:bg-primary hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer border-0 outline-none"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setItemToDelete({ id: event.id, title: event.title, type: 'event' });
+                        }}
+                        title="Delete Event"
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer border-0 outline-none"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Body */}
@@ -282,20 +326,39 @@ export const MediaPage: React.FC = () => {
                   </div>
 
                   {/* Highlights Bullet List */}
-                  <div className="mt-4 bg-primary/5 rounded p-3 border border-primary/10">
-                    <span className="font-display text-[9px] font-extrabold uppercase tracking-widest text-primary mb-1.5 block">Highlights / 重点</span>
-                    <ul className="list-disc pl-4 text-[10px] text-on-surface-variant/90 space-y-1">
-                      {event.highlights.map((highlight, idx) => (
-                        <li key={idx}>{highlight}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  {event.highlights && event.highlights.length > 0 && (
+                    <div className="mt-4 bg-primary/5 rounded p-3 border border-primary/10">
+                      <span className="font-display text-[9px] font-extrabold uppercase tracking-widest text-primary mb-1.5 block">Highlights / 重点</span>
+                      <ul className="list-disc pl-4 text-[10px] text-on-surface-variant/90 space-y-1">
+                        {event.highlights.map((highlight, idx) => (
+                          <li key={idx}>{highlight}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )
       )}
+
+      {/* Modals */}
+      <MediaFormModal
+        isOpen={isFormOpen}
+        onClose={() => { setIsFormOpen(false); setEditingItem(undefined); }}
+        onSave={handleSave}
+        type={formType}
+        initialData={editingItem}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        propertyName={itemToDelete?.title}
+        itemType={itemToDelete?.type === 'blog' ? 'article' : 'event'}
+      />
     </div>
   );
 };

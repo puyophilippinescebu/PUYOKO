@@ -6,9 +6,18 @@ interface DeleteConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   propertyName?: string;
+  title?: string;
+  itemType?: string;
 }
 
-export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpen, onClose, onConfirm, propertyName }) => {
+export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  propertyName,
+  title,
+  itemType = 'property'
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -22,19 +31,21 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
         >
           <X className="w-5 h-5" />
         </button>
-
+ 
         <div className="flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-6 border border-red-100">
             <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
           
-          <h2 className="font-display text-2xl font-bold text-primary mb-2">Delete Property</h2>
+          <h2 className="font-display text-2xl font-bold text-primary mb-2">
+            {title || `Delete ${itemType.charAt(0).toUpperCase() + itemType.slice(1)}`}
+          </h2>
           
           <p className="font-sans text-on-surface-variant mb-6">
-            Are you sure you want to delete <strong className="text-primary">{propertyName || 'this property'}</strong>? 
+            Are you sure you want to delete <strong className="text-primary">{propertyName || `this ${itemType}`}</strong>? 
             This action cannot be undone and will permanently remove it from the system.
           </p>
-
+ 
           <div className="flex w-full gap-4 mt-2">
             <button 
               onClick={onClose}
