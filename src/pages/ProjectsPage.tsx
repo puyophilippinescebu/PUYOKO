@@ -1,14 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bed, Bath, Square, ChevronRight, Hammer, Flame, LayoutGrid, Heart } from 'lucide-react';
+import { Bed, Bath, Square, ChevronRight, Hammer, Flame, LayoutGrid, Heart, Edit2, Trash2, Archive, ArchiveRestore, Plus } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
+import { useAuth } from '../contexts/AuthContext';
+import { PropertyFormModal } from '../components/PropertyFormModal';
+import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
 import { Property } from '../types';
 import { cn } from '../lib/utils';
 
 export const ProjectsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { properties, loading } = useProperties();
+  const { isAuthenticated } = useAuth();
+  const { properties, loading, addProperty, updateProperty, deleteProperty } = useProperties();
   const [activeTab, setActiveTab] = useState<'All' | 'Under Construction' | 'Preselling'>('All');
+
+  const [editingProperty, setEditingProperty] = useState<Property | undefined>();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
 
   // Filter properties to only show projects ("Under Construction" or "Preselling")
   const projectList = useMemo(() => {
@@ -87,6 +95,22 @@ export const ProjectsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Results Header & Add Button */}
+      <div className="mb-10 flex items-center justify-between border-b border-outline/10 pb-6">
+        <h3 className="font-display text-2xl font-bold text-primary">
+          {loading ? 'Loading...' : `${filteredProjects.length} Projects Active`}
+        </h3>
+        {isAuthenticated && (
+          <button
+            onClick={() => { setEditingProperty(undefined); setIsFormOpen(true); }}
+            className="flex items-center gap-2 rounded-sm bg-primary px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-white hover:bg-primary-light transition-all active:scale-95 cursor-pointer shadow-md"
+          >
+            <Plus className="h-4 w-4" />
+            Add Project
+          </button>
+        )}
+      </div>
+
       {/* Grid */}
       {loading ? (
         <div className="flex h-64 items-center justify-center">
@@ -141,6 +165,33 @@ export const ProjectsPage: React.FC = () => {
                   )}>
                     {project.status}
                   </div>
+
+                  {/* Admin Controls Overlay */}
+                  {isAuthenticated && (
+                    <div className="absolute right-4 top-4 flex gap-2 z-20">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); updateProperty({ ...project, status: project.status === 'Archived' ? 'Active' : 'Archived' }); }}
+                        title={project.status === 'Archived' ? 'Unarchive' : 'Archive'}
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-orange-500 hover:bg-orange-500 hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer"
+                      >
+                        {project.status === 'Archived' ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditingProperty(project); setIsFormOpen(true); }}
+                        title="Edit Project"
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-primary hover:bg-primary hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setPropertyToDelete(project); }}
+                        title="Delete Project"
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Details */}
@@ -214,6 +265,23 @@ export const ProjectsPage: React.FC = () => {
           })}
         </div>
       )}
+
+      <PropertyFormModal
+        isOpen={isFormOpen}
+        onClose={() => { setIsFormOpen(false); setEditingProperty(undefined); }}
+        onSave={data => {
+          if (editingProperty) updateProperty({ ...editingProperty, ...data });
+          else addProperty(data);
+        }}
+        initialData={editingProperty}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={!!propertyToDelete}
+        onClose={() => setPropertyToDelete(null)}
+        propertyName={propertyToDelete?.title}
+        onConfirm={() => { if (propertyToDelete) deleteProperty(propertyToDelete.id); }}
+      />
     </div>
   );
 };

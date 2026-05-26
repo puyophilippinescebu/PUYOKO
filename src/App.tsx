@@ -55,7 +55,7 @@ export default function App() {
                 <RequireAuth>
                   <AdminLayout>
                     <Routes>
-                      <Route path="properties" element={<PageTransition><PropertiesPage isAdmin /></PageTransition>} />
+                      <Route path="properties" element={<PageTransition><PropertiesPage /></PageTransition>} />
                       <Route path="" element={<Navigate to="properties" replace />} />
                       <Route path="*" element={<Navigate to="properties" replace />} />
                     </Routes>
