@@ -6,6 +6,7 @@ import { useMedia, BlogPost, EventPost } from '../contexts/MediaContext';
 import { useAuth } from '../contexts/AuthContext';
 import { MediaFormModal } from '../components/MediaFormModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
+import { MediaDetailModal } from '../components/MediaDetailModal';
 
 export const MediaPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,6 +31,10 @@ export const MediaPage: React.FC = () => {
   const [formType, setFormType] = useState<'blog' | 'event'>('blog');
   const [editingItem, setEditingItem] = useState<any | undefined>();
   const [itemToDelete, setItemToDelete] = useState<{ id: string; title: string; type: 'blog' | 'event' } | null>(null);
+
+  // Detail view state
+  const [viewingItem, setViewingItem] = useState<BlogPost | EventPost | null>(null);
+  const [viewingType, setViewingType] = useState<'blog' | 'event'>('blog');
 
   // Tabs: 'blogs' or 'events'
   const activeTab = searchParams.get('tab') === 'events' ? 'events' : 'blogs';
@@ -187,8 +192,9 @@ export const MediaPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredBlogs.map(blog => (
               <article 
-                key={blog.id} 
-                className="bg-white border border-outline/25 rounded-sm overflow-hidden flex flex-col group hover:shadow-2xl hover:border-primary/20 transition-all duration-500 relative"
+                key={blog.id}
+                onClick={() => { setViewingItem(blog); setViewingType('blog'); }}
+                className="bg-white border border-outline/25 rounded-sm overflow-hidden flex flex-col group hover:shadow-2xl hover:border-primary/20 transition-all duration-500 relative cursor-pointer"
               >
                 {/* Image */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-surface-muted">
@@ -245,7 +251,10 @@ export const MediaPage: React.FC = () => {
 
                   <div className="border-t border-outline/10 pt-4 flex justify-between items-center mt-auto">
                     <span className="text-[10px] font-mono text-primary/50 uppercase tracking-widest">{blog.date}</span>
-                    <button className="flex items-center gap-1 font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary hover:text-primary-light transition-all hover:pl-2 active:scale-95 border-0 bg-transparent outline-none cursor-pointer">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setViewingItem(blog); setViewingType('blog'); }}
+                      className="flex items-center gap-1 font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary hover:text-primary-light transition-all hover:gap-2 active:scale-95 border-0 bg-transparent outline-none cursor-pointer"
+                    >
                       Read Article <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
@@ -262,9 +271,10 @@ export const MediaPage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredEvents.map(event => (
-              <div 
-                key={event.id} 
-                className="bg-white border border-outline/25 rounded-sm overflow-hidden flex flex-col group hover:shadow-2xl hover:border-primary/20 transition-all duration-500 relative"
+              <div
+                key={event.id}
+                onClick={() => { setViewingItem(event); setViewingType('event'); }}
+                className="bg-white border border-outline/25 rounded-sm overflow-hidden flex flex-col group hover:shadow-2xl hover:border-primary/20 transition-all duration-500 relative cursor-pointer"
               >
                 {/* Image */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-surface-muted">
@@ -358,6 +368,13 @@ export const MediaPage: React.FC = () => {
         onConfirm={handleDeleteConfirm}
         propertyName={itemToDelete?.title}
         itemType={itemToDelete?.type === 'blog' ? 'article' : 'event'}
+      />
+
+      <MediaDetailModal
+        isOpen={!!viewingItem}
+        onClose={() => setViewingItem(null)}
+        item={viewingItem}
+        type={viewingType}
       />
     </div>
   );
