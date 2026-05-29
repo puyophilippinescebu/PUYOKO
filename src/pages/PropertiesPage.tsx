@@ -7,7 +7,7 @@ import { Property } from '../types';
 import { cn } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, ChevronDown, ShieldCheck } from 'lucide-react';
+import { Plus, ChevronDown, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // ── Custom Dropdown ──────────────────────────────────────────────────────────
@@ -96,6 +96,15 @@ export const PropertiesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [listingType, selectedCity, searchQuery]);
+
   const [videoUrlInput, setVideoUrlInput] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
 
   const handleSaveVideoUrl = () => {
@@ -117,11 +126,23 @@ export const PropertiesPage: React.FC = () => {
     });
   }, [properties, listingType, selectedCity, searchQuery, isAuthenticated]);
 
+  const paginatedProperties = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredProperties.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProperties, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const cities = ['All Cities', ...Array.from(new Set(properties.map(p => p.city)))];
   const types = ['All Properties', 'For Sale', 'For Rent'];
 
   return (
-    <div className="mx-auto max-w-container-max px-gutter py-20">
+    <div className="mx-auto max-w-container-max px-gutter py-10 md:py-20">
       {/* Admin Video URL Configuration Card */}
       {isAuthenticated && (
         <div className="mb-10 rounded-sm border border-outline/30 bg-white/95 frosted-jade p-6 shadow-sm">
@@ -154,7 +175,7 @@ export const PropertiesPage: React.FC = () => {
 
 
       {/* Filter Engine */}
-      <section className="mb-16">
+      <section className="mb-10 md:mb-16">
         <div className="border border-outline/30 bg-white shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-4 items-center">
             {/* Search (Always visible, spans 1 grid column on desktop) */}
@@ -218,25 +239,23 @@ export const PropertiesPage: React.FC = () => {
       </section>
 
       {/* Results Header */}
-      <div className="mb-10 flex items-center justify-between">
-        <h3 className="font-display text-2xl font-black text-primary">
+      <div ref={resultsRef} className="scroll-mt-24 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h3 className="font-display text-xl sm:text-2xl font-black text-primary">
           {loading ? 'Loading...' : `${filteredProperties.length} Estates Found`}
         </h3>
-        <div className="flex items-center gap-4">
-          {isAuthenticated && (
-            <button
-              onClick={() => { setEditingProperty(undefined); setIsFormOpen(true); }}
-              className="flex items-center gap-2 rounded-sm bg-primary px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-white hover:bg-primary-light transition-all active:scale-95"
-            >
-              <Plus className="h-4 w-4" />
-              Add Property
-            </button>
-          )}
-        </div>
+        {isAuthenticated && (
+          <button
+            onClick={() => { setEditingProperty(undefined); setIsFormOpen(true); }}
+            className="self-start sm:self-auto flex items-center gap-2 rounded-sm bg-primary px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-white hover:bg-primary-light transition-all active:scale-95"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Property</span>
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
-        {filteredProperties.map(prop => (
+        {paginatedProperties.map(prop => (
           <PropertyCard
             key={prop.id}
             property={prop}
@@ -247,6 +266,53 @@ export const PropertiesPage: React.FC = () => {
           />
         ))}
       </div>
+
+      {/* Pagination UI */}
+      {totalPages > 1 && (
+        <div className="mt-16 flex items-center justify-center gap-2">
+          {/* Previous Page */}
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-sm border border-outline/20 bg-white font-mono text-xs uppercase tracking-widest text-primary transition-all",
+              "hover:border-primary hover:bg-primary/5 active:scale-95 disabled:pointer-events-none disabled:opacity-30"
+            )}
+            aria-label="Previous page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          {/* Page numbers */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button
+              key={page}
+              onClick={() => handlePageChange(page)}
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-sm font-mono text-xs transition-all active:scale-95",
+                currentPage === page
+                  ? "bg-primary font-bold text-white shadow-md shadow-primary/20"
+                  : "border border-outline/20 bg-white text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary/5"
+              )}
+            >
+              {page}
+            </button>
+          ))}
+
+          {/* Next Page */}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-sm border border-outline/20 bg-white font-mono text-xs uppercase tracking-widest text-primary transition-all",
+              "hover:border-primary hover:bg-primary/5 active:scale-95 disabled:pointer-events-none disabled:opacity-30"
+            )}
+            aria-label="Next page"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {filteredProperties.length === 0 && (
         <div className="flex h-64 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/30 text-center">

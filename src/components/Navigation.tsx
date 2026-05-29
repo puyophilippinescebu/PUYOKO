@@ -174,20 +174,20 @@ export const Navigation: React.FC = () => {
         {/* Right Section controls (Admin Badge, Sign Out, Hamburger Menu) */}
         <div className="flex items-center gap-4">
           {isAuthenticated && (
-            <div ref={dropdownRef} className="relative flex items-center gap-3 border-l border-outline/30 pl-4 md:pl-6">
+            <div ref={dropdownRef} className="relative flex items-center gap-2 sm:gap-3 border-l border-outline/30 pl-3 sm:pl-6">
               {/* ADMIN Badge — click to open profile */}
               <button
                 onClick={() => { setProfileOpen(o => !o); setEditingName(false); }}
-                className="flex items-center gap-1.5 text-primary-neon bg-jade-deep px-3 py-1.5 rounded-sm hover:opacity-80 transition-opacity"
+                className="flex items-center gap-1.5 text-primary-neon bg-jade-deep px-2 sm:px-3 py-1.5 rounded-sm hover:opacity-80 transition-opacity"
               >
-                <ShieldCheck className="w-3 h-3" />
-                <span className="text-[9px] font-mono uppercase tracking-widest font-bold">{displayName}</span>
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-[9px] font-mono uppercase tracking-widest font-bold">{displayName}</span>
               </button>
 
               {/* Logout button */}
               <button
                 onClick={() => { logout(); navigate('/login'); }}
-                className="text-on-surface-variant hover:text-red-500 transition-colors active:scale-95 flex items-center gap-1"
+                className="hidden sm:flex text-on-surface-variant hover:text-red-500 transition-colors active:scale-95 items-center gap-1"
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
@@ -338,6 +338,30 @@ export const Navigation: React.FC = () => {
                   </Link>
                 );
               })}
+
+              {/* Mobile Admin Profile Section */}
+              {isAuthenticated && (
+                <div className="mt-4 pt-5 border-t border-outline/20 flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-sans text-xs font-bold text-on-surface">{displayName}</span>
+                        <span className="font-mono text-[8px] uppercase tracking-widest text-on-surface-variant/70">{userEmail ?? 'admin@puyoko.com'}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { logout(); navigate('/login'); setMobileMenuOpen(false); }}
+                      className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -36,37 +36,13 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           alt={property.title}
           className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
         />
-        <div className="absolute left-6 top-6 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm">
+        <div className="absolute left-4 top-4 sm:left-6 sm:top-6 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm max-w-[85%] truncate" title={`${property.type} / ${property.city}`}>
           {property.type} / {property.city}
         </div>
 
         {property.status === 'Archived' && (
-          <div className="absolute left-6 top-14 bg-red-600/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg">
+          <div className="absolute left-4 top-12 sm:left-6 sm:top-14 bg-red-600/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg">
             Archived
-          </div>
-        )}
-
-        {isAuthenticated && (
-          <div className="absolute right-4 top-4 flex gap-2">
-            <button
-              onClick={(e) => { e.stopPropagation(); onArchive?.(property.id); }}
-              title={property.status === 'Archived' ? 'Unarchive' : 'Archive'}
-              className="bg-white/90 backdrop-blur-md p-2 rounded-full text-orange-500 hover:bg-orange-500 hover:text-white transition-colors shadow-lg active:scale-95"
-            >
-              {property.status === 'Archived' ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onEdit?.(property); }}
-              className="bg-white/90 backdrop-blur-md p-2 rounded-full text-primary hover:bg-primary hover:text-white transition-colors shadow-lg active:scale-95"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
-              className="bg-white/90 backdrop-blur-md p-2 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-colors shadow-lg active:scale-95"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
           </div>
         )}
       </div>
@@ -112,6 +88,36 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           </div>
         </div>
       </div>
+
+      {/* Admin Action Toolbar */}
+      {isAuthenticated && (
+        <div className="flex border-t border-outline/10 bg-surface-muted/30">
+          <button
+            onClick={(e) => { e.stopPropagation(); onArchive?.(property.id); }}
+            className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-orange-600 hover:bg-orange-50/50 hover:text-orange-700 transition-colors border-r border-outline/10"
+            title={property.status === 'Archived' ? 'Unarchive Property' : 'Archive Property'}
+          >
+            {property.status === 'Archived' ? <ArchiveRestore className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
+            <span>{property.status === 'Archived' ? 'Restore' : 'Archive'}</span>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit?.(property); }}
+            className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-primary hover:bg-primary/5 transition-colors border-r border-outline/10"
+            title="Edit Property Details"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+            <span>Edit</span>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
+            className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+            title="Delete Property"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -88,10 +88,10 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => { setProfileOpen(o => !o); setEditingName(false); }}
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-sm"
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors px-2 sm:px-3 py-1.5 rounded-sm"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-primary-neon" />
-                <span className="text-[9px] font-mono uppercase tracking-widest font-bold text-white">{displayName}</span>
+                <span className="hidden sm:inline text-[9px] font-mono uppercase tracking-widest font-bold text-white">{displayName}</span>
               </button>
 
               {profileOpen && (
