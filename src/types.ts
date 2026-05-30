@@ -17,6 +17,9 @@ export interface Property {
   area: number;
   description: string;
   type: "For Sale" | "For Rent";
+  videoUrl?: string;
+  pricePeriod?: string;
+  originalPrice?: number;
 }
 
 export interface StatCard {

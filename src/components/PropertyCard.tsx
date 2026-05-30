@@ -60,8 +60,29 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           </button>
         </div>
 
-        <div className="mb-4 font-display text-[22px] font-extrabold text-primary tracking-tight">
-          {formattedPrice}{property.type === 'For Rent' ? '/mo' : ''}
+        <div className="mb-4 flex items-baseline gap-2 flex-wrap min-h-[32px]">
+          {property.originalPrice && property.originalPrice > property.price && (
+            <span className="font-sans text-xs font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
+              {new Intl.NumberFormat(
+                property.currency === 'USD' ? 'en-US' :
+                property.currency === 'EUR' ? 'de-DE' :
+                property.currency === 'JPY' ? 'ja-JP' : 'en-PH',
+                {
+                  style: 'currency',
+                  currency: property.currency || 'PHP',
+                  maximumFractionDigits: 0,
+                }
+              ).format(property.originalPrice)}
+            </span>
+          )}
+          <div className="font-display text-[22px] font-extrabold text-primary tracking-tight">
+            {formattedPrice}
+            {property.type === 'For Rent' && (
+              <span className="text-xs font-semibold text-on-surface-variant/70 lowercase font-sans ml-1">
+                / {property.pricePeriod || 'mo'}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center justify-between border-t border-outline/10 pt-4 font-sans text-xs font-bold tracking-wide text-on-surface-variant/80">

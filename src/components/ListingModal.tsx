@@ -2,7 +2,7 @@ import React from 'react';
 import { X, MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Property } from '../types';
-import { cn } from '../lib/utils';
+import { cn, getVideoEmbedUrl } from '../lib/utils';
 
 interface ListingModalProps {
   property: Property;
@@ -12,20 +12,28 @@ interface ListingModalProps {
 
 export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, onClose }) => {
   const [currentImage, setCurrentImage] = React.useState(0);
+  const [isPlayingVideo, setIsPlayingVideo] = React.useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      setIsPlayingVideo(false);
     }
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
 
-  const nextImage = () => setCurrentImage((prev) => (prev + 1) % property.images.length);
-  const prevImage = () => setCurrentImage((prev) => (prev - 1 + property.images.length) % property.images.length);
+  const nextImage = () => {
+    setIsPlayingVideo(false);
+    setCurrentImage((prev) => (prev + 1) % property.images.length);
+  };
+  const prevImage = () => {
+    setIsPlayingVideo(false);
+    setCurrentImage((prev) => (prev - 1 + property.images.length) % property.images.length);
+  };
 
   const formattedPrice = new Intl.NumberFormat(
     property.currency === 'USD' ? 'en-US' :
@@ -65,12 +73,60 @@ export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, on
 
             <div className="flex h-full w-full flex-col lg:flex-row">
               {/* Image Section */}
-              <div className="relative h-[35vh] w-full bg-black lg:h-auto lg:w-1/2">
-                <img 
-                  src={property.images[currentImage]} 
-                  alt={property.title} 
-                  className="h-full w-full object-cover"
-                />
+              <div className="relative h-[35vh] w-full bg-black lg:h-auto lg:w-1/2 overflow-hidden">
+                {isPlayingVideo && property.videoUrl ? (
+                  (() => {
+                    const embedData = getVideoEmbedUrl(property.videoUrl);
+                    return embedData ? (
+                      <iframe
+                        src={embedData.embedUrl}
+                        title="Property Walkthrough Video"
+                        className="w-full h-full border-0 absolute inset-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <video src={property.videoUrl} controls autoPlay className="w-full h-full absolute inset-0" />
+                    );
+                  })()
+                ) : (
+                  <img 
+                    src={property.images[currentImage]} 
+                    alt={property.title} 
+                    className="h-full w-full object-cover"
+                  />
+                )}
+
+                {isPlayingVideo && (
+                  <button
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setIsPlayingVideo(false); 
+                    }}
+                    className="absolute top-4 left-4 z-20 rounded-full bg-black/60 backdrop-blur-md px-3 py-1.5 text-white font-mono text-[8px] font-bold uppercase tracking-widest hover:bg-black/80 transition-all cursor-pointer"
+                  >
+                    Show Photos
+                  </button>
+                )}
+
+                {currentImage === 0 && property.videoUrl && !isPlayingVideo && (
+                  <div 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setIsPlayingVideo(true); 
+                    }}
+                    className="absolute inset-0 flex items-center justify-center bg-black/15 transition-colors hover:bg-black/25 cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3 bg-white/20 frosted-jade backdrop-blur-md px-5 py-2.5 rounded-full border border-white/25 shadow-2xl transition-transform hover:scale-105 active:scale-95 duration-300">
+                      <div className="bg-primary text-white rounded-full p-2 shadow-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 translate-x-[1px]">
+                          <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-white drop-shadow-sm">Play Tour</span>
+                    </div>
+                  </div>
+                )}
                 
                 {property.images.length > 1 && (
                   <>
@@ -113,7 +169,30 @@ export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, on
                     ))}
                   </div>
                   <h2 className="mb-2 font-serif text-3xl lg:text-4xl font-bold text-primary leading-tight tracking-wide">{property.title}</h2>
-                  <p className="font-display text-2xl lg:text-3xl font-extrabold text-on-surface tracking-tight">{formattedPrice}</p>
+                  <div className="mb-2 flex items-baseline gap-3 flex-wrap">
+                    {property.originalPrice && property.originalPrice > property.price && (
+                      <span className="font-sans text-xs font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
+                        {new Intl.NumberFormat(
+                          property.currency === 'USD' ? 'en-US' :
+                          property.currency === 'EUR' ? 'de-DE' :
+                          property.currency === 'JPY' ? 'ja-JP' : 'en-PH',
+                          {
+                            style: 'currency',
+                            currency: property.currency || 'PHP',
+                            maximumFractionDigits: 0,
+                          }
+                        ).format(property.originalPrice)}
+                      </span>
+                    )}
+                    <p className="font-display text-2xl lg:text-3xl font-extrabold text-on-surface tracking-tight">
+                      {formattedPrice}
+                      {property.type === 'For Rent' && (
+                        <span className="text-sm font-semibold text-on-surface-variant/70 lowercase font-sans ml-1.5">
+                          / {property.pricePeriod || 'mo'}
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Dynamic Grid Columns */}

@@ -29,7 +29,10 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     landmarks: '',
     mapsLink: '',
     images: [],
-    tags: []
+    tags: [],
+    videoUrl: '',
+    pricePeriod: '',
+    originalPrice: 0
   });
 
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -37,7 +40,12 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        ...initialData,
+        videoUrl: initialData.videoUrl || '',
+        pricePeriod: initialData.pricePeriod || '',
+        originalPrice: initialData.originalPrice || 0
+      });
       setImageUrls(initialData.images || []);
       if (initialData.landmarks) {
         const parsed = initialData.landmarks.split(/\r?\n/).filter(Boolean);
@@ -48,7 +56,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     } else {
       setFormData({
         title: '', price: 0, currency: 'PHP', status: 'Active', city: '', address: '',
-        type: 'For Sale', bedrooms: 0, bathrooms: 0, area: 0, description: '', landmarks: '', mapsLink: '', images: [], tags: []
+        type: 'For Sale', bedrooms: 0, bathrooms: 0, area: 0, description: '', landmarks: '', mapsLink: '', images: [], tags: [], videoUrl: '', pricePeriod: '', originalPrice: 0
       });
       setImageUrls([]);
       setLandmarksList(['']);
@@ -93,7 +101,22 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     e.preventDefault();
     const finalData = {
       ...formData,
-      images: imageUrls
+      images: imageUrls,
+      pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
+      originalPrice: formData.originalPrice || undefined
+    };
+    onSave(finalData);
+    onClose();
+  };
+
+  const handleSaveArchived = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const finalData = {
+      ...formData,
+      images: imageUrls,
+      pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
+      status: 'Archived' as const,
+      originalPrice: formData.originalPrice || undefined
     };
     onSave(finalData);
     onClose();
@@ -119,12 +142,12 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
         <div className="overflow-y-auto p-8 flex-1">
           <form id="property-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className="md:col-span-2">
                 <label className={labelClass}>Title</label>
                 <input required type="text" className={inputClass} value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
               </div>
               <div>
-                <label className={labelClass}>Price</label>
+                <label className={labelClass}>Current Price (Now)</label>
                 <div className="flex gap-2 items-end">
                   <select 
                     className="border-b border-outline/30 bg-transparent py-2 focus:border-primary outline-none transition-colors text-sm font-sans w-8 appearance-none text-center cursor-pointer font-semibold" 
@@ -147,6 +170,23 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                   />
                 </div>
               </div>
+              <div>
+                <label className={labelClass}>Original Price (Before Discount - Optional)</label>
+                <div className="flex gap-2 items-end">
+                  <span className="border-b border-outline/30 bg-transparent py-2 text-sm font-sans text-outline/50 w-8 text-center font-semibold select-none">
+                    {formData.currency === 'USD' ? '$' : formData.currency === 'EUR' ? '€' : formData.currency === 'JPY' ? '¥' : '₱'}
+                  </span>
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="e.g. 180000000"
+                    className={inputClass + " flex-1"} 
+                    value={formData.originalPrice || ''} 
+                    onChange={e => setFormData({...formData, originalPrice: Number(e.target.value.replace(/\D/g, ''))})} 
+                  />
+                </div>
+              </div>
               
               <div>
                 <label className={labelClass}>Type</label>
@@ -155,6 +195,25 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                   <option>For Rent</option>
                 </select>
               </div>
+              {formData.type === 'For Rent' && (
+                <div>
+                  <label className={labelClass}>Rental Specifics / Suffix</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. monthly, annually, night, room / mo" 
+                    className={inputClass} 
+                    list="rental-periods-datalist"
+                    value={formData.pricePeriod || ''} 
+                    onChange={e => setFormData({...formData, pricePeriod: e.target.value})} 
+                  />
+                  <datalist id="rental-periods-datalist">
+                    <option value="monthly" />
+                    <option value="annually" />
+                    <option value="weekly" />
+                    <option value="nightly" />
+                  </datalist>
+                </div>
+              )}
               <div>
                 <label className={labelClass}>Status</label>
                 <select className={inputClass + " appearance-none"} value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as any})}>
@@ -225,6 +284,10 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                 <label className={labelClass}>Google Maps URL</label>
                 <input type="url" placeholder="https://maps.google.com/..." className={inputClass} value={formData.mapsLink || ''} onChange={e => setFormData({...formData, mapsLink: e.target.value})} />
               </div>
+              <div>
+                <label className={labelClass}>Video Walkthrough URL</label>
+                <input type="url" placeholder="e.g. YouTube, TikTok, Facebook link" className={inputClass} value={formData.videoUrl || ''} onChange={e => setFormData({...formData, videoUrl: e.target.value})} />
+              </div>
 
               <div className="grid grid-cols-3 gap-4 md:col-span-2">
                 <div>
@@ -283,12 +346,21 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
           </form>
         </div>
 
-        <div className="border-t border-outline/10 p-6 flex justify-end gap-4 bg-background-warm/50">
-          <button onClick={onClose} className="px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-widest text-on-surface hover:bg-black/5 transition-colors active:scale-95">
+        <div className="border-t border-outline/10 p-6 flex justify-end gap-4 bg-background-warm/50 flex-wrap">
+          <button type="button" onClick={onClose} className="px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-widest text-on-surface hover:bg-black/5 transition-colors active:scale-95">
             Cancel
           </button>
+          {!initialData && (
+            <button 
+              type="button" 
+              onClick={handleSaveArchived} 
+              className="border-2 border-orange-600/35 text-orange-600 hover:bg-orange-50 px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-widest transition-colors active:scale-95"
+            >
+              Save as Archived
+            </button>
+          )}
           <button type="submit" form="property-form" className="bg-primary text-white px-8 py-3 font-mono text-[10px] font-bold uppercase tracking-widest hover:bg-primary-light transition-colors active:scale-95 shadow-lg">
-            Save Property
+            {initialData ? "Save Changes" : "Publish Property"}
           </button>
         </div>
       </div>

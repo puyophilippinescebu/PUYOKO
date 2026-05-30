@@ -18,7 +18,8 @@ export const MOCK_PROPERTIES: Property[] = [
     bathrooms: 8,
     area: 1200,
     description: "An authentic recreation of a Spanish-colonial governor's mansion built with modern seismic-resistant engineering and smart climate control. This estate features imported Machuca tiles, a 25-meter lap pool, and a private wine cellar. Masterfully curated by our lead archivist.",
-    type: "For Sale"
+    type: "For Sale",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
     id: "PK-9021",
@@ -38,7 +39,8 @@ export const MOCK_PROPERTIES: Property[] = [
     bathrooms: 6,
     area: 750,
     description: "A monumental restoration project merging a historic 19th-century foundation with avant-garde sustainable engineering. This estate represents the pinnacle of Cebuano luxury, blending the traditional Bahay na Bato aesthetic with modern structural glass and smart home integration.",
-    type: "For Sale"
+    type: "For Sale",
+    originalPrice: 95000000
   },
   {
     id: "PK-7712",
@@ -94,6 +96,7 @@ export const MOCK_PROPERTIES: Property[] = [
     bathrooms: 2,
     area: 120,
     description: "An elegant high-rise penthouse interior with floor-to-ceiling windows showing a sprawling cityscape of Cebu at night. Located in the heart of Cebu's technology hub.",
-    type: "For Rent"
+    type: "For Rent",
+    pricePeriod: "monthly"
   }
 ];
