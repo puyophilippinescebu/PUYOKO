@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bed, Bath, Square } from 'lucide-react';
+import { Bed, Bath, Square, BookOpen, ArrowRight, User, Clock } from 'lucide-react';
 import { cn, getVideoEmbedUrl } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
+import { useMedia } from '../contexts/MediaContext';
 import { ContactForm } from '../components/ContactForm';
 import janEricImg from '../../Puyoko Team Pictures/Jan Eric.jpg';
 import mainPhotoImg from '../../Puyo Main Photo.jpg';
@@ -11,6 +12,9 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [videoUrl, setVideoUrl] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
   const { properties, loading: propertiesLoading } = useProperties();
+  const { blogs, loading: mediaLoading } = useMedia();
+
+  const latestBlog = blogs && blogs.length > 0 ? blogs[0] : null;
 
   useEffect(() => {
     const handleStorage = () => {
@@ -192,33 +196,97 @@ export const LandingPage: React.FC = () => {
         </section>
       )}
 
-      {/* CTA Section */}
-      <section className="mx-auto max-w-container-max px-gutter py-24">
-        <div className="relative overflow-hidden rounded-2xl bg-jade-deep px-12 py-20 text-center text-white md:px-24">
-          <div className="relative z-10 mx-auto max-w-2xl">
-            <h2 className="mb-6 font-display text-4xl font-black md:text-5xl">Invest in Cebu's Prosperity</h2>
-            <p className="mb-10 font-sans text-lg text-white/80 leading-relaxed">
-              Whether you are looking for a heritage home or a modern estate, our team is ready to guide you home.
-            </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <button 
-                onClick={() => navigate('/schedule')}
-                className="group relative overflow-hidden bg-primary px-10 py-4 font-mono text-xs font-bold uppercase tracking-widest transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press active:scale-95 cursor-pointer"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-light via-primary to-primary-light opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 bg-[length:200%_auto] group-hover:animate-gradient-x" />
-                <span className="relative z-10">Schedule a Visit</span>
-              </button>
-              <button 
-                onClick={() => navigate('/contact')}
-                className="border border-white/30 bg-white/5 px-10 py-4 font-mono text-xs font-bold uppercase tracking-widest backdrop-blur-sm transition-all hover:bg-white/10 btn-press active:scale-95 cursor-pointer"
-              >
-                Contact an Agent
-              </button>
+      {/* Dynamic Latest Journal Section */}
+      <section className="mx-auto max-w-container-max px-gutter py-24 select-none">
+        <div className="mb-12 text-center max-w-2xl mx-auto">
+          <span className="text-primary-light text-xs font-mono tracking-[0.4em] uppercase block mb-3">LATEST JOURNAL / 资讯</span>
+          <h2 className="font-display text-3xl md:text-5xl font-light text-primary mb-4 leading-tight">
+            Featured <span className="italic-serif text-primary-light">Insight</span>
+          </h2>
+          <p className="font-sans text-sm text-on-surface-variant leading-relaxed">
+            Stay informed with our most recent market updates, buying guides, and Visayan design aesthetics.
+          </p>
+        </div>
+
+        {mediaLoading ? (
+          /* High-Fidelity Skeleton Loader */
+          <div className="bg-white border border-outline/25 rounded-sm overflow-hidden grid md:grid-cols-2 gap-0 shadow-lg animate-pulse">
+            <div className="aspect-[16/10] md:aspect-auto bg-surface-muted min-h-[300px]" />
+            <div className="p-8 md:p-12 flex flex-col justify-center space-y-4">
+              <div className="h-4 bg-outline/20 w-1/4 rounded" />
+              <div className="h-8 bg-outline/20 w-3/4 rounded" />
+              <div className="space-y-2">
+                <div className="h-4 bg-outline/20 w-full rounded" />
+                <div className="h-4 bg-outline/20 w-5/6 rounded" />
+              </div>
+              <div className="h-10 bg-outline/20 w-1/3 rounded mt-4" />
             </div>
           </div>
-          {/* Internal pattern */}
-          <div className="heritage-pattern absolute inset-0 opacity-10" />
-        </div>
+        ) : latestBlog ? (
+          /* Premium Interactive Card Showcase */
+          <div 
+            onClick={() => navigate('/media?tab=blogs')}
+            className="bg-white border border-outline/25 rounded-sm overflow-hidden grid md:grid-cols-2 gap-0 group hover:shadow-2xl hover:border-primary/20 transition-all duration-500 cursor-pointer relative"
+          >
+            {/* Visual Column */}
+            <div className="relative overflow-hidden bg-surface-muted aspect-[16/10] md:aspect-auto min-h-[350px]">
+              <img 
+                src={latestBlog.image} 
+                alt={latestBlog.title} 
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <span className="absolute top-6 left-6 bg-white/95 backdrop-blur-md px-3.5 py-1.5 text-[9px] font-extrabold uppercase font-display tracking-widest text-primary shadow-sm border border-outline/10">
+                {latestBlog.category}
+              </span>
+            </div>
+
+            {/* Content & Details Column */}
+            <div className="p-8 md:p-12 flex flex-col justify-center relative">
+              {/* Decorative Chinese character in background */}
+              <div className="absolute right-8 bottom-4 text-[120px] font-serif text-primary/5 select-none pointer-events-none group-hover:text-primary/10 transition-colors duration-500">
+                墨
+              </div>
+
+              {/* Meta information */}
+              <div className="flex items-center gap-4 text-[9px] font-display font-extrabold uppercase tracking-widest text-on-surface-variant/40 mb-4 z-10">
+                <span className="flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-primary/50" /> {latestBlog.author}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-primary/50" /> {latestBlog.readTime}
+                </span>
+              </div>
+
+              <h3 className="font-serif text-2xl md:text-3xl font-bold text-primary mb-4 leading-snug group-hover:text-primary-light transition-colors duration-300 z-10">
+                {latestBlog.title}
+              </h3>
+              
+              <p className="font-sans text-sm text-on-surface-variant/90 leading-relaxed mb-6 max-w-xl z-10">
+                {latestBlog.excerpt}
+              </p>
+
+              <div className="border-t border-outline/10 pt-6 flex justify-between items-center mt-4 z-10">
+                <span className="text-xs font-mono text-primary/50 uppercase tracking-widest">{latestBlog.date}</span>
+                <button
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    navigate('/media?tab=blogs'); 
+                  }}
+                  className="flex items-center gap-1.5 font-mono text-[10px] font-extrabold uppercase tracking-widest text-primary hover:text-primary-light transition-all hover:gap-2.5 active:scale-95 border-0 bg-transparent outline-none cursor-pointer"
+                >
+                  Read Full Article <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Empty Fallback State */
+          <div className="flex h-64 flex-col items-center justify-center rounded-sm border border-dashed border-outline-variant/30 text-center p-8 bg-white/50">
+            <BookOpen className="w-8 h-8 text-primary/40 mb-3 animate-pulse" />
+            <p className="font-display text-lg font-bold text-on-surface-variant">No featured insights published yet</p>
+          </div>
+        )}
       </section>
 
 
