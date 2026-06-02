@@ -60,6 +60,8 @@ export default function App() {
                     <AdminLayout>
                       <Routes>
                         <Route path="properties" element={<PageTransition><PropertiesPage /></PageTransition>} />
+                        <Route path="projects" element={<PageTransition><ProjectsPage /></PageTransition>} />
+                        <Route path="media" element={<PageTransition><MediaPage /></PageTransition>} />
                         <Route path="schedule" element={<PageTransition><AdminSchedule /></PageTransition>} />
                         <Route path="" element={<Navigate to="properties" replace />} />
                         <Route path="*" element={<Navigate to="properties" replace />} />

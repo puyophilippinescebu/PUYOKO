@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, LogOut, User, LayoutGrid, Check, X, Calendar } from 'lucide-react';
+import { ShieldCheck, LogOut, User, LayoutGrid, Check, X, Calendar, Hammer, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '../lib/utils';
@@ -36,6 +36,8 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const adminLinks = [
     { name: 'Properties', path: '/admin/properties', icon: LayoutGrid },
+    { name: 'Projects', path: '/admin/projects', icon: Hammer },
+    { name: 'Blogs & Events', path: '/admin/media', icon: BookOpen },
     { name: 'Schedule', path: '/admin/schedule', icon: Calendar },
   ];
 
