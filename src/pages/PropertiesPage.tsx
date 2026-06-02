@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Search } from 'lucide-react';
 import { PropertyCard } from '../components/PropertyCard';
 import { PropertyFormModal } from '../components/PropertyFormModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
@@ -7,7 +6,18 @@ import { Property } from '../types';
 import { cn, normalizeLocation } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, ChevronDown, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Search, 
+  Plus, 
+  ChevronDown, 
+  ShieldCheck, 
+  ChevronLeft, 
+  ChevronRight,
+  MapPin,
+  Home,
+  RotateCcw,
+  SlidersHorizontal
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // ── Custom Dropdown ──────────────────────────────────────────────────────────
@@ -16,10 +26,11 @@ interface FilterDropdownProps {
   value: string;
   options: string[];
   onChange: (v: string) => void;
+  icon?: React.ReactNode;
   className?: string;
 }
 
-const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, onChange, className }) => {
+const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, onChange, icon, className }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -32,50 +43,58 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, 
   }, []);
 
   return (
-    <div ref={ref} className={cn('relative', className)}>
+    <div ref={ref} className={cn('relative group', className)}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-2 px-6 py-[22px] text-left outline-none"
+        className="w-full flex items-center gap-3 px-6 py-[16px] text-left outline-none hover:bg-primary/[0.02] transition-colors duration-300"
       >
-        <span className="text-[10px] font-mono text-outline uppercase tracking-widest shrink-0">{label} /</span>
-        <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary truncate flex-1">
-          {value}
-        </span>
+        {icon && <div className="text-primary/60 group-hover:text-primary transition-colors shrink-0">{icon}</div>}
+        <div className="flex flex-col flex-1 min-w-0">
+          <span className="text-[8px] font-mono text-outline uppercase tracking-[0.2em] mb-0.5">{label}</span>
+          <span className="font-sans text-[11px] font-bold text-primary truncate">
+            {value}
+          </span>
+        </div>
         <ChevronDown
-          className={cn('h-3 w-3 text-outline/50 transition-transform duration-300 shrink-0', open && 'rotate-180')}
+          className={cn('h-3.5 w-3.5 text-outline/50 transition-transform duration-300 shrink-0', open && 'rotate-180')}
         />
       </button>
 
       {/* Panel */}
       <div
         className={cn(
-          'absolute top-[calc(100%+2px)] left-0 z-50 min-w-[220px] bg-white border border-outline/20 shadow-2xl overflow-hidden origin-top',
-          'transition-all duration-200',
+          'absolute top-[calc(100%+6px)] left-0 z-50 min-w-[240px] bg-white/95 backdrop-blur-md border border-outline/25 shadow-2xl rounded-sm overflow-hidden origin-top',
+          'transition-all duration-300 ease-out',
           open ? 'opacity-100 scale-y-100 pointer-events-auto' : 'opacity-0 scale-y-95 pointer-events-none'
         )}
       >
         {/* Panel header */}
-        <div className="px-6 py-2.5 border-b border-outline/10 bg-surface/50">
-          <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-outline">{label}</span>
+        <div className="px-6 py-3 border-b border-outline/10 bg-primary/[0.02]">
+          <span className="text-[8px] font-mono uppercase tracking-[0.3em] text-primary/75">{label} / Options</span>
         </div>
 
-        {options.map((opt, i) => (
-          <button
-            key={opt}
-            onClick={() => { onChange(opt); setOpen(false); }}
-            className={cn(
-              'w-full text-left px-6 py-3.5 font-mono text-[10px] uppercase tracking-widest',
-              'flex items-center gap-3 transition-all duration-150',
-              i < options.length - 1 && 'border-b border-outline/[0.07]',
-              value === opt
-                ? 'bg-primary text-white'
-                : 'text-on-surface hover:bg-primary/5 hover:text-primary hover:pl-8'
-            )}
-          >
-            {value === opt && <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />}
-            {opt}
-          </button>
-        ))}
+        <div className="py-1">
+          {options.map((opt, i) => (
+            <button
+              key={opt}
+              onClick={() => { onChange(opt); setOpen(false); }}
+              className={cn(
+                'w-full text-left px-6 py-3.5 font-mono text-[9px] uppercase tracking-widest',
+                'flex items-center gap-2.5 transition-all duration-300',
+                value === opt
+                  ? 'bg-primary text-white font-extrabold'
+                  : 'text-on-surface-variant hover:bg-primary/5 hover:text-primary hover:pl-8'
+              )}
+            >
+              {value === opt ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-primary/10 shrink-0 transition-all" />
+              )}
+              {opt}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -176,28 +195,34 @@ export const PropertiesPage: React.FC = () => {
 
       {/* Filter Engine */}
       <section className="mb-10 md:mb-16">
-        <div className="border border-outline/30 bg-white shadow-sm">
+        <div className="border border-outline/35 bg-white/90 backdrop-blur-md rounded-lg shadow-lg shadow-primary/5 overflow-hidden transition-all duration-300">
           <div className="grid grid-cols-1 md:grid-cols-4 items-center">
             {/* Search (Always visible, spans 1 grid column on desktop) */}
-            <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[22px] md:col-span-1">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-outline z-10" />
-              <input
-                type="text"
-                placeholder="Search Archive..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent pl-8 font-mono text-[10px] uppercase tracking-widest outline-none"
-              />
+            <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[16px] md:col-span-1 group hover:bg-primary/[0.02] transition-colors duration-300 flex items-center gap-3">
+              <Search className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors shrink-0" />
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-[8px] font-mono text-outline uppercase tracking-[0.2em] mb-0.5">Search Keyword</span>
+                <input
+                  type="text"
+                  placeholder="Search Archive..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent font-sans text-[11px] font-bold text-primary placeholder-outline/40 outline-none"
+                />
+              </div>
             </div>
 
             {/* Mobile Filter Toggle Button (Hidden on desktop) */}
-            <div className="flex md:hidden items-center justify-between px-6 py-4 border-b border-outline/10 bg-surface-muted/30">
+            <div className="flex md:hidden items-center justify-between px-6 py-[18px] border-b border-outline/10 bg-primary/[0.01]">
               <button
                 onClick={() => setShowFiltersMobile(s => !s)}
-                className="w-full flex items-center justify-between text-left font-mono text-[10px] font-bold uppercase tracking-widest text-primary"
+                className="w-full flex items-center justify-between text-left font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary outline-none"
               >
-                <span>{showFiltersMobile ? "Hide Filter Options" : "Show Filter Options (City, Type)"}</span>
-                <ChevronDown className={cn("h-4 w-4 text-outline transition-transform duration-300", showFiltersMobile && "rotate-180")} />
+                <span className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-3.5 w-3.5 text-primary/60" />
+                  {showFiltersMobile ? "Hide Filter Options" : "Show Filter Options (City, Type)"}
+                </span>
+                <ChevronDown className={cn("h-4 w-4 text-primary/50 transition-transform duration-300", showFiltersMobile && "rotate-180")} />
               </button>
             </div>
 
@@ -212,6 +237,7 @@ export const PropertiesPage: React.FC = () => {
                 value={selectedCity}
                 options={cities}
                 onChange={setSelectedCity}
+                icon={<MapPin className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors" />}
                 className="border-b md:border-b-0 md:border-r border-outline/10"
               />
 
@@ -221,17 +247,32 @@ export const PropertiesPage: React.FC = () => {
                 value={listingType}
                 options={types}
                 onChange={setListingType}
+                icon={<Home className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors" />}
                 className="border-b md:border-b-0 md:border-r border-outline/10"
               />
 
-              {/* Reset */}
+              {/* Reset / Status Button */}
               <div className="px-6 py-4 md:py-0">
-                <button
-                  onClick={() => { setSearchQuery(''); setSelectedCity('All Cities'); setListingType('All Properties'); }}
-                  className="w-full bg-primary text-white py-4 font-mono text-[10px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-primary-light active:scale-95"
-                >
-                  Reset Filters
-                </button>
+                {searchQuery !== '' || selectedCity !== 'All Cities' || listingType !== 'All Properties' ? (
+                  <button
+                    onClick={() => { setSearchQuery(''); setSelectedCity('All Cities'); setListingType('All Properties'); }}
+                    className="group relative w-full overflow-hidden bg-primary text-white py-3.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.2em] transition-all duration-500 hover:shadow-lg hover:shadow-primary/30 btn-press active:scale-95 cursor-pointer rounded-sm border-0 outline-none flex items-center justify-center gap-1.5"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary-light via-primary to-primary-light opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 bg-[length:200%_auto] group-hover:animate-gradient-x" />
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Reset Filters
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full border border-outline/20 bg-primary/[0.02] text-outline/50 py-3.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.2em] cursor-not-allowed rounded-sm flex items-center justify-center gap-1.5"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    No Active Filters
+                  </button>
+                )}
               </div>
             </div>
           </div>
