@@ -55,10 +55,10 @@ export const LandingPage: React.FC = () => {
                 <span className="relative z-10">Check Properties</span>
               </button>
               <button 
-                onClick={() => navigate('/about')}
+                onClick={() => navigate('/contact')}
                 className="px-3 md:px-8 py-3 md:py-5 border border-primary/20 font-mono text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-primary hover:bg-primary/5 transition-all active:scale-95 text-center shrink-0 w-full md:w-auto"
               >
-                The Story
+                Contact Us
               </button>
             </div>
           </div>
@@ -118,156 +118,11 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Estates Section */}
-      <section className="py-24 bg-background-warm/30 border-b border-outline/10 scroll-mt-20">
-        <div className="mx-auto max-w-container-max px-gutter">
-          <div className="text-center mb-16 select-none">
-            <span className="text-primary-light text-xs font-mono tracking-widest uppercase mb-4 block">Selection / 精选</span>
-            <h2 className="font-display text-4xl font-light text-primary">
-              Featured <span className="italic-serif text-primary-light">Estates</span>
-            </h2>
-            <p className="font-sans text-xs text-on-surface-variant max-w-md mx-auto mt-4 leading-relaxed">
-              Explore a curated selection of our finest properties currently open for viewings.
-            </p>
-          </div>
-
-          {propertiesLoading ? (
-            <div className="flex justify-center py-20">
-              <span className="font-mono text-xs uppercase tracking-widest text-primary animate-pulse">Loading Featured Estates...</span>
-            </div>
-          ) : properties.filter(p => p.status !== 'Archived').length === 0 ? (
-            <div className="text-center py-20 bg-white/40 border border-outline/25 rounded-2xl">
-              <p className="font-serif text-lg italic text-primary/75">Premium estates coming soon.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {properties
-                .filter(p => p.status !== 'Archived')
-                .slice(0, 3)
-                .map(p => {
-                  const formattedPrice = new Intl.NumberFormat(
-                    p.currency === 'USD' ? 'en-US' :
-                    p.currency === 'EUR' ? 'de-DE' :
-                    p.currency === 'JPY' ? 'ja-JP' : 'en-PH',
-                    {
-                      style: 'currency',
-                      currency: p.currency || 'PHP',
-                      maximumFractionDigits: 0,
-                    }
-                  ).format(p.price);
-
-                  return (
-                    <div
-                      key={p.id}
-                      className="group bg-white cursor-pointer overflow-hidden rounded-sm border border-outline/30 shadow-sm transition-all duration-500 hover:shadow-2xl hover:border-primary/20 flex flex-col h-full"
-                      onClick={() => navigate(`/property/${p.id}`)}
-                    >
-                      <div className="relative aspect-[16/10] overflow-hidden bg-black/10">
-                        {p.images[0]?.startsWith('data:video/') || p.images[0]?.endsWith('.mp4') || p.images[0]?.endsWith('.mov') || p.images[0]?.endsWith('.webm') ? (
-                          <video
-                            src={p.images[0]}
-                            className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                            muted
-                            playsInline
-                            autoPlay
-                            loop
-                          />
-                        ) : (
-                          <img
-                            src={p.images[0]}
-                            alt={p.title}
-                            className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                          />
-                        )}
-                        <div className="absolute left-4 top-4 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm max-w-[85%] truncate">
-                          {p.type} / {p.city}
-                        </div>
-                      </div>
-
-                      <div className="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="mb-3 flex items-start justify-between">
-                            <div>
-                              <h3 className="font-serif text-xl font-bold text-primary group-hover:text-primary-light transition-colors leading-tight tracking-wide mb-1">
-                                {p.title}
-                              </h3>
-                              <p className="font-mono text-[9px] text-on-surface-variant/40">ID: {p.id}</p>
-                            </div>
-                          </div>
-
-                          <div className="mb-4 flex items-baseline gap-2 flex-wrap min-h-[32px]">
-                            {p.originalPrice && p.originalPrice > p.price && (
-                              <span className="font-sans text-xs font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
-                                {new Intl.NumberFormat(
-                                  p.currency === 'USD' ? 'en-US' :
-                                  p.currency === 'EUR' ? 'de-DE' :
-                                  p.currency === 'JPY' ? 'ja-JP' : 'en-PH',
-                                  {
-                                    style: 'currency',
-                                    currency: p.currency || 'PHP',
-                                    maximumFractionDigits: 0,
-                                  }
-                                ).format(p.originalPrice)}
-                              </span>
-                            )}
-                            <div className="font-display text-[22px] font-extrabold text-primary tracking-tight">
-                              {formattedPrice}
-                              {p.type === 'For Rent' && (
-                                <span className="text-xs font-semibold text-on-surface-variant/70 lowercase font-sans ml-1">
-                                  / {p.pricePeriod || 'mo'}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between border-t border-outline/10 pt-4 font-sans text-xs font-bold tracking-wide text-on-surface-variant/80">
-                            <div className="flex items-center gap-4">
-                              {p.bedrooms > 0 && (
-                                <div className="flex items-center gap-1.5">
-                                  <Bed className="h-4 w-4 text-primary/60" />
-                                  <span>{p.bedrooms} Bed</span>
-                                </div>
-                              )}
-                              {p.bathrooms > 0 && (
-                                <div className="flex items-center gap-1.5">
-                                  <Bath className="h-4 w-4 text-primary/60" />
-                                  <span>{p.bathrooms} Bath</span>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-1.5">
-                                <Square className="h-3.5 w-3.5 text-primary/60" />
-                                <span>{p.area} m²</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1 font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary-light/90">
-                              Heritage
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Schedule Tour button */}
-                        <div className="mt-6 pt-4 border-t border-outline/10" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => navigate(`/schedule?propertyId=${encodeURIComponent(p.id)}`)}
-                            className="w-full rounded-full bg-primary hover:bg-primary-light text-white py-3 font-mono text-[9px] font-bold uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-95 text-center cursor-pointer border-0"
-                          >
-                            Schedule Tour
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* Materials Module - Natural Tones Design Layout */}
       <section className="bg-primary text-white pt-24 pb-32 relative mt-16 md:mt-24">
         {/* Curvy Top Divider */}
-        <div className="absolute bottom-full left-0 w-full overflow-hidden leading-none flex items-end">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-[60px] md:h-[120px] text-primary fill-current">
+        <div className="absolute bottom-full left-0 w-full overflow-hidden leading-none flex items-end -mb-[2px]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-[60px] md:h-[120px] text-primary fill-current translate-y-[2px]">
             <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
           </svg>
         </div>
