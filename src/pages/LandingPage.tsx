@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ContactForm } from '../components/ContactForm';
 import { cn, getVideoEmbedUrl } from '../lib/utils';
+import { useProperties } from '../contexts/PropertiesContext';
 import janEricImg from '../../Puyoko Team Pictures/Jan Eric.jpg';
 import mainPhotoImg from '../../Puyo Main Photo.jpg';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [videoUrl, setVideoUrl] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
+  const { properties, loading: propertiesLoading } = useProperties();
 
   useEffect(() => {
     const handleStorage = () => {
@@ -72,8 +73,175 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Contact Form Section (Upper Half) */}
-      <ContactForm />
+      {/* Silingan / Schedule / Contact 3-Column Promo Section */}
+      <section className="py-20 bg-white border-b border-outline/10 select-none">
+        <div className="mx-auto max-w-container-max px-gutter grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+          {/* Column 1: Journal */}
+          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-.778.099-1.533.284-2.253" />
+              </svg>
+            </div>
+            <h3 className="font-serif text-lg font-bold text-primary">Silingan Journal</h3>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
+              Silingan is the official journal of Puyoko. Learn about local architecture, history, and community stories.
+            </p>
+            <button 
+              onClick={() => navigate('/media')}
+              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
+            >
+              Explore Journal &gt;
+            </button>
+          </div>
+
+          {/* Column 2: Schedule Tour */}
+          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+              </svg>
+            </div>
+            <h3 className="font-serif text-lg font-bold text-primary">Schedule Tour</h3>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
+              Have you found the right estate for you? Schedule an on-site or online tour with us to learn more.
+            </p>
+            <button 
+              onClick={() => navigate('/schedule')}
+              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
+            >
+              Schedule Now &gt;
+            </button>
+          </div>
+
+          {/* Column 3: Contact Us */}
+          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
+            </div>
+            <h3 className="font-serif text-lg font-bold text-primary">Contact Us</h3>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
+              Puyoko is ready to help you in your home buying experience. Get in touch with our team today!
+            </p>
+            <button 
+              onClick={() => navigate('/contact')}
+              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
+            >
+              Contact Us Now &gt;
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Estates Section */}
+      <section className="py-24 bg-background-warm/30 border-b border-outline/10 scroll-mt-20">
+        <div className="mx-auto max-w-container-max px-gutter">
+          <div className="text-center mb-16 select-none">
+            <span className="text-primary-light text-xs font-mono tracking-widest uppercase mb-4 block">Selection / 精选</span>
+            <h2 className="font-display text-4xl font-light text-primary">
+              Featured <span className="italic-serif text-primary-light">Estates</span>
+            </h2>
+            <p className="font-sans text-xs text-on-surface-variant max-w-md mx-auto mt-4 leading-relaxed">
+              Explore a curated selection of our finest properties currently open for viewings.
+            </p>
+          </div>
+
+          {propertiesLoading ? (
+            <div className="flex justify-center py-20">
+              <span className="font-mono text-xs uppercase tracking-widest text-primary animate-pulse">Loading Featured Estates...</span>
+            </div>
+          ) : properties.filter(p => p.status !== 'Archived').length === 0 ? (
+            <div className="text-center py-20 bg-white/40 border border-outline/25 rounded-2xl">
+              <p className="font-serif text-lg italic text-primary/75">Premium estates coming soon.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              {properties
+                .filter(p => p.status !== 'Archived')
+                .slice(0, 3)
+                .map(p => {
+                  const formattedPrice = new Intl.NumberFormat(
+                    p.currency === 'USD' ? 'en-US' :
+                    p.currency === 'EUR' ? 'de-DE' :
+                    p.currency === 'JPY' ? 'ja-JP' : 'en-PH',
+                    {
+                      style: 'currency',
+                      currency: p.currency || 'PHP',
+                      maximumFractionDigits: 0,
+                    }
+                  ).format(p.price);
+
+                  return (
+                    <div
+                      key={p.id}
+                      className="group bg-white rounded-2xl overflow-hidden border border-outline/25 hover:border-primary/50 shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer flex flex-col h-full"
+                      onClick={() => navigate(`/property/${p.id}`)}
+                    >
+                      {/* Image container */}
+                      <div className="relative aspect-[16/10] overflow-hidden bg-black/10">
+                        {p.images[0]?.startsWith('data:video/') || p.images[0]?.endsWith('.mp4') || p.images[0]?.endsWith('.mov') || p.images[0]?.endsWith('.webm') ? (
+                          <video
+                            src={p.images[0]}
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                            muted
+                            playsInline
+                            autoPlay
+                            loop
+                          />
+                        ) : (
+                          <img
+                            src={p.images[0]}
+                            alt={p.title}
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                          />
+                        )}
+                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm max-w-[85%] truncate">
+                          {p.type} / {p.city}
+                        </div>
+                      </div>
+
+                      {/* Info container */}
+                      <div className="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                          <h3 className="font-serif text-xl font-bold text-primary group-hover:text-primary-light transition-colors leading-tight tracking-wide mb-1">
+                            {p.title}
+                          </h3>
+                          <p className="font-mono text-[9px] text-on-surface-variant/40 mb-3">ID: {p.id}</p>
+                          <p className="font-display text-[22px] font-extrabold text-primary tracking-tight mb-4">
+                            {formattedPrice}
+                            {p.type === 'For Rent' && (
+                              <span className="text-xs font-semibold text-on-surface-variant/70 lowercase font-sans ml-1">
+                                / {p.pricePeriod || 'mo'}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+
+                        {/* Action buttons (direct links) */}
+                        <div className="mt-4 pt-4 border-t border-outline/10 grid grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => navigate(`/schedule?propertyId=${encodeURIComponent(p.id)}`)}
+                            className="w-full rounded-full bg-primary hover:bg-primary-light text-white py-2.5 font-mono text-[9px] font-bold uppercase tracking-wider transition-all duration-300 shadow-sm active:scale-95 text-center cursor-pointer border-0"
+                          >
+                            Schedule Tour
+                          </button>
+                          <button
+                            onClick={() => navigate(`/contact?propertyId=${encodeURIComponent(p.id)}&inquiryType=General%20Inquiry`)}
+                            className="w-full rounded-full border border-primary/20 hover:bg-primary/5 text-primary py-2.5 font-mono text-[9px] font-bold uppercase tracking-wider transition-all duration-300 active:scale-95 text-center cursor-pointer bg-white"
+                          >
+                            Contact Us
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Materials Module - Natural Tones Design Layout */}
       <section className="bg-primary text-white pt-24 pb-32 relative mt-16 md:mt-24">
@@ -178,67 +346,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Silingan / Schedule / Contact 3-Column Promo Section */}
-      <section className="py-20 bg-white border-t border-b border-outline/10 select-none">
-        <div className="mx-auto max-w-container-max px-gutter grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-          {/* Column 1: Journal */}
-          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-.778.099-1.533.284-2.253" />
-              </svg>
-            </div>
-            <h3 className="font-serif text-lg font-bold text-primary">Silingan Journal</h3>
-            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
-              Silingan is the official journal of Puyoko. Learn about local architecture, history, and community stories.
-            </p>
-            <button 
-              onClick={() => navigate('/media')}
-              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
-            >
-              Explore Journal &gt;
-            </button>
-          </div>
 
-          {/* Column 2: Schedule Tour */}
-          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
-              </svg>
-            </div>
-            <h3 className="font-serif text-lg font-bold text-primary">Schedule Tour</h3>
-            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
-              Have you found the right estate for you? Schedule an on-site or online tour with us to learn more.
-            </p>
-            <button 
-              onClick={() => navigate('/schedule')}
-              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
-            >
-              Schedule Now &gt;
-            </button>
-          </div>
-
-          {/* Column 3: Contact Us */}
-          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-              </svg>
-            </div>
-            <h3 className="font-serif text-lg font-bold text-primary">Contact Us</h3>
-            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
-              Puyoko is ready to help you in your home buying experience. Get in touch with our team today!
-            </p>
-            <button 
-              onClick={() => navigate('/contact')}
-              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
-            >
-              Contact Us Now &gt;
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* Footer Biography Section */}
       <section className="py-24 px-gutter border-t border-outline/20 bg-background-warm/50">
