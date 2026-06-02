@@ -435,7 +435,7 @@ export const PropertyDetailsPage: React.FC = () => {
  
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => navigate(`/contact?propertyId=${encodeURIComponent(property.id)}&inquiryType=Property%20Viewing`)}
+                  onClick={() => navigate(`/schedule?propertyId=${encodeURIComponent(property.id)}`)}
                   className="w-full rounded-full bg-primary py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-primary-light active:scale-95"
                 >
                   Schedule Viewing

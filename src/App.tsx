@@ -19,6 +19,7 @@ import { AboutUsPage } from './pages/AboutUsPage';
 import { AboutServicesPage } from './pages/AboutServicesPage';
 import { FirstTimeAnimation } from './components/FirstTimeAnimation';
 import { ContactForm } from './components/ContactForm';
+import { ScheduleTourWizard } from './components/ScheduleTourWizard';
 import { AuthProvider } from './contexts/AuthContext';
 import { PropertiesProvider } from './contexts/PropertiesContext';
 import { MediaProvider } from './contexts/MediaContext';
@@ -97,6 +98,7 @@ function PublicLayout() {
               <Route path="/about" element={<PageTransition><AboutUsPage /></PageTransition>} />
               <Route path="/about/services" element={<PageTransition><AboutServicesPage /></PageTransition>} />
               <Route path="/contact" element={<PageTransition><ContactForm standalone={true} /></PageTransition>} />
+              <Route path="/schedule" element={<PageTransition><ScheduleTourWizard standalone={true} /></PageTransition>} />
             </Routes>
           </main>
           <Footer />

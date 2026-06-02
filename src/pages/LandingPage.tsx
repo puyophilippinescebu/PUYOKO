@@ -159,15 +159,15 @@ export const LandingPage: React.FC = () => {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <button 
-                onClick={() => navigate('/contact')}
-                className="group relative overflow-hidden bg-primary px-10 py-4 font-mono text-xs font-bold uppercase tracking-widest transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press active:scale-95"
+                onClick={() => navigate('/schedule')}
+                className="group relative overflow-hidden bg-primary px-10 py-4 font-mono text-xs font-bold uppercase tracking-widest transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press active:scale-95 cursor-pointer"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-light via-primary to-primary-light opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 bg-[length:200%_auto] group-hover:animate-gradient-x" />
                 <span className="relative z-10">Schedule a Visit</span>
               </button>
               <button 
                 onClick={() => navigate('/contact')}
-                className="border border-white/30 bg-white/5 px-10 py-4 font-mono text-xs font-bold uppercase tracking-widest backdrop-blur-sm transition-all hover:bg-white/10 btn-press active:scale-95"
+                className="border border-white/30 bg-white/5 px-10 py-4 font-mono text-xs font-bold uppercase tracking-widest backdrop-blur-sm transition-all hover:bg-white/10 btn-press active:scale-95 cursor-pointer"
               >
                 Contact an Agent
               </button>
@@ -175,6 +175,68 @@ export const LandingPage: React.FC = () => {
           </div>
           {/* Internal pattern */}
           <div className="heritage-pattern absolute inset-0 opacity-10" />
+        </div>
+      </section>
+
+      {/* Silingan / Schedule / Contact 3-Column Promo Section */}
+      <section className="py-20 bg-white border-t border-b border-outline/10 select-none">
+        <div className="mx-auto max-w-container-max px-gutter grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+          {/* Column 1: Journal */}
+          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-.778.099-1.533.284-2.253" />
+              </svg>
+            </div>
+            <h3 className="font-serif text-lg font-bold text-primary">Silingan Journal</h3>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
+              Silingan is the official journal of Puyoko. Learn about local architecture, history, and community stories.
+            </p>
+            <button 
+              onClick={() => navigate('/media')}
+              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
+            >
+              Explore Journal &gt;
+            </button>
+          </div>
+
+          {/* Column 2: Schedule Tour */}
+          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+              </svg>
+            </div>
+            <h3 className="font-serif text-lg font-bold text-primary">Schedule Tour</h3>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
+              Have you found the right estate for you? Schedule an on-site or online tour with us to learn more.
+            </p>
+            <button 
+              onClick={() => navigate('/schedule')}
+              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
+            >
+              Schedule Now &gt;
+            </button>
+          </div>
+
+          {/* Column 3: Contact Us */}
+          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
+            </div>
+            <h3 className="font-serif text-lg font-bold text-primary">Contact Us</h3>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
+              Puyoko is ready to help you in your home buying experience. Get in touch with our team today!
+            </p>
+            <button 
+              onClick={() => navigate('/contact')}
+              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
+            >
+              Contact Us Now &gt;
+            </button>
+          </div>
         </div>
       </section>
 
