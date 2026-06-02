@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, Bed, Bath, Square, Heart, Edit2, Trash2, Archive, ArchiveRestore } from 'lucide-react';
 import { Property } from '../types';
-import { cn } from '../lib/utils';
+import { cn, normalizeLocation } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 
 interface PropertyCardProps {
@@ -47,8 +47,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
             className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
           />
         )}
-        <div className="absolute left-4 top-4 sm:left-6 sm:top-6 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm max-w-[85%] truncate" title={`${property.type} / ${property.city}`}>
-          {property.type} / {property.city}
+        <div className="absolute left-4 top-4 sm:left-6 sm:top-6 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm max-w-[85%] truncate" title={`${property.type} / ${normalizeLocation(property.city)}`}>
+          {property.type} / {normalizeLocation(property.city)}
         </div>
 
         {property.status === 'Archived' && (

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useBlockedDates } from '../hooks/useBlockedDates';
+import { normalizeLocation } from '../lib/utils';
 
 interface ScheduleTourWizardProps {
   standalone?: boolean;
@@ -116,6 +117,9 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
   const [filterCity, setFilterCity] = useState<string>('All');
   const [filterPriceRange, setFilterPriceRange] = useState<string>('All');
 
+  // Dynamic location list based on the actual properties, standardized to prevent duplicates
+  const locationOptions = Array.from(new Set(properties.map(p => normalizeLocation(p.city)))).filter(Boolean).sort();
+
   // Contact Info states (Step 3)
   const [formData, setFormData] = useState(emptyForm);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -197,7 +201,7 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
   // Filtered Properties for Step 1
   const filteredProperties = properties.filter(p => {
     if (filterType !== 'All' && p.type !== filterType) return false;
-    if (filterCity !== 'All' && p.city !== filterCity) return false;
+    if (filterCity !== 'All' && normalizeLocation(p.city) !== filterCity) return false;
     if (filterPriceRange !== 'All') {
       if (filterPriceRange === 'Under 30M' && p.price >= 30000000) return false;
       if (filterPriceRange === '30M - 100M' && (p.price < 30000000 || p.price > 100000000)) return false;
@@ -303,8 +307,9 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                 onChange={(e) => setFilterCity(e.target.value)}
               >
                 <option value="All">All Locations</option>
-                <option value="Cebu City">Cebu City</option>
-                <option value="Lapu-Lapu City">Lapu-Lapu City</option>
+                {locationOptions.map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -360,7 +365,7 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                       </h3>
                       <p className="font-mono text-[9px] text-on-surface-variant/70 mt-1 flex items-center gap-1">
                         <MapPin className="w-3 h-3 text-primary/60 shrink-0" />
-                        {p.city} • {p.area} sqm
+                        {normalizeLocation(p.city)} • {p.area} sqm
                       </p>
                     </div>
 
@@ -402,7 +407,7 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                 {selectedProperty.title}
               </h3>
               <p className="font-mono text-[9px] text-on-surface-variant/70 mt-0.5">
-                ID: {selectedProperty.id} • {selectedProperty.city}, {selectedProperty.address}
+                ID: {selectedProperty.id} • {normalizeLocation(selectedProperty.city)}, {selectedProperty.address}
               </p>
             </div>
             <div className="shrink-0 flex flex-col items-center sm:items-end gap-2">

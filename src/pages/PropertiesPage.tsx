@@ -4,7 +4,7 @@ import { PropertyCard } from '../components/PropertyCard';
 import { PropertyFormModal } from '../components/PropertyFormModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
 import { Property } from '../types';
-import { cn } from '../lib/utils';
+import { cn, normalizeLocation } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, ChevronDown, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -118,7 +118,7 @@ export const PropertiesPage: React.FC = () => {
     return properties.filter(p => {
       if (!isAuthenticated && p.status === 'Archived') return false;
       const matchesType = listingType === 'All Properties' || p.type === listingType;
-      const matchesCity = selectedCity === 'All Cities' || p.city === selectedCity;
+      const matchesCity = selectedCity === 'All Cities' || normalizeLocation(p.city) === selectedCity;
       const matchesSearch =
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -138,7 +138,7 @@ export const PropertiesPage: React.FC = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const cities = ['All Cities', ...Array.from(new Set(properties.map(p => p.city)))];
+  const cities = ['All Cities', ...Array.from(new Set(properties.map(p => normalizeLocation(p.city)))).filter(Boolean).sort()];
   const types = ['All Properties', 'For Sale', 'For Rent'];
 
   return (
