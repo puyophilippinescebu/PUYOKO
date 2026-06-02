@@ -17,6 +17,7 @@ import {
   Info 
 } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
+import { useBlockedDates } from '../hooks/useBlockedDates';
 
 interface ScheduleTourWizardProps {
   standalone?: boolean;
@@ -90,6 +91,7 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
     return dates;
   };
 
+  const { isDateBlocked, blockedDates } = useBlockedDates();
   const calendarDays = getPSTDates();
   
   const formatDateString = (d: Date) => {
@@ -97,6 +99,17 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
   };
 
   const [selectedDateStr, setSelectedDateStr] = useState<string>(formatDateString(calendarDays[0]));
+  const allDaysBlocked = calendarDays.every(d => isDateBlocked(formatDateString(d)));
+
+  // Smart Fallback Selection: If default or selected date is blocked, find the first available unblocked date
+  useEffect(() => {
+    if (isDateBlocked(selectedDateStr)) {
+      const firstAvailable = calendarDays.find(d => !isDateBlocked(formatDateString(d)));
+      if (firstAvailable) {
+        setSelectedDateStr(formatDateString(firstAvailable));
+      }
+    }
+  }, [blockedDates, isDateBlocked, selectedDateStr]);
 
   // Filters for Step 1
   const [filterType, setFilterType] = useState<string>('All');
@@ -441,27 +454,37 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                   const monthName = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
                   const fullStr = formatDateString(date);
                   const isSelected = selectedDateStr === fullStr;
+                  const isBlocked = isDateBlocked(fullStr);
 
                   return (
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => setSelectedDateStr(fullStr)}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer min-w-[125px] snap-center select-none flex-shrink-0 ${
-                        isSelected 
-                          ? 'bg-primary border-primary text-white shadow-md scale-[1.02]' 
-                          : 'bg-white hover:bg-surface-muted/50 border-outline/30 text-on-surface'
+                      disabled={isBlocked}
+                      onClick={() => { if (!isBlocked) setSelectedDateStr(fullStr); }}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all min-w-[125px] snap-center select-none flex-shrink-0 ${
+                        isBlocked
+                          ? 'bg-gray-50 border-outline/10 text-on-surface-variant/40 cursor-not-allowed opacity-60'
+                          : isSelected 
+                            ? 'bg-primary border-primary text-white shadow-md scale-[1.02] cursor-pointer' 
+                            : 'bg-white hover:bg-surface-muted/50 border-outline/30 text-on-surface cursor-pointer'
                       }`}
                     >
-                      <span className={`font-mono text-[8.5px] uppercase tracking-wider ${isSelected ? 'text-white/80' : 'text-on-surface-variant/60'}`}>
+                      <span className={`font-mono text-[8.5px] uppercase tracking-wider ${
+                        isBlocked ? 'text-red-500/50' : isSelected ? 'text-white/80' : 'text-on-surface-variant/60'
+                      }`}>
                         {dayOfWeek}
                       </span>
                       <span className="font-display text-xl font-bold my-1 leading-none">
                         {dayOfMonth}
                       </span>
-                      <span className={`font-mono text-[8.5px] uppercase tracking-wider ${isSelected ? 'text-white/80' : 'text-on-surface-variant/60'}`}>
-                        {monthName}
-                      </span>
+                      {isBlocked ? (
+                        <span className="font-mono text-[7.5px] uppercase tracking-widest text-red-500 font-extrabold mt-0.5">Unavailable</span>
+                      ) : (
+                        <span className={`font-mono text-[8.5px] uppercase tracking-wider ${isSelected ? 'text-white/80' : 'text-on-surface-variant/60'}`}>
+                          {monthName}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -474,6 +497,24 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                 Tours must be scheduled at least **2 days in advance** to coordinate details, up to a **2-week limit** maximum.
               </p>
             </div>
+
+            {allDaysBlocked && (
+              <div className="flex items-start gap-3 text-red-800 bg-red-50 border border-red-200 p-4 rounded-xl font-sans text-xs select-none">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                <div className="space-y-2 leading-relaxed">
+                  <span className="font-mono text-[9px] uppercase tracking-wider font-extrabold text-red-700 block">Fully Booked / No Slots Available</span>
+                  <p>
+                    We are currently unable to accommodate automated tour bookings online for the next 2 weeks. Please reach out to our team directly through our contact page to arrange a private viewing.
+                  </p>
+                  <Link
+                    to={`/contact?propertyId=${selectedPropertyId}`}
+                    className="inline-flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-widest font-extrabold text-red-700 hover:text-red-950 border-b border-red-700/30 pb-0.5 transition-all"
+                  >
+                    Contact Us Direct ↗
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Selector Type & Time Slots */}
@@ -553,7 +594,8 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
             </button>
             <button
               onClick={() => setCurrentStep(3)}
-              className="px-10 py-3.5 bg-primary hover:bg-primary-light text-white font-sans text-sm font-semibold tracking-wide rounded-full shadow-sm hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+              disabled={allDaysBlocked}
+              className="px-10 py-3.5 bg-primary hover:bg-primary-light disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:shadow-none text-white font-sans text-sm font-semibold tracking-wide rounded-full shadow-sm hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
             >
               Next Step <ArrowRight className="w-4 h-4" />
             </button>
