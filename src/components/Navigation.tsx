@@ -207,6 +207,18 @@ export const Navigation: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Admin Portal Redirect Link */}
+                  <div className="px-5 py-3 border-b border-outline/10 bg-primary-neon/[0.04]">
+                    <Link
+                      to="/admin/properties"
+                      onClick={() => setProfileOpen(false)}
+                      className="w-full flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest font-extrabold text-primary hover:text-primary-light transition-colors py-1"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-primary" />
+                      Go to Admin Portal
+                    </Link>
+                  </div>
+
                   {/* Edit Display Name */}
                   <div className="px-5 py-4 border-b border-outline/10">
                     <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant mb-2">Display Name</p>
@@ -352,13 +364,23 @@ export const Navigation: React.FC = () => {
                         <span className="font-mono text-[8px] uppercase tracking-widest text-on-surface-variant/70">{userEmail ?? 'admin@puyoko.com'}</span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => { logout(); navigate('/login'); setMobileMenuOpen(false); }}
-                      className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      Sign Out
-                    </button>
+                    <div className="flex gap-4">
+                      <Link
+                        to="/admin/properties"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-1.5 font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary hover:text-primary-light transition-colors"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Admin
+                      </Link>
+                      <button
+                        onClick={() => { logout(); navigate('/login'); setMobileMenuOpen(false); }}
+                        className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        Sign Out
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
