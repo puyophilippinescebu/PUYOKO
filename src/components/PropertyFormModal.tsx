@@ -103,7 +103,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       ...formData,
       images: imageUrls,
       pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
-      originalPrice: formData.originalPrice || undefined
+      originalPrice: formData.originalPrice || null
     };
     onSave(finalData);
     onClose();
@@ -111,12 +111,17 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
 
   const handleSaveArchived = (e: React.MouseEvent) => {
     e.preventDefault();
+    const form = document.getElementById('property-form') as HTMLFormElement;
+    if (form && !form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
     const finalData = {
       ...formData,
       images: imageUrls,
       pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
       status: 'Archived' as const,
-      originalPrice: formData.originalPrice || undefined
+      originalPrice: formData.originalPrice || null
     };
     onSave(finalData);
     onClose();
@@ -304,10 +309,10 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className={labelClass}>Images</label>
+                <label className={labelClass}>Images & Videos</label>
                 <input 
                   type="file" 
-                  accept="image/*" 
+                  accept="image/*,video/*" 
                   multiple
                   className={inputClass + " file:mr-4 file:rounded-sm file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-mono file:uppercase file:tracking-widest file:text-primary hover:file:bg-primary/20"} 
                   onChange={handleImageUpload} 
@@ -317,7 +322,16 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                   <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
                     {imageUrls.map((url, index) => (
                       <div key={index} className="relative h-32 w-48 shrink-0 overflow-hidden rounded-sm border border-outline/30 group">
-                        <img src={url} alt={`Preview ${index + 1}`} className="h-full w-full object-cover" />
+                        {url.startsWith('data:video/') || url.endsWith('.mp4') || url.endsWith('.mov') || url.endsWith('.webm') ? (
+                          <div className="relative h-full w-full bg-black">
+                            <video src={url} className="h-full w-full object-cover" muted playsInline />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/35 pointer-events-none">
+                              <span className="font-mono text-[8px] font-bold text-white uppercase tracking-widest bg-primary px-2 py-0.5 rounded-sm">VIDEO</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <img src={url} alt={`Preview ${index + 1}`} className="h-full w-full object-cover" />
+                        )}
                         <button
                           type="button"
                           onClick={() => setImageUrls(urls => urls.filter((_, i) => i !== index))}

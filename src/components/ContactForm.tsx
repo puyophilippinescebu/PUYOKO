@@ -1,6 +1,21 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  CheckCircle, 
+  AlertCircle, 
+  Loader2, 
+  X, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Video, 
+  User, 
+  Check, 
+  ArrowRight, 
+  Home, 
+  Info 
+} from 'lucide-react';
+import { useProperties } from '../contexts/PropertiesContext';
 
 interface ContactFormProps {
   standalone?: boolean;
@@ -20,20 +35,81 @@ const WEB3FORMS_KEY = '2c966280-088b-4c06-8ce9-bd7c0aee5351';
 
 const emptyForm = {
   inquireAs: 'Interested Buyer',
-  inquiryType: 'General Inquiry',
   firstName: '',
   middleName: '',
   lastName: '',
   email: '',
   countryCode: 'ph',
   phone: '',
-  message: '',
   agreePrivacy: false,
 };
 
+const TIME_SLOTS = [
+  '09:00 am',
+  '10:00 am',
+  '11:00 am',
+  '01:00 pm',
+  '02:00 pm',
+  '03:00 pm',
+  '04:00 pm'
+];
+
 export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) => {
+  const location = useLocation();
+  const { properties } = useProperties();
+
+  // Route/Url Query parameters (pre-selected values)
+  const searchParams = new URLSearchParams(location.search);
+  const urlPropertyId = searchParams.get('propertyId') || (location.state as any)?.propertyId || '';
+  const urlInquiryType = searchParams.get('inquiryType') || (location.state as any)?.inquiryType || 'Property Viewing';
+
+  // Wizard Steps: 1 = Select Home, 2 = Select Schedule, 3 = Contact Info
+  const [currentStep, setCurrentStep] = useState<number>(urlPropertyId ? 2 : 1);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>(urlPropertyId);
+  const [selectedTime, setSelectedTime] = useState<string>('09:00 am');
+  const [tourType, setTourType] = useState<'In Person' | 'In Video Chat'>('In Person');
+  
+  // Dynamically generate the next 7 days in Manila local time format
+  const getNext7Days = () => {
+    const dates = [];
+    const now = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() + i);
+      dates.push(d);
+    }
+    return dates;
+  };
+
+  const calendarDays = getNext7Days();
+  
+  const formatDateString = (d: Date) => {
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(formatDateString(calendarDays[0]));
+
+  // Filters for Step 1
+  const [filterType, setFilterType] = useState<string>('All');
+  const [filterCity, setFilterCity] = useState<string>('All');
+  const [filterPriceRange, setFilterPriceRange] = useState<string>('All');
+
+  // Contact Info states (Step 3)
   const [formData, setFormData] = useState(emptyForm);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  // Sync if URL query parameters change (e.g. they click Schedule Viewing from a different listing details page)
+  useEffect(() => {
+    if (urlPropertyId) {
+      setSelectedPropertyId(urlPropertyId);
+      setCurrentStep(2);
+    }
+  }, [urlPropertyId]);
+
+  const selectedProperty = properties.find(p => {
+    const normalize = (s: string) => s.replace(/[\s-]/g, '').toLowerCase();
+    return normalize(p.id) === normalize(selectedPropertyId);
+  });
 
   const selectedCountry = COUNTRIES.find(c => c.code === formData.countryCode);
 
@@ -47,17 +123,27 @@ export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) 
     setStatus('loading');
 
     try {
-      const payload = {
+      const payload: any = {
         access_key: WEB3FORMS_KEY,
-        subject: `New Inquiry from ${formData.firstName} ${formData.lastName} — ${formData.inquiryType}`,
-        from_name: 'PUYOKO Website',
+        subject: selectedProperty
+          ? `[Tour Booking] ${formData.firstName} ${formData.lastName} — ${selectedProperty.title} (${selectedProperty.id})`
+          : `New Inquiry from ${formData.firstName} ${formData.lastName}`,
+        from_name: 'PUYOKO Booking Center',
         'Inquiring As': formData.inquireAs,
-        'Inquiry Type': formData.inquiryType,
         Name: `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`,
         Email: formData.email,
         Phone: `${selectedCountry?.dial ?? ''} ${formData.phone}`,
-        Message: formData.message || '(No message provided)',
       };
+
+      if (selectedProperty) {
+        payload['Property ID'] = selectedProperty.id;
+        payload['Property Title'] = selectedProperty.title;
+        payload['Property Price'] = new Intl.NumberFormat('en-PH', { style: 'currency', currency: selectedProperty.currency || 'PHP', maximumFractionDigits: 0 }).format(selectedProperty.price);
+        payload['Property Address'] = `${selectedProperty.address}, ${selectedProperty.city}`;
+        payload['Selected Tour Date'] = selectedDateStr;
+        payload['Tour Mode'] = tourType;
+        payload['Selected Time Slot'] = selectedTime;
+      }
 
       const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
@@ -69,6 +155,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) 
       if (data.success) {
         setStatus('success');
         setFormData(emptyForm);
+        // Delay a tiny bit and go back to step 1/2 or show success page
       } else {
         setStatus('error');
       }
@@ -77,226 +164,609 @@ export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) 
     }
   };
 
+  // Filtered Properties for Step 1
+  const filteredProperties = properties.filter(p => {
+    if (filterType !== 'All' && p.type !== filterType) return false;
+    if (filterCity !== 'All' && p.city !== filterCity) return false;
+    if (filterPriceRange !== 'All') {
+      if (filterPriceRange === 'Under 30M' && p.price >= 30000000) return false;
+      if (filterPriceRange === '30M - 100M' && (p.price < 30000000 || p.price > 100000000)) return false;
+      if (filterPriceRange === 'Above 100M' && p.price <= 100000000) return false;
+    }
+    return true;
+  });
+
   const inputClass = "w-full border border-outline/30 bg-white/80 rounded-md px-4 py-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-sm text-on-surface";
   const labelClass = "block text-[11px] font-bold uppercase tracking-wider text-on-surface mb-1.5";
 
-  const content = (
-    <div className="max-w-4xl mx-auto px-6 lg:px-0">
-      <div className="text-center mb-12">
-        <h2 className="font-serif italic text-5xl text-primary mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-          Contact Us
-        </h2>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6 relative">
-        {/* Background heritage pattern faintly behind the form if desired, but we'll keep it clean */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Row 1 */}
-          <div>
-            <label className={labelClass}>I'M HERE TO INQUIRE AS A/AN</label>
-            <div className="relative">
-              <select
-                className={inputClass + " appearance-none cursor-pointer"}
-                value={formData.inquireAs}
-                onChange={(e) => setFormData({ ...formData, inquireAs: e.target.value })}
-              >
-                <option value="" disabled>Select Option</option>
-                <option>Interested Buyer</option>
-                <option>Interested to Rent</option>
-                <option>Homeowner</option>
-                <option>Broker/Agent</option>
-                <option>Proposals</option>
-                <option>Applicant</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-primary">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-              </div>
-            </div>
-          </div>
-          <div>
-            <label className={labelClass}>INQUIRY TYPE</label>
-            <div className="relative">
-              <select
-                className={inputClass + " appearance-none cursor-pointer"}
-                value={formData.inquiryType}
-                onChange={(e) => setFormData({ ...formData, inquiryType: e.target.value })}
-              >
-                <option>General Inquiry</option>
-                <option>Property Viewing</option>
-                <option>Pricing Details</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-primary">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Row 2 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className={labelClass}>FIRST NAME *</label>
-            <input
-              type="text"
-              required
-              placeholder="First Name"
-              className={inputClass}
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>MIDDLE NAME</label>
-            <input
-              type="text"
-              placeholder="Middle Name"
-              className={inputClass}
-              value={formData.middleName}
-              onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>LAST NAME *</label>
-            <input
-              type="text"
-              required
-              placeholder="Last Name"
-              className={inputClass}
-              value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-            />
-          </div>
-        </div>
-
-        {/* Row 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className={labelClass}>YOUR EMAIL *</label>
-            <input
-              type="email"
-              required
-              placeholder="email@example.com"
-              className={inputClass}
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>CONTACT NUMBER *</label>
-            <div className="flex">
-              <div className="relative flex-shrink-0 w-[100px] border border-r-0 border-outline/30 bg-background-warm rounded-l-md overflow-hidden">
-                <select
-                  className="w-full h-full appearance-none bg-transparent cursor-pointer pl-10 pr-6 outline-none text-sm font-medium text-on-surface-variant focus:ring-1 focus:ring-primary focus:border-primary"
-                  value={formData.countryCode}
-                  onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                  title="Country Code"
-                >
-                  {COUNTRIES.map(c => (
-                    <option key={c.code} value={c.code}>{c.dial}</option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <img src={`https://flagcdn.com/w20/${formData.countryCode}.png`} alt="flag" className="h-3 w-4" />
-                </div>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-primary">
-                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
-              </div>
-              <input
-                type="tel"
-                required
-                placeholder="9123456789"
-                className={inputClass + " rounded-l-none"}
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Row 4 */}
-        <div>
-          <label className={labelClass}>MESSAGE (optional)</label>
-          <textarea
-            rows={3}
-            placeholder="Message"
-            className={inputClass + " resize-none"}
-            value={formData.message}
-            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-          ></textarea>
-        </div>
-
-        {/* Row 5 - Agreement & Submit */}
-        <div className="flex flex-col md:flex-row items-start justify-between gap-8 mt-8">
-          <div className="flex items-start max-w-2xl">
-            <input
-              type="checkbox"
-              id="privacy"
-              required
-              className="mt-1 w-4 h-4 text-primary border-outline/40 rounded focus:ring-primary cursor-pointer flex-shrink-0"
-              checked={formData.agreePrivacy}
-              onChange={(e) => setFormData({ ...formData, agreePrivacy: e.target.checked })}
-            />
-            <label htmlFor="privacy" className="ml-3 text-[11px] text-on-surface-variant/80 leading-relaxed cursor-pointer">
-              By submitting this form, I certify that I have read and accept the <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link> and authorize
-              Puyoko, its employees, authorized representatives and third party service providers, and consent to
-              the use and processing of my personal information to contact me with marketing or promotional
-              information through phone call, mail, email, SMS or any type of electronic message.
-            </label>
-          </div>
-
-          <div className="flex-shrink-0 self-end md:self-auto flex flex-col items-end">
-            {(() => {
-              const isComplete = formData.firstName && formData.lastName && formData.email && formData.phone && formData.agreePrivacy;
-              const buttonClass = isComplete ? "flex items-center gap-2 bg-primary hover:bg-primary-light disabled:opacity-60 text-white px-10 py-3.5 rounded-full font-sans text-sm font-semibold tracking-wide transition-colors shadow-sm" : "flex items-center gap-2 bg-gray-400 hover:bg-gray-500 disabled:opacity-60 text-white px-10 py-3.5 rounded-full font-sans text-sm font-semibold tracking-wide transition-colors shadow-sm";
-              return (
-                <button
-                  type="submit"
-                  disabled={!isComplete || status === 'loading'}
-                  className={buttonClass}
-                >
-                  {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {status === 'loading' ? 'Sending...' : 'Send Inquiry'}
-                </button>
-              );
-            })()}
-          </div>
-        </div>
-
-        {/* Success / Error feedback */}
-        {status === 'success' && (
-          <div className="mt-6 flex items-center gap-3 rounded-lg bg-green-50 border border-green-200 px-5 py-4 text-green-700">
-            <CheckCircle className="h-5 w-5 shrink-0" />
-            <p className="text-sm font-medium">Your inquiry has been sent! We'll get back to you shortly.</p>
-          </div>
-        )}
-        {status === 'error' && (
-          <div className="mt-6 flex items-center gap-3 rounded-lg bg-red-50 border border-red-200 px-5 py-4 text-red-600">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-sm font-medium">Something went wrong. Please try again or email us directly.</p>
-          </div>
-        )}
-
-
-      </form>
-    </div>
-  );
-
-  if (standalone) {
-    return (
-      <div className="pt-32 pb-24 px-gutter mx-auto max-w-container-max min-h-[80vh] flex flex-col justify-center relative z-10">
-        <div className="absolute inset-0 heritage-pattern opacity-10 pointer-events-none -z-10"></div>
-        {content}
-      </div>
-    );
-  }
-
   return (
-    <section className="py-24 px-gutter border-t border-outline/20 relative z-10">
+    <div className={standalone ? "pt-32 pb-24 px-gutter mx-auto max-w-6xl min-h-[85vh] relative z-10" : "py-20 px-gutter border-t border-outline/20 relative z-10 max-w-6xl mx-auto"}>
       <div className="absolute inset-0 heritage-pattern opacity-[0.03] pointer-events-none -z-10"></div>
-      <div className="mx-auto max-w-container-max">
-        {content}
+      
+      {/* ── Wizard Header ── */}
+      <div className="text-center mb-10 select-none">
+        <h2 className="font-serif italic text-4xl text-primary mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+          {currentStep === 1 && "Select Your Estate"}
+          {currentStep === 2 && "Schedule A Private Tour"}
+          {currentStep === 3 && "Tell Us About Yourself"}
+        </h2>
+        <p className="font-mono text-[9px] uppercase tracking-widest text-primary/75 mt-1">
+          {currentStep === 1 && "Select which home you are interested in exploring"}
+          {currentStep === 2 && "Choose your preferred date, tour type, and time slot"}
+          {currentStep === 3 && "Review your booking details and confirm your inquiry"}
+        </p>
       </div>
-    </section>
+
+      {/* ── Interactive Step Tracker (Progress Bar) ── */}
+      <div className="max-w-xl mx-auto mb-12 relative flex items-center justify-between select-none">
+        <div className="absolute left-0 right-0 h-[2px] bg-outline-variant/30 -z-10"></div>
+        <div className="absolute left-0 right-0 h-[2px] bg-primary transition-all duration-500 -z-10" style={{ width: `${((currentStep - 1) / 2) * 100}%` }}></div>
+        
+        {/* Step 1 */}
+        <button 
+          onClick={() => { if (selectedPropertyId) setCurrentStep(1); }}
+          className={`flex flex-col items-center gap-1.5 focus:outline-none ${selectedPropertyId ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+          disabled={!selectedPropertyId}
+        >
+          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-display text-xs font-bold transition-all duration-300 ${
+            currentStep === 1 ? 'bg-primary text-white border-primary shadow-md scale-105' :
+            currentStep > 1 ? 'bg-primary-light border-primary-light text-white' : 'bg-white text-on-surface-variant/50 border-outline-variant/50'
+          }`}>
+            {currentStep > 1 ? <Check className="w-3.5 h-3.5" /> : "1"}
+          </div>
+          <span className={`font-mono text-[9px] uppercase tracking-wider ${currentStep === 1 ? 'text-primary font-bold' : 'text-on-surface-variant/60'}`}>Select Home</span>
+        </button>
+
+        {/* Step 2 */}
+        <button 
+          onClick={() => { if (selectedPropertyId) setCurrentStep(2); }}
+          className={`flex flex-col items-center gap-1.5 focus:outline-none ${selectedPropertyId ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+          disabled={!selectedPropertyId}
+        >
+          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-display text-xs font-bold transition-all duration-300 ${
+            currentStep === 2 ? 'bg-primary text-white border-primary shadow-md scale-105' :
+            currentStep > 2 ? 'bg-primary-light border-primary-light text-white' : 
+            selectedPropertyId ? 'bg-white text-primary border-primary/40' : 'bg-white text-on-surface-variant/50 border-outline-variant/50'
+          }`}>
+            {currentStep > 2 ? <Check className="w-3.5 h-3.5" /> : "2"}
+          </div>
+          <span className={`font-mono text-[9px] uppercase tracking-wider ${currentStep === 2 ? 'text-primary font-bold' : 'text-on-surface-variant/60'}`}>Schedule</span>
+        </button>
+
+        {/* Step 3 */}
+        <button 
+          className="flex flex-col items-center gap-1.5 focus:outline-none cursor-default"
+          disabled
+        >
+          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-display text-xs font-bold transition-all duration-300 ${
+            currentStep === 3 ? 'bg-primary text-white border-primary shadow-md scale-105' :
+            'bg-white text-on-surface-variant/50 border-outline-variant/50'
+          }`}>
+            3
+          </div>
+          <span className={`font-mono text-[9px] uppercase tracking-wider ${currentStep === 3 ? 'text-primary font-bold' : 'text-on-surface-variant/60'}`}>Contact</span>
+        </button>
+      </div>
+
+      {/* ── STEP 1: SELECT YOUR HOME ── */}
+      {currentStep === 1 && (
+        <div className="animate-page-enter">
+          {/* Category Filter selectors */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 bg-white/40 border border-outline/20 p-4 rounded-2xl backdrop-blur-sm shadow-sm">
+            <div>
+              <label className={labelClass}>Property Type</label>
+              <select 
+                className={inputClass + " bg-white"} 
+                value={filterType} 
+                onChange={(e) => setFilterType(e.target.value)}
+              >
+                <option value="All">All Types</option>
+                <option value="For Sale">For Sale</option>
+                <option value="For Rent">For Rent</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Location (City)</label>
+              <select 
+                className={inputClass + " bg-white"} 
+                value={filterCity} 
+                onChange={(e) => setFilterCity(e.target.value)}
+              >
+                <option value="All">All Locations</option>
+                <option value="Cebu City">Cebu City</option>
+                <option value="Lapu-Lapu City">Lapu-Lapu City</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Price Category</label>
+              <select 
+                className={inputClass + " bg-white"} 
+                value={filterPriceRange} 
+                onChange={(e) => setFilterPriceRange(e.target.value)}
+              >
+                <option value="All">All Budgets</option>
+                <option value="Under 30M">Under ₱30M</option>
+                <option value="30M - 100M">₱30M - ₱100M</option>
+                <option value="Above 100M">Above ₱100M</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Properties Grid */}
+          {filteredProperties.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProperties.map(p => (
+                <div 
+                  key={p.id}
+                  onClick={() => {
+                    setSelectedPropertyId(p.id);
+                    // Automatically build a default template message for them
+                    setSelectedDateStr(formatDateString(calendarDays[0]));
+                    setCurrentStep(2);
+                  }}
+                  className={`group bg-white rounded-2xl overflow-hidden border border-outline/25 hover:border-primary/50 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col relative ${
+                    selectedPropertyId === p.id ? 'ring-2 ring-primary border-primary' : ''
+                  }`}
+                >
+                  {/* Image with beautiful status tags */}
+                  <div className="relative h-48 w-full overflow-hidden bg-black/10">
+                    <img 
+                      src={p.images[0]} 
+                      alt={p.title} 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    />
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                      <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded shadow-sm border ${
+                        p.status === 'Active' ? 'bg-green-500/90 text-white border-green-400' :
+                        p.status === 'Pending' ? 'bg-amber-500/90 text-white border-amber-400' :
+                        'bg-blue-500/90 text-white border-blue-400'
+                      }`}>
+                        {p.status === 'Active' ? 'Ready to Tour' : p.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <span className="font-mono text-[8px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full select-none">
+                        {p.type}
+                      </span>
+                      <h3 className="font-serif text-base font-bold text-primary mt-2 group-hover:text-primary-light transition-colors leading-tight">
+                        {p.title}
+                      </h3>
+                      <p className="font-mono text-[9px] text-on-surface-variant/70 mt-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-primary/60 shrink-0" />
+                        {p.city} • {p.area} sqm
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-outline/10 flex items-center justify-between">
+                      <p className="font-display text-sm font-extrabold text-on-surface">
+                        {new Intl.NumberFormat('en-PH', { style: 'currency', currency: p.currency || 'PHP', maximumFractionDigits: 0 }).format(p.price)}
+                        {p.type === 'For Rent' && <span className="text-[10px] font-normal text-on-surface-variant/70">/mo</span>}
+                      </p>
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Schedule Tour <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 bg-white/30 border border-outline/25 rounded-2xl">
+              <p className="font-serif text-lg italic text-primary/75">No matching estates found. Try clearing your filters!</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── STEP 2: SELECT A SCHEDULE ── */}
+      {currentStep === 2 && selectedProperty && (
+        <div className="animate-page-enter max-w-4xl mx-auto space-y-10">
+          
+          {/* Selected Property details Card */}
+          <div className="p-4 bg-white border border-outline/35 rounded-2xl flex flex-col sm:flex-row gap-4 items-center shadow-sm relative">
+            <div className="w-full sm:w-32 h-20 rounded-xl overflow-hidden bg-black/10 shrink-0">
+              <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 text-center sm:text-left pr-4">
+              <span className="font-mono text-[8px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full select-none">
+                Selected Estate
+              </span>
+              <h3 className="font-serif text-base font-bold text-on-surface mt-1 leading-tight">
+                {selectedProperty.title}
+              </h3>
+              <p className="font-mono text-[10px] text-on-surface-variant/70 mt-0.5">
+                ID: {selectedProperty.id} • {selectedProperty.city}, {selectedProperty.address}
+              </p>
+            </div>
+            <div className="shrink-0 flex flex-col items-center sm:items-end gap-2">
+              <p className="font-display text-sm font-extrabold text-on-surface">
+                {new Intl.NumberFormat('en-PH', { style: 'currency', currency: selectedProperty.currency || 'PHP', maximumFractionDigits: 0 }).format(selectedProperty.price)}
+              </p>
+              <button 
+                onClick={() => setCurrentStep(1)}
+                className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 transition-colors cursor-pointer"
+              >
+                Change Property &gt;
+              </button>
+            </div>
+          </div>
+
+          {/* Select a Date (Horizontal Calendar picker) */}
+          <div className="bg-white/40 border border-outline/25 p-6 rounded-2xl backdrop-blur-sm shadow-sm space-y-4">
+            <h3 className="font-serif italic text-lg text-primary flex items-center gap-2 select-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <Calendar className="w-5 h-5 text-primary-light" /> Select a Date
+            </h3>
+            
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-3">
+              {calendarDays.map((date, idx) => {
+                const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+                const dayOfMonth = date.getDate().toString().padStart(2, '0');
+                const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                const fullStr = formatDateString(date);
+                const isSelected = selectedDateStr === fullStr;
+
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedDateStr(fullStr)}
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                      isSelected 
+                        ? 'bg-primary border-primary text-white shadow-md scale-[1.03]' 
+                        : 'bg-white hover:bg-surface-muted/50 border-outline/30 text-on-surface'
+                    }`}
+                  >
+                    <span className={`font-mono text-[8px] uppercase tracking-wider ${isSelected ? 'text-white/80' : 'text-on-surface-variant/60'}`}>
+                      {dayOfWeek}
+                    </span>
+                    <span className="font-display text-lg font-bold my-0.5 leading-none">
+                      {dayOfMonth}
+                    </span>
+                    <span className={`font-mono text-[8px] uppercase tracking-wider ${isSelected ? 'text-white/80' : 'text-on-surface-variant/60'}`}>
+                      {month}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Selector Type & Time slots */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Tour Type */}
+            <div className="bg-white/40 border border-outline/25 p-6 rounded-2xl backdrop-blur-sm shadow-sm space-y-4">
+              <h3 className="font-serif italic text-lg text-primary flex items-center gap-2 select-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <User className="w-5 h-5 text-primary-light" /> How would you like to tour?
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setTourType('In Person')}
+                  className={`flex flex-col items-center justify-center p-5 rounded-xl border-2 transition-all gap-2 cursor-pointer ${
+                    tourType === 'In Person'
+                      ? 'bg-primary border-primary text-white shadow-md'
+                      : 'bg-white hover:bg-surface-muted/50 border-outline/30 text-on-surface'
+                  }`}
+                >
+                  <MapPin className={`w-6 h-6 ${tourType === 'In Person' ? 'text-white' : 'text-primary/70'}`} />
+                  <span className="font-display text-xs font-bold uppercase tracking-wider">In Person</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTourType('In Video Chat')}
+                  className={`flex flex-col items-center justify-center p-5 rounded-xl border-2 transition-all gap-2 cursor-pointer ${
+                    tourType === 'In Video Chat'
+                      ? 'bg-primary border-primary text-white shadow-md'
+                      : 'bg-white hover:bg-surface-muted/50 border-outline/30 text-on-surface'
+                  }`}
+                >
+                  <Video className={`w-6 h-6 ${tourType === 'In Video Chat' ? 'text-white' : 'text-primary/70'}`} />
+                  <span className="font-display text-xs font-bold uppercase tracking-wider">Video Chat</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Time Slot Picker */}
+            <div className="bg-white/40 border border-outline/25 p-6 rounded-2xl backdrop-blur-sm shadow-sm space-y-4">
+              <h3 className="font-serif italic text-lg text-primary flex items-center gap-2 select-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <Clock className="w-5 h-5 text-primary-light" /> Select a Time
+              </h3>
+
+              <div className="grid grid-cols-3 gap-2">
+                {TIME_SLOTS.map((time, idx) => {
+                  const isSelected = selectedTime === time;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedTime(time)}
+                      className={`py-2.5 px-3 rounded-lg border text-center font-mono text-[10px] font-semibold transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-primary border-primary text-white shadow-sm'
+                          : 'bg-white hover:bg-surface-muted/50 border-outline/35 text-on-surface'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Navigation Action */}
+          <div className="flex justify-between items-center pt-4">
+            <button
+              onClick={() => setCurrentStep(1)}
+              className="px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary-light transition-colors border-2 border-primary/10 rounded-full cursor-pointer bg-white"
+            >
+              &lt; Back to Properties
+            </button>
+            <button
+              onClick={() => setCurrentStep(3)}
+              className="px-10 py-3.5 bg-primary hover:bg-primary-light text-white font-sans text-sm font-semibold tracking-wide rounded-full shadow-sm hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+            >
+              Next Step <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── STEP 3: CONTACT INFORMATION & SUMMARY ── */}
+      {currentStep === 3 && selectedProperty && (
+        <div className="animate-page-enter max-w-5xl mx-auto">
+          {status === 'success' ? (
+            <div className="text-center py-16 bg-white border border-outline/20 rounded-2xl shadow-sm space-y-6 max-w-xl mx-auto">
+              <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto border border-green-200">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="font-serif italic text-3xl text-primary" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Tour Requested!
+              </h2>
+              <p className="font-sans text-sm text-on-surface-variant max-w-sm mx-auto leading-relaxed">
+                Thank you! Your private viewing booking for **{selectedProperty.title}** has been sent to our Gmail. An agent will contact you shortly to confirm your visit.
+              </p>
+              <div className="pt-4">
+                <button
+                  onClick={() => {
+                    setStatus('idle');
+                    setCurrentStep(1);
+                    setSelectedPropertyId('');
+                  }}
+                  className="px-8 py-3 bg-primary hover:bg-primary-light text-white font-sans text-xs font-bold uppercase tracking-widest rounded-full transition-colors cursor-pointer"
+                >
+                  Schedule Another Tour
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+              
+              {/* Left Column: Summary */}
+              <div className="lg:col-span-2 space-y-6 bg-white/40 border border-outline/25 p-6 rounded-2xl backdrop-blur-sm shadow-sm select-none">
+                <h3 className="font-serif italic text-lg text-primary" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  Summary of Tour
+                </h3>
+                
+                {/* Visual Listing */}
+                <div className="rounded-xl overflow-hidden bg-white border border-outline/20 shadow-sm">
+                  <div className="h-32 w-full bg-black/10">
+                    <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="p-4">
+                    <span className="font-mono text-[7px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full select-none">
+                      {selectedProperty.type}
+                    </span>
+                    <h4 className="font-serif text-sm font-bold text-primary mt-1.5 leading-tight">
+                      {selectedProperty.title}
+                    </h4>
+                    <p className="font-mono text-[9px] text-on-surface-variant/60">
+                      ID: {selectedProperty.id} • {selectedProperty.city}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Details Summary slots */}
+                <div className="space-y-4 pt-4 border-t border-outline/10">
+                  <div className="flex gap-3.5 items-start">
+                    <Calendar className="w-4 h-4 text-primary-light mt-0.5 shrink-0" />
+                    <div>
+                      <span className="block font-mono text-[8px] uppercase tracking-wider text-on-surface-variant/50">Selected Date</span>
+                      <span className="font-sans text-xs font-bold text-on-surface">{selectedDateStr}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start">
+                    <User className="w-4 h-4 text-primary-light mt-0.5 shrink-0" />
+                    <div>
+                      <span className="block font-mono text-[8px] uppercase tracking-wider text-on-surface-variant/50">Tour Type</span>
+                      <span className="font-sans text-xs font-bold text-on-surface">{tourType}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start">
+                    <Clock className="w-4 h-4 text-primary-light mt-0.5 shrink-0" />
+                    <div>
+                      <span className="block font-mono text-[8px] uppercase tracking-wider text-on-surface-variant/50">Time Slot</span>
+                      <span className="font-sans text-xs font-bold text-on-surface">{selectedTime}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => setCurrentStep(2)}
+                    className="font-mono text-[8px] font-bold uppercase tracking-wider text-primary-light hover:text-primary border-b border-primary/20 pb-0.5 cursor-pointer"
+                  >
+                    &lt; Change Schedule / Mode
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Contact details form */}
+              <form onSubmit={handleSubmit} className="lg:col-span-3 bg-white border border-outline/25 p-8 rounded-2xl shadow-sm space-y-6">
+                <h3 className="font-serif italic text-lg text-primary" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  Your Contact Information
+                </h3>
+                
+                {/* Inquiry Level */}
+                <div>
+                  <label className={labelClass}>I'm inquiring as a/an *</label>
+                  <div className="relative">
+                    <select
+                      className={inputClass + " appearance-none cursor-pointer bg-white"}
+                      value={formData.inquireAs}
+                      onChange={(e) => setFormData({ ...formData, inquireAs: e.target.value })}
+                    >
+                      <option>Interested Buyer</option>
+                      <option>Interested to Rent</option>
+                      <option>Homeowner</option>
+                      <option>Broker/Agent</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-primary">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Names */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className={labelClass}>FIRST NAME *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Juan"
+                      className={inputClass}
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>MIDDLE NAME</label>
+                    <input
+                      type="text"
+                      placeholder="Dela"
+                      className={inputClass}
+                      value={formData.middleName}
+                      onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>LAST NAME *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Cruz"
+                      className={inputClass}
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Email and Phone */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>EMAIL ADDRESS *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="juandelacruz@gmail.com"
+                      className={inputClass}
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>CONTACT NUMBER *</label>
+                    <div className="flex">
+                      <div className="relative flex-shrink-0 w-[95px] border border-r-0 border-outline/30 bg-background-warm rounded-l-md overflow-hidden">
+                        <select
+                          className="w-full h-full appearance-none bg-transparent cursor-pointer pl-9 pr-6 outline-none text-xs font-semibold text-on-surface-variant focus:ring-1 focus:ring-primary focus:border-primary"
+                          value={formData.countryCode}
+                          onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                          title="Country Code"
+                        >
+                          {COUNTRIES.map(c => (
+                            <option key={c.code} value={c.code}>{c.dial}</option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
+                          <img src={`https://flagcdn.com/w20/${formData.countryCode}.png`} alt="flag" className="h-3 w-4" />
+                        </div>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-primary">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="9123456789"
+                        className={inputClass + " rounded-l-none"}
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Privacy agreement checkbox */}
+                <div className="flex items-start mt-4 bg-background-warm/30 p-3 rounded-lg border border-outline/10">
+                  <input
+                    type="checkbox"
+                    id="wizard-privacy"
+                    required
+                    className="mt-1 w-4 h-4 text-primary border-outline/40 rounded focus:ring-primary cursor-pointer flex-shrink-0"
+                    checked={formData.agreePrivacy}
+                    onChange={(e) => setFormData({ ...formData, agreePrivacy: e.target.checked })}
+                  />
+                  <label htmlFor="wizard-privacy" className="ml-3 text-[10px] text-on-surface-variant/80 leading-relaxed cursor-pointer select-none">
+                    By submitting this request, I certify that I have read and agree to the <Link to="/privacy" className="text-primary font-semibold hover:underline">Privacy Policy</Link> and authorize Puyoko representatives to contact me through my details with promotional tour updates.
+                  </label>
+                </div>
+
+                {/* Navigation Back and Submit actions */}
+                <div className="flex justify-between items-center pt-4 border-t border-outline/10">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(2)}
+                    className="px-6 py-2.5 font-mono text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary-light transition-colors border border-primary/20 rounded-full cursor-pointer bg-white"
+                  >
+                    &lt; Back
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className="px-8 py-3 bg-primary hover:bg-primary-light disabled:bg-gray-400 text-white font-sans text-xs font-bold uppercase tracking-widest rounded-full shadow-sm hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    {status === 'loading' && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {status === 'loading' ? 'Submitting...' : 'Confirm booking request'}
+                  </button>
+                </div>
+
+                {status === 'error' && (
+                  <div className="mt-4 flex items-center gap-2.5 rounded-lg bg-red-50 border border-red-200 px-4 py-3.5 text-red-600">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <p className="text-xs font-semibold">Something went wrong. Please check your network and try again.</p>
+                  </div>
+                )}
+              </form>
+
+            </div>
+          )}
+        </div>
+      )}
+
+    </div>
   );
 };

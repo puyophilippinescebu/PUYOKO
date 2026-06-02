@@ -89,6 +89,13 @@ export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, on
                       <video src={property.videoUrl} controls autoPlay className="w-full h-full absolute inset-0" />
                     );
                   })()
+                ) : property.images[currentImage]?.startsWith('data:video/') || property.images[currentImage]?.endsWith('.mp4') || property.images[currentImage]?.endsWith('.mov') || property.images[currentImage]?.endsWith('.webm') ? (
+                  <video
+                    src={property.images[currentImage]}
+                    className="w-full h-full object-contain absolute inset-0 bg-black"
+                    controls
+                    autoPlay
+                  />
                 ) : (
                   <img 
                     src={property.images[currentImage]} 

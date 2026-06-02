@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { InactivityTimeoutModal } from '../components/InactivityTimeoutModal';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -8,7 +9,7 @@ interface AuthContextType {
   displayName: string;
   updateDisplayName: (name: string) => void;
   login: () => void;
-  logout: () => void;
+  logout: (reason?: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -33,6 +34,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>('Admin');
+
+  // Inactivity session timeout configuration (Secure Defaults)
+  const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+  const WARNING_DURATION = 60 * 1000; // 60 seconds warning countdown
+  const maxSeconds = WARNING_DURATION / 1000;
+
+  // Inactivity timeout states
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
+  const [secondsRemaining, setSecondsRemaining] = useState(maxSeconds);
+
+  const lastActivityRef = useRef<number>(Date.now());
+  const checkIntervalRef = useRef<any>(null);
 
   // When userEmail changes, load that user's saved name
   useEffect(() => {
@@ -65,18 +78,92 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // login() is handled directly via supabase.auth.signInWithPassword in LoginPage
-  const login = () => {};
+  const login = () => {
+    lastActivityRef.current = Date.now();
+    setShowTimeoutWarning(false);
+  };
 
-  const logout = async () => {
+  const logout = async (reason?: string) => {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     setUserEmail(null);
     setDisplayName('Admin');
+    setShowTimeoutWarning(false);
+    if (checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current);
+      checkIntervalRef.current = null;
+    }
+    if (reason === 'inactivity') {
+      window.location.href = '/login?reason=inactivity';
+    }
   };
+
+  // Reset inactivity timer
+  const resetActivity = useCallback(() => {
+    lastActivityRef.current = Date.now();
+    setSecondsRemaining(maxSeconds);
+    setShowTimeoutWarning(false);
+  }, [maxSeconds]);
+
+  // Monitor inactivity when user is authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setShowTimeoutWarning(false);
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
+      }
+      return;
+    }
+
+    lastActivityRef.current = Date.now();
+
+    // broad activity triggers to cover all forms of user presence
+    const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    const handleActivity = () => {
+      resetActivity();
+    };
+
+    activityEvents.forEach(event => {
+      window.addEventListener(event, handleActivity, { passive: true });
+    });
+
+    checkIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - lastActivityRef.current;
+
+      if (elapsed >= INACTIVITY_TIMEOUT) {
+        if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
+        logout('inactivity');
+      } else if (elapsed >= INACTIVITY_TIMEOUT - WARNING_DURATION) {
+        setShowTimeoutWarning(true);
+        const remaining = Math.max(0, Math.ceil((INACTIVITY_TIMEOUT - elapsed) / 1000));
+        setSecondsRemaining(remaining);
+      } else {
+        setShowTimeoutWarning(false);
+      }
+    }, 1000);
+
+    return () => {
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, handleActivity);
+      });
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
+      }
+    };
+  }, [isAuthenticated, resetActivity]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, isLoading, userEmail, displayName, updateDisplayName, login, logout }}>
       {children}
+      <InactivityTimeoutModal
+        isOpen={showTimeoutWarning}
+        secondsRemaining={secondsRemaining}
+        maxSeconds={maxSeconds}
+        onStayLoggedIn={resetActivity}
+        onLogOutNow={() => logout()}
+      />
     </AuthContext.Provider>
   );
 };

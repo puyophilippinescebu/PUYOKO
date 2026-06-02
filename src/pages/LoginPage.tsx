@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Eye, EyeOff, ArrowLeft, ShieldAlert } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,7 +11,10 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  const isInactiveLogout = new URLSearchParams(location.search).get('reason') === 'inactivity';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +54,18 @@ export const LoginPage: React.FC = () => {
           <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-on-surface-variant mt-2">Authorized Personnel Only</p>
         </div>
 
+        {isInactiveLogout && !error && (
+          <div className="bg-amber-50 text-amber-800 border border-amber-200 text-xs font-mono p-4 mb-6 uppercase tracking-wider text-center rounded-xl flex flex-col items-center gap-1.5 shadow-sm animate-fade-in">
+            <div className="flex items-center gap-1.5 font-bold text-amber-700">
+              <ShieldAlert className="w-4 h-4 animate-pulse" />
+              <span>Security Notice</span>
+            </div>
+            <span className="text-[10px] text-amber-800/80">Signed out due to inactivity</span>
+          </div>
+        )}
+
         {error && (
-          <div className="bg-red-50 text-red-600 border border-red-200 text-xs font-mono p-4 mb-6 uppercase tracking-wider text-center rounded-lg">
+          <div className="bg-red-50 text-red-600 border border-red-200 text-xs font-mono p-4 mb-6 uppercase tracking-wider text-center rounded-xl">
             {error}
           </div>
         )}

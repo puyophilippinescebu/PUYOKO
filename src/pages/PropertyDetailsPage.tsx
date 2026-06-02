@@ -4,17 +4,71 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, ExternalLink, Link as LinkIcon, Check, X } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
 import { cn, getVideoEmbedUrl } from '../lib/utils';
+import { supabase } from '../lib/supabaseClient';
+import { Property } from '../types';
 
 export const PropertyDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { properties, loading } = useProperties();
+  const { properties, loading: contextLoading } = useProperties();
+  const [localProperty, setLocalProperty] = useState<Property | null>(null);
+  const [localLoading, setLocalLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [showVideoInLightbox, setShowVideoInLightbox] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const property = properties.find(p => p.id === id);
+  useEffect(() => {
+    if (!id) return;
+    
+    // Normalized case-insensitive matching for hyphens/spaces
+    const normalize = (s: string) => s.replace(/[\s-]/g, '').toLowerCase();
+    const found = properties.find(p => normalize(p.id) === normalize(id));
+    
+    if (found) {
+      setLocalProperty(found);
+      setLocalLoading(false);
+    } else if (!contextLoading) {
+      // Fallback: fetch directly from Supabase if not found in cached context properties
+      const fetchSingleProperty = async () => {
+        try {
+          let { data, error } = await supabase
+            .from('properties')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (error || !data) {
+            // Try alternative string pattern if exact match fails (e.g. space vs hyphen mismatch)
+            const altId = id.includes(' ') ? id.replace(' ', '-') : id.replace('-', ' ');
+            const resAlt = await supabase
+              .from('properties')
+              .select('*')
+              .eq('id', altId)
+              .single();
+            if (!resAlt.error && resAlt.data) {
+              data = resAlt.data;
+            }
+          }
+
+          if (data) {
+            setLocalProperty(data);
+          } else {
+            setLocalProperty(null);
+          }
+        } catch (e) {
+          console.error("Direct fetch failed:", e);
+          setLocalProperty(null);
+        } finally {
+          setLocalLoading(false);
+        }
+      };
+
+      fetchSingleProperty();
+    }
+  }, [id, properties, contextLoading]);
+
+  const property = localProperty;
 
   useEffect(() => {
     if (isLightboxOpen) {
@@ -42,7 +96,7 @@ export const PropertyDetailsPage: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  if (loading) {
+  if (contextLoading && localLoading && !property) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-surface">
         <div className="font-mono text-xs uppercase tracking-widest text-primary animate-pulse">Loading Estate...</div>
@@ -90,7 +144,32 @@ export const PropertyDetailsPage: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const renderSubThumbnail = (idx: number, className?: string) => {
+    const img = property.images[idx];
+    if (!img) return null;
+    const isVideo = img.startsWith('data:video/') || img.endsWith('.mp4') || img.endsWith('.mov') || img.endsWith('.webm');
+    return (
+      <div 
+        onClick={() => { setCurrentImage(idx); setIsLightboxOpen(true); setShowVideoInLightbox(false); }} 
+        className={cn("relative overflow-hidden cursor-pointer h-full w-full bg-black border border-outline/10", className)}
+      >
+        {isVideo ? (
+          <div className="relative h-full w-full">
+            <video src={img} className="h-full w-full object-cover" muted playsInline />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+              <span className="font-mono text-[7px] font-bold text-white uppercase tracking-widest bg-primary px-1.5 py-0.5 rounded-sm">VIDEO</span>
+            </div>
+          </div>
+        ) : (
+          <img src={img} alt={`${property.title} - ${idx + 1}`} className="h-full w-full object-cover transition-transform hover:scale-105 duration-300" />
+        )}
+      </div>
+    );
+  };
+
   const renderMainThumbnail = (className: string) => {
+    const firstImg = property.images[0] || '';
+    const isVideo = firstImg.startsWith('data:video/') || firstImg.endsWith('.mp4') || firstImg.endsWith('.mov') || firstImg.endsWith('.webm');
     return (
       <div 
         onClick={() => { 
@@ -100,11 +179,20 @@ export const PropertyDetailsPage: React.FC = () => {
         }} 
         className={cn("relative overflow-hidden cursor-pointer group", className)}
       >
-        <img 
-          src={property.images[0] || ''} 
-          alt={property.title} 
-          className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-500" 
-        />
+        {isVideo ? (
+          <div className="relative h-full w-full bg-black">
+            <video src={firstImg} className="h-full w-full object-cover" muted playsInline autoPlay loop />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/15 pointer-events-none">
+              <span className="font-mono text-[9px] font-bold text-white uppercase tracking-widest bg-primary px-3 py-1.5 rounded-full border border-white/20 shadow-md">PLAY TOUR</span>
+            </div>
+          </div>
+        ) : (
+          <img 
+            src={firstImg} 
+            alt={property.title} 
+            className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-500" 
+          />
+        )}
         {property.videoUrl && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/15 transition-colors hover:bg-black/25 group-hover:bg-black/20 duration-300">
             <div className="flex items-center gap-3 bg-white/20 frosted-jade backdrop-blur-md px-5 py-2.5 rounded-full border border-white/25 shadow-2xl transition-all duration-300 group-hover:scale-105 active:scale-95">
@@ -158,11 +246,20 @@ export const PropertyDetailsPage: React.FC = () => {
                     if (idx === 0 && property.videoUrl) setShowVideoInLightbox(true);
                   }}
                 >
-                  <img 
-                    src={img} 
-                    alt={`${property.title} - ${idx + 1}`} 
-                    className="w-full h-full object-cover"
-                  />
+                  {img.startsWith('data:video/') || img.endsWith('.mp4') || img.endsWith('.mov') || img.endsWith('.webm') ? (
+                    <div className="relative h-full w-full bg-black">
+                      <video src={img} className="w-full h-full object-cover" muted playsInline />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                        <span className="font-mono text-[8px] font-bold text-white uppercase tracking-widest bg-primary px-2 py-1 rounded-sm">VIDEO</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <img 
+                      src={img} 
+                      alt={`${property.title} - ${idx + 1}`} 
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                   {idx === 0 && property.videoUrl && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/15">
                       <div className="flex items-center gap-2.5 bg-white/20 frosted-jade backdrop-blur-md px-4 py-2 rounded-full border border-white/25 shadow-xl">
@@ -189,21 +286,21 @@ export const PropertyDetailsPage: React.FC = () => {
             {property.images.length >= 5 ? (
               <>
                 {renderMainThumbnail("col-span-2 row-span-2 h-full w-full")}
-                <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); setShowVideoInLightbox(false); }} src={property.images[1]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
-                <img onClick={() => { setCurrentImage(2); setIsLightboxOpen(true); setShowVideoInLightbox(false); }} src={property.images[2]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
-                <img onClick={() => { setCurrentImage(3); setIsLightboxOpen(true); setShowVideoInLightbox(false); }} src={property.images[3]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
-                <img onClick={() => { setCurrentImage(4); setIsLightboxOpen(true); setShowVideoInLightbox(false); }} src={property.images[4]} alt={property.title} className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                {renderSubThumbnail(1)}
+                {renderSubThumbnail(2)}
+                {renderSubThumbnail(3)}
+                {renderSubThumbnail(4)}
               </>
             ) : property.images.length >= 3 ? (
               <>
                 {renderMainThumbnail("col-span-2 row-span-2 h-full w-full")}
-                <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); setShowVideoInLightbox(false); }} src={property.images[1]} alt={property.title} className="col-span-2 row-span-1 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
-                <img onClick={() => { setCurrentImage(2); setIsLightboxOpen(true); setShowVideoInLightbox(false); }} src={property.images[2]} alt={property.title} className="col-span-2 row-span-1 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                {renderSubThumbnail(1, "col-span-2 row-span-1")}
+                {renderSubThumbnail(2, "col-span-2 row-span-1")}
               </>
             ) : property.images.length === 2 ? (
               <>
                 {renderMainThumbnail("col-span-2 row-span-2 h-full w-full")}
-                <img onClick={() => { setCurrentImage(1); setIsLightboxOpen(true); setShowVideoInLightbox(false); }} src={property.images[1]} alt={property.title} className="col-span-2 row-span-2 h-full w-full object-cover transition-transform hover:scale-[1.02] duration-300 cursor-pointer" />
+                {renderSubThumbnail(1, "col-span-2 row-span-2")}
               </>
             ) : (
               renderMainThumbnail("col-span-4 row-span-2 h-full w-full")
@@ -338,13 +435,13 @@ export const PropertyDetailsPage: React.FC = () => {
  
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => navigate('/contact')}
+                  onClick={() => navigate(`/contact?propertyId=${encodeURIComponent(property.id)}&inquiryType=Property%20Viewing`)}
                   className="w-full rounded-full bg-primary py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-primary-light active:scale-95"
                 >
                   Schedule Viewing
                 </button>
                 <button
-                  onClick={() => navigate('/contact')}
+                  onClick={() => navigate(`/contact?propertyId=${encodeURIComponent(property.id)}&inquiryType=General%20Inquiry`)}
                   className="w-full rounded-full border-2 border-primary/20 py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest text-primary transition-all hover:bg-primary/5 active:scale-95"
                 >
                   Contact Agent
@@ -405,11 +502,20 @@ export const PropertyDetailsPage: React.FC = () => {
                 );
               })()
             ) : (
-              <img
-                src={property.images[currentImage]}
-                alt={property.title}
-                className="max-h-[73vh] max-w-[93vw] md:max-h-[78vh] md:max-w-[83vw] object-contain rounded-xl"
-              />
+              property.images[currentImage]?.startsWith('data:video/') || property.images[currentImage]?.endsWith('.mp4') || property.images[currentImage]?.endsWith('.mov') || property.images[currentImage]?.endsWith('.webm') ? (
+                <video
+                  src={property.images[currentImage]}
+                  controls
+                  autoPlay
+                  className="max-h-[73vh] max-w-[93vw] md:max-h-[78vh] md:max-w-[83vw] object-contain rounded-xl bg-black"
+                />
+              ) : (
+                <img
+                  src={property.images[currentImage]}
+                  alt={property.title}
+                  className="max-h-[73vh] max-w-[93vw] md:max-h-[78vh] md:max-w-[83vw] object-contain rounded-xl"
+                />
+              )
             )}
           </div>
 
