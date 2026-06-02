@@ -84,6 +84,11 @@ export default function App() {
 function PublicLayout() {
   const location = useLocation();
   const isPropertyPage = location.pathname.startsWith('/property/');
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/admin/properties" replace />;
+  }
 
   return (
     <div className="relative min-h-screen">

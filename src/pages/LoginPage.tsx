@@ -12,9 +12,16 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
   const isInactiveLogout = new URLSearchParams(location.search).get('reason') === 'inactivity';
+
+  // Redirect to admin portal if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/admin/properties', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
