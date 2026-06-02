@@ -34,7 +34,7 @@ export const LoginPage: React.FC = () => {
     }
 
     login();
-    navigate('/properties');
+    navigate('/admin/properties');
   };
 
   return (

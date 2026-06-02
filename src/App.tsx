@@ -26,7 +26,7 @@ import { MediaProvider } from './contexts/MediaContext';
 import { useAuth } from './contexts/AuthContext';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { MediaPage } from './pages/MediaPage';
-import { AdminScheduleBlock } from './pages/AdminScheduleBlock';
+import { AdminSchedule } from './pages/AdminSchedule';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -60,7 +60,7 @@ export default function App() {
                     <AdminLayout>
                       <Routes>
                         <Route path="properties" element={<PageTransition><PropertiesPage /></PageTransition>} />
-                        <Route path="schedule-block" element={<PageTransition><AdminScheduleBlock /></PageTransition>} />
+                        <Route path="schedule" element={<PageTransition><AdminSchedule /></PageTransition>} />
                         <Route path="" element={<Navigate to="properties" replace />} />
                         <Route path="*" element={<Navigate to="properties" replace />} />
                       </Routes>

@@ -36,7 +36,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const adminLinks = [
     { name: 'Properties', path: '/admin/properties', icon: LayoutGrid },
-    { name: 'Schedule Blocks', path: '/admin/schedule-block', icon: Calendar },
+    { name: 'Schedule', path: '/admin/schedule', icon: Calendar },
   ];
 
   return (
@@ -74,16 +74,8 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             </div>
           </div>
 
-          {/* Right: Profile + View Public Site */}
+          {/* Right: Profile */}
           <div className="flex items-center gap-4">
-            <a
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors border border-white/20 px-3 py-1.5 rounded-sm"
-            >
-              View Public Site ↗
-            </a>
 
             {/* Profile dropdown */}
             <div ref={dropdownRef} className="relative">

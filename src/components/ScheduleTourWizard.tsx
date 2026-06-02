@@ -14,7 +14,8 @@ import {
   ArrowRight, 
   ChevronLeft, 
   ChevronRight, 
-  Info 
+  Info,
+  UserCheck 
 } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useBlockedDates } from '../hooks/useBlockedDates';
@@ -112,6 +113,19 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
     }
   }, [blockedDates, isDateBlocked, selectedDateStr]);
 
+  // Agent Details state
+  const [agentName, setAgentName] = useState(() => localStorage.getItem('puyoko_agent_name') || 'Claire Jane');
+  const [agentPhone, setAgentPhone] = useState(() => localStorage.getItem('puyoko_agent_phone') || '+63 912 345 6789');
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'puyoko_agent_name' && e.newValue) setAgentName(e.newValue);
+      if (e.key === 'puyoko_agent_phone' && e.newValue) setAgentPhone(e.newValue);
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Filters for Step 1
   const [filterType, setFilterType] = useState<string>('All');
   const [filterCity, setFilterCity] = useState<string>('All');
@@ -169,6 +183,8 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
         payload['Selected Tour Date'] = selectedDateStr;
         payload['Tour Mode'] = tourType;
         payload['Selected Time Slot'] = selectedTime;
+        payload['Assigned Agent'] = agentName;
+        payload['Agent Contact'] = agentPhone;
       }
 
       const res = await fetch('https://api.web3forms.com/submit', {
@@ -685,6 +701,15 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                     <div>
                       <span className="block font-mono text-[8px] uppercase tracking-wider text-on-surface-variant/50">Time Slot</span>
                       <span className="font-sans text-xs font-bold text-on-surface">{selectedTime}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start mt-4 pt-4 border-t border-outline/10 select-none">
+                    <UserCheck className="w-4 h-4 text-primary-light mt-0.5 shrink-0" />
+                    <div>
+                      <span className="block font-mono text-[8px] uppercase tracking-wider text-on-surface-variant/50">Your Tour Representative</span>
+                      <span className="font-sans text-xs font-extrabold text-primary block leading-none">{agentName}</span>
+                      <span className="block font-mono text-[8px] text-on-surface-variant/75 mt-1">{agentPhone}</span>
                     </div>
                   </div>
                 </div>
