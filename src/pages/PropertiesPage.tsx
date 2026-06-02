@@ -195,7 +195,7 @@ export const PropertiesPage: React.FC = () => {
 
       {/* Filter Engine */}
       <section className="mb-10 md:mb-16">
-        <div className="border border-outline/35 bg-white/90 backdrop-blur-md rounded-lg shadow-lg shadow-primary/5 overflow-hidden transition-all duration-300">
+        <div className="border border-outline/35 bg-white/90 backdrop-blur-md rounded-lg shadow-lg shadow-primary/5 transition-all duration-300">
           <div className="grid grid-cols-1 md:grid-cols-4 items-center">
             {/* Search (Always visible, spans 1 grid column on desktop) */}
             <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[16px] md:col-span-1 group hover:bg-primary/[0.02] transition-colors duration-300 flex items-center gap-3">
