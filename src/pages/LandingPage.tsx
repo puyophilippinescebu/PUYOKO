@@ -245,19 +245,13 @@ export const LandingPage: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Schedule Tour and Contact buttons */}
-                        <div className="mt-6 pt-4 border-t border-outline/10 grid grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
+                        {/* Schedule Tour button */}
+                        <div className="mt-6 pt-4 border-t border-outline/10" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => navigate(`/schedule?propertyId=${encodeURIComponent(p.id)}`)}
-                            className="w-full rounded-full bg-primary hover:bg-primary-light text-white py-2.5 font-mono text-[9px] font-bold uppercase tracking-wider transition-all duration-300 shadow-sm active:scale-95 text-center cursor-pointer border-0"
+                            className="w-full rounded-full bg-primary hover:bg-primary-light text-white py-3 font-mono text-[9px] font-bold uppercase tracking-widest transition-all duration-300 shadow-sm active:scale-95 text-center cursor-pointer border-0"
                           >
                             Schedule Tour
-                          </button>
-                          <button
-                            onClick={() => navigate(`/contact?propertyId=${encodeURIComponent(p.id)}&inquiryType=General%20Inquiry`)}
-                            className="w-full rounded-full border border-primary/20 hover:bg-primary/5 text-primary py-2.5 font-mono text-[9px] font-bold uppercase tracking-wider transition-all duration-300 active:scale-95 text-center cursor-pointer bg-white"
-                          >
-                            Contact Us
                           </button>
                         </div>
                       </div>
@@ -268,9 +262,6 @@ export const LandingPage: React.FC = () => {
           )}
         </div>
       </section>
-
-      {/* Contact Us Form Section */}
-      <ContactForm />
 
       {/* Materials Module - Natural Tones Design Layout */}
       <section className="bg-primary text-white pt-24 pb-32 relative mt-16 md:mt-24">
