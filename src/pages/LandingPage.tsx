@@ -5,7 +5,8 @@ import { cn, getVideoEmbedUrl } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useMedia } from '../contexts/MediaContext';
 import { ContactForm } from '../components/ContactForm';
-import janEricImg from '../../Puyoko Team Pictures/Jan Eric.jpg';
+import janEricImg1 from '../../Puyoko Team Pictures/Jan Eric.jpg';
+import janEricImg2 from '../../Puyoko Team Pictures/Jan Eric Barong.jpg';
 import mainPhotoImg from '../../Puyo Main Photo.jpg';
 
 export const LandingPage: React.FC = () => {
@@ -15,6 +16,16 @@ export const LandingPage: React.FC = () => {
   const { blogs, loading: mediaLoading } = useMedia();
 
   const latestBlog = blogs && blogs.length > 0 ? blogs[0] : null;
+
+  const [currentJanEricPhoto, setCurrentJanEricPhoto] = useState(0);
+  const janEricPhotos = [janEricImg1, janEricImg2];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentJanEricPhoto((prev) => (prev + 1) % janEricPhotos.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleStorage = () => {
@@ -315,12 +326,18 @@ export const LandingPage: React.FC = () => {
       <section className="py-24 px-gutter border-t border-outline/20 bg-background-warm/50">
         <div className="mx-auto max-w-container-max grid lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-4 max-w-sm mx-auto lg:mx-0 relative">
-            <div className="aspect-[3/4] overflow-hidden border border-outline shadow-xl">
-              <img 
-                src={janEricImg} 
-                alt="Jan Eric Saladaga" 
-                className="w-full h-full object-cover"
-              />
+            <div className="aspect-[3/4] overflow-hidden border border-outline shadow-xl relative min-h-[400px] bg-[#E8F3EF]">
+              {janEricPhotos.map((img, idx) => (
+                <img 
+                  key={idx}
+                  src={img} 
+                  alt="Jan Eric Saladaga" 
+                  className={cn(
+                    "absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out transform",
+                    currentJanEricPhoto === idx ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 pointer-events-none z-0"
+                  )}
+                />
+              ))}
             </div>
             <div className="absolute -bottom-6 -right-6 bg-primary text-white p-6 font-serif italic text-xl shadow-lg">
               "Building Legacies."
