@@ -97,7 +97,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) 
           ? `Property Inquiry from ${formData.firstName} ${formData.lastName} — ${selectedProperty.title} (${selectedProperty.id})`
           : `New Inquiry from ${formData.firstName} ${formData.lastName} — ${formData.inquiryType}`,
         from_name: 'PUYOKO Website',
-        'Inquiring As': formData.inquireAs,
+        'Inquire As': formData.inquireAs,
         'Inquiry Type': formData.inquiryType,
         Name: `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`,
         Email: formData.email,
@@ -124,6 +124,25 @@ export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) 
 
       const data = await res.json();
       if (data.success) {
+        // Send to Google Sheets if URL is configured
+        const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+        console.log("VITE_GOOGLE_SCRIPT_URL read from env:", googleScriptUrl);
+        if (googleScriptUrl) {
+          try {
+            console.log("Attempting to send payload to Google Sheets...");
+            const sheetRes = await fetch(googleScriptUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain' },
+              body: JSON.stringify({ ...payload, formType: 'Contact Inquiry' }),
+            });
+            console.log("Google Sheets response status:", sheetRes.status);
+          } catch (err) {
+            console.error('Failed to log to Google Sheets:', err);
+          }
+        } else {
+          console.warn("VITE_GOOGLE_SCRIPT_URL is not defined in the environment!");
+        }
+
         setStatus('success');
         setFormData(emptyForm);
       } else {
