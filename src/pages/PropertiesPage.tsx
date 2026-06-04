@@ -16,7 +16,10 @@ import {
   MapPin,
   Home,
   RotateCcw,
-  SlidersHorizontal
+  SlidersHorizontal,
+  RefreshCw,
+  Check,
+  AlertTriangle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -104,7 +107,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, 
 export const PropertiesPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { properties, loading, addProperty, updateProperty, deleteProperty } = useProperties();
+  const { properties, loading, addProperty, updateProperty, deleteProperty, syncAllPropertiesToSheets } = useProperties();
 
   const [editingProperty, setEditingProperty] = useState<Property | undefined>();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -125,12 +128,26 @@ export const PropertiesPage: React.FC = () => {
   }, [listingType, selectedCity, searchQuery]);
 
   const [videoUrlInput, setVideoUrlInput] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const handleSaveVideoUrl = () => {
     localStorage.setItem('puyoko_homepage_video_url', videoUrlInput.trim());
     // Dispatch storage event so LandingPage (same window) can react immediately if opened
     window.dispatchEvent(new Event('storage'));
     alert('Homepage video URL successfully updated!');
+  };
+
+  const handleSyncAll = async () => {
+    setSyncStatus('loading');
+    try {
+      await syncAllPropertiesToSheets();
+      setSyncStatus('success');
+      setTimeout(() => setSyncStatus('idle'), 5000);
+    } catch (err) {
+      setSyncStatus('error');
+      setTimeout(() => setSyncStatus('idle'), 5000);
+      alert('Failed to sync properties to Google Sheets. Check your VITE_GOOGLE_SCRIPT_URL deployment.');
+    }
   };
 
   const filteredProperties = useMemo(() => {
@@ -162,31 +179,74 @@ export const PropertiesPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-container-max px-gutter py-10 md:py-20">
-      {/* Admin Video URL Configuration Card */}
+      {/* Admin Control Panel Card */}
       {isAuthenticated && (
-        <div className="mb-10 rounded-sm border border-outline/30 bg-white/95 frosted-jade p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            <h3 className="font-display text-sm font-bold text-primary uppercase tracking-wider">Homepage Video Showcase Config</h3>
+        <div className="mb-10 rounded-sm border border-outline/30 bg-white/95 frosted-jade p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8 divide-y md:divide-y-0 md:divide-x divide-outline/20">
+          {/* Section 1: Video Config */}
+          <div className="pb-6 md:pb-0 md:pr-8">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <h3 className="font-display text-sm font-bold text-primary uppercase tracking-wider">Homepage Video Showcase Config</h3>
+            </div>
+            <p className="font-sans text-xs text-on-surface-variant mb-4 leading-relaxed">
+              Paste a video URL from **YouTube**, **TikTok**, or **Facebook** to dynamically feature a video player on your homepage. 
+              Leave the field completely empty to hide the homepage video section.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="url"
+                placeholder="e.g. https://www.youtube.com/watch?v=..."
+                value={videoUrlInput}
+                onChange={e => setVideoUrlInput(e.target.value)}
+                className="flex-grow border-b border-outline/30 bg-transparent py-2.5 px-3 focus:border-primary outline-none text-xs font-sans transition-colors"
+              />
+              <button
+                onClick={handleSaveVideoUrl}
+                className="bg-primary text-white px-6 py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-primary-light active:scale-95 shrink-0"
+              >
+                Update Video URL
+              </button>
+            </div>
           </div>
-          <p className="font-sans text-xs text-on-surface-variant mb-4 leading-relaxed">
-            Paste a video URL from **YouTube**, **TikTok**, or **Facebook** to dynamically feature a video player on your homepage. 
-            Leave the field completely empty to hide the homepage video section.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="url"
-              placeholder="e.g. https://www.youtube.com/watch?v=... or https://www.tiktok.com/@user/video/..."
-              value={videoUrlInput}
-              onChange={e => setVideoUrlInput(e.target.value)}
-              className="flex-grow border-b border-outline/30 bg-transparent py-2.5 px-3 focus:border-primary outline-none text-xs font-sans transition-colors"
-            />
-            <button
-              onClick={handleSaveVideoUrl}
-              className="bg-primary text-white px-8 py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-primary-light active:scale-95 shrink-0"
-            >
-              Update Video URL
-            </button>
+
+          {/* Section 2: Google Sheets Sync */}
+          <div className="pt-6 md:pt-0 md:pl-8 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <RefreshCw className="h-5 w-5 text-primary" />
+                <h3 className="font-display text-sm font-bold text-primary uppercase tracking-wider">Google Sheets Property Sync</h3>
+              </div>
+              <p className="font-sans text-xs text-on-surface-variant mb-4 leading-relaxed">
+                Sync all properties in the database to the Google Sheet tab (**Property Update**). 
+                Future creations, modifications, and deletions will sync automatically in the background.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 flex-wrap mt-2">
+              <button
+                onClick={handleSyncAll}
+                disabled={syncStatus === 'loading'}
+                className={cn(
+                  "bg-primary text-white px-6 py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 shrink-0 disabled:opacity-60 flex items-center gap-2",
+                  syncStatus === 'loading' ? 'cursor-wait' : 'hover:bg-primary-light'
+                )}
+              >
+                {syncStatus === 'loading' && <RefreshCw className="h-3 w-3 animate-spin" />}
+                {syncStatus === 'loading' ? 'Syncing...' : 'Sync All Properties'}
+              </button>
+              
+              {syncStatus === 'success' && (
+                <div className="flex items-center gap-1.5 text-green-600 font-mono text-[10px] font-bold uppercase tracking-wider animate-fade-in">
+                  <Check className="h-4 w-4" />
+                  Synced Successfully
+                </div>
+              )}
+              {syncStatus === 'error' && (
+                <div className="flex items-center gap-1.5 text-red-600 font-mono text-[10px] font-bold uppercase tracking-wider animate-fade-in">
+                  <AlertTriangle className="h-4 w-4" />
+                  Sync Failed
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

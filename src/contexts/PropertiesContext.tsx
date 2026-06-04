@@ -35,6 +35,7 @@ interface PropertiesContextType {
   addProperty: (prop: Omit<Property, 'id'>) => Promise<void>;
   updateProperty: (prop: Property) => Promise<void>;
   deleteProperty: (id: string) => Promise<void>;
+  syncAllPropertiesToSheets: () => Promise<void>;
 }
 
 const PropertiesContext = createContext<PropertiesContextType | undefined>(undefined);
@@ -42,6 +43,60 @@ const PropertiesContext = createContext<PropertiesContextType | undefined>(undef
 export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Helper to sync property change with Google Sheets via script URL
+  const syncWithGoogleSheets = async (action: 'CREATE' | 'UPDATE' | 'DELETE', property: Property) => {
+    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+    if (!googleScriptUrl) {
+      console.warn("VITE_GOOGLE_SCRIPT_URL is not defined in the environment!");
+      return;
+    }
+
+    try {
+      console.log(`Attempting to sync property (${action}) to Google Sheets...`);
+      const res = await fetch(googleScriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          formType: 'Property Sync',
+          action,
+          property
+        }),
+      });
+      console.log("Google Sheets property sync response status:", res.status);
+    } catch (err) {
+      console.error('Failed to sync property to Google Sheets:', err);
+    }
+  };
+
+  // Function to sync all properties to Google Sheets
+  const syncAllPropertiesToSheets = async () => {
+    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+    if (!googleScriptUrl) {
+      console.warn("VITE_GOOGLE_SCRIPT_URL is not defined in the environment!");
+      throw new Error("VITE_GOOGLE_SCRIPT_URL is not configured in your environment!");
+    }
+
+    try {
+      console.log("Attempting to sync all properties to Google Sheets...");
+      const res = await fetch(googleScriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          formType: 'Property Sync',
+          action: 'SYNC_ALL',
+          properties: properties
+        }),
+      });
+      console.log("Google Sheets sync all response status:", res.status);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+    } catch (err) {
+      console.error('Failed to sync all properties to Google Sheets:', err);
+      throw err;
+    }
+  };
 
   const fetchProperties = async () => {
     // 1. Instant Load from Cache or MOCK_PROPERTIES (Stale-While-Revalidate pattern)
@@ -123,6 +178,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     const propertyToInsert = { ...newProp, id: propertyId } as Property;
     
     persistState([propertyToInsert, ...properties]);
+    syncWithGoogleSheets('CREATE', propertyToInsert);
 
     try {
       const { error } = await supabase.from('properties').insert([propertyToInsert]);
@@ -138,6 +194,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   const updateProperty = async (updatedProp: Property) => {
     const updated = properties.map(p => p.id === updatedProp.id ? updatedProp : p);
     persistState(updated);
+    syncWithGoogleSheets('UPDATE', updatedProp);
 
     try {
       const { error } = await supabase.from('properties').update(updatedProp).eq('id', updatedProp.id);
@@ -151,9 +208,14 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const deleteProperty = async (id: string) => {
+    const propertyToDelete = properties.find(p => p.id === id);
     const filtered = properties.filter(p => p.id !== id);
     persistState(filtered);
     removeUnsyncedId(id);
+
+    if (propertyToDelete) {
+      syncWithGoogleSheets('DELETE', propertyToDelete);
+    }
 
     try {
       const { error } = await supabase.from('properties').delete().eq('id', id);
@@ -165,7 +227,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   return (
-    <PropertiesContext.Provider value={{ properties, loading, fetchProperties, addProperty, updateProperty, deleteProperty }}>
+    <PropertiesContext.Provider value={{ properties, loading, fetchProperties, addProperty, updateProperty, deleteProperty, syncAllPropertiesToSheets }}>
       {children}
     </PropertiesContext.Provider>
   );
