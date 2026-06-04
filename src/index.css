@@ -73,3 +73,21 @@
   animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity, transform;
 }
+
+/* ── Subtle Jade Ink-Wash Painting Effect ── */
+.jade-wash-bg {
+  position: relative;
+}
+
+.jade-wash-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' width='100%25' height='100%25' preserveAspectRatio='none'%3E%3Cpath d='M0 320 Q 200 230 400 290 T 800 250 T 1200 280 L 1200 600 L 0 600 Z' fill='%2340916c' fill-opacity='0.035' filter='blur(15px)'/%3E%3Cpath d='M150 350 Q 400 250 650 320 T 1050 280 T 1200 310 L 1200 600 L 0 600 Z' fill='%231b4332' fill-opacity='0.02' filter='blur(22px)'/%3E%3Cpath d='M50 420 Q 300 360 600 400 T 1000 370 T 1200 390 L 1200 600 L 0 600 Z' fill='%2395d5b2' fill-opacity='0.03' filter='blur(12px)'/%3E%3C!-- Subtle painting clouds --%3E%3Cellipse cx='250' cy='120' rx='100' ry='15' fill='%23a5c1b5' fill-opacity='0.04' filter='blur(10px)'/%3E%3Cellipse cx='850' cy='180' rx='120' ry='18' fill='%23a5c1b5' fill-opacity='0.03' filter='blur(12px)'/%3E%3C!-- Minimal traditional style branches --%3E%3Cpath d='M50 50 Q 80 80 120 70 M 120 70 Q 150 90 190 85 M 100 75 Q 110 110 130 115' stroke='%2340916c' stroke-width='0.8' stroke-opacity='0.08' fill='none'/%3E%3Cpath d='M1150 80 Q 1120 110 1080 100 M 1080 100 Q 1050 120 1010 115' stroke='%231b4332' stroke-width='0.8' stroke-opacity='0.06' fill='none'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+

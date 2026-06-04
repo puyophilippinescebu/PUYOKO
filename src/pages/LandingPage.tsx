@@ -80,43 +80,63 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Schedule / Contact 2-Column Promo Section */}
-      <section className="py-20 bg-white border-b border-outline/10 select-none">
-        <div className="mx-auto max-w-container-max px-gutter grid grid-cols-1 md:grid-cols-2 gap-12 text-center">
+      <section className="py-24 bg-white jade-wash-bg border-b border-outline/10 select-none overflow-hidden relative">
+        <div className="mx-auto max-w-container-max px-gutter grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
           {/* Column 1: Schedule Tour */}
-          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+          <div 
+            onClick={() => navigate('/schedule')}
+            className="group relative flex flex-col items-center p-10 bg-white/40 hover:bg-[#E8F3EF]/50 backdrop-blur-xs rounded-lg border border-[#a5c1b5]/30 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
+          >
+            {/* Animated Gradient Icon Container */}
+            <div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 shadow-md group-hover:scale-110 group-hover:shadow-primary/20 mb-6">
+              {/* Default background (soft jade tint) */}
+              <div className="absolute inset-0 bg-[#E8F3EF] border border-primary/10 transition-opacity duration-500 group-hover:opacity-0" />
+              {/* Hover gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-light via-primary to-primary-neon opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              
+              {/* Icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="relative z-10 w-7 h-7 text-primary transition-colors duration-500 group-hover:text-white">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
             </div>
-            <h3 className="font-serif text-lg font-bold text-primary">Schedule Tour</h3>
-            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
+            
+            <h3 className="font-serif text-xl font-bold text-primary mb-3 group-hover:text-primary-light transition-colors duration-300">Schedule Tour</h3>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-sm mb-5">
               Have you found the right estate for you? Schedule an on-site or online tour with us to learn more.
             </p>
             <button 
-              onClick={() => navigate('/schedule')}
-              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
+              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary group-hover:text-primary-light border-b border-primary/20 group-hover:border-primary-light/50 pb-0.5 transition-all duration-300 flex items-center gap-1 cursor-pointer"
             >
-              Schedule Now &gt;
+              Schedule Now <span className="transform transition-transform duration-300 group-hover:translate-x-1">&gt;</span>
             </button>
           </div>
 
           {/* Column 2: Contact Us */}
-          <div className="flex flex-col items-center p-6 space-y-4 hover:-translate-y-1 transition-transform duration-300">
-            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
+          <div 
+            onClick={() => navigate('/contact')}
+            className="group relative flex flex-col items-center p-10 bg-white/40 hover:bg-[#E8F3EF]/50 backdrop-blur-xs rounded-lg border border-[#a5c1b5]/30 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
+          >
+            {/* Animated Gradient Icon Container */}
+            <div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 shadow-md group-hover:scale-110 group-hover:shadow-primary/20 mb-6">
+              {/* Default background (soft jade tint) */}
+              <div className="absolute inset-0 bg-[#E8F3EF] border border-primary/10 transition-opacity duration-500 group-hover:opacity-0" />
+              {/* Hover gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-light via-primary to-primary-neon opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              
+              {/* Icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="relative z-10 w-7 h-7 text-primary transition-colors duration-500 group-hover:text-white">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
               </svg>
             </div>
-            <h3 className="font-serif text-lg font-bold text-primary">Contact Us</h3>
-            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-xs">
+            
+            <h3 className="font-serif text-xl font-bold text-primary mb-3 group-hover:text-primary-light transition-colors duration-300">Contact Us</h3>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed max-w-sm mb-5">
               Puyoko is ready to help you in your home buying experience. Get in touch with our team today!
             </p>
             <button 
-              onClick={() => navigate('/contact')}
-              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary hover:text-primary-light border-b border-primary/20 pb-0.5 mt-2 transition-colors cursor-pointer"
+              className="font-mono text-[9px] font-bold uppercase tracking-widest text-primary group-hover:text-primary-light border-b border-primary/20 group-hover:border-primary-light/50 pb-0.5 transition-all duration-300 flex items-center gap-1 cursor-pointer"
             >
-              Contact Us Now &gt;
+              Contact Us Now <span className="transform transition-transform duration-300 group-hover:translate-x-1">&gt;</span>
             </button>
           </div>
         </div>
