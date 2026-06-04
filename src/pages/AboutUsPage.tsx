@@ -13,7 +13,7 @@ export const AboutUsPage: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentJanEricPhoto((prev) => (prev + 1) % janEricPhotos.length);
-    }, 4500);
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -67,15 +67,15 @@ export const AboutUsPage: React.FC = () => {
       {/* Owner Story */}
       <section className="mb-32">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div className="relative aspect-square w-64 md:w-80 mx-auto overflow-hidden border border-outline shadow-xl group bg-[#E8F3EF]">
+          <div className="relative aspect-square w-64 md:w-80 mx-auto overflow-hidden border border-outline shadow-xl group bg-[#E8F3EF] z-10">
             {janEricPhotos.map((img, idx) => (
               <img 
                 key={idx}
                 src={img} 
                 alt="Jan Eric Saladaga" 
                 className={cn(
-                  "absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out transform",
-                  currentJanEricPhoto === idx ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 pointer-events-none z-0"
+                  "absolute inset-0 w-full h-full object-cover transition-opacity duration-1500 ease-in-out",
+                  currentJanEricPhoto === idx ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
                 )}
               />
             ))}
