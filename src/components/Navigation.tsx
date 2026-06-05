@@ -108,7 +108,7 @@ export const Navigation: React.FC = () => {
         <Link to="/" className="flex items-center gap-3">
           <img src="/puyoko-logo.png" alt="PUYOKO Logo" className="h-12 w-12 object-contain" />
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-[0.2em] uppercase text-primary leading-none">PUYOKO</span>
+            <span className="font-display text-xl font-bold tracking-[0.2em] uppercase text-primary leading-none">PUYOKO</span>
             <span className="font-mono text-[8px] tracking-[0.4em] text-primary-light uppercase pt-1">Premium Estates</span>
           </div>
         </Link>

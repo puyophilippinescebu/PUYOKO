@@ -51,7 +51,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <Link to="/admin/properties" className="flex items-center gap-3">
               <img src="/puyoko-logo.png" alt="PUYOKO" className="h-9 w-9 object-contain brightness-0 invert" />
               <div className="flex flex-col">
-                <span className="text-base font-bold tracking-[0.2em] uppercase text-white leading-none">PUYOKO</span>
+                <span className="font-display text-base font-bold tracking-[0.2em] uppercase text-white leading-none">PUYOKO</span>
                 <span className="font-mono text-[7px] tracking-[0.4em] text-primary-neon uppercase pt-0.5">Admin Portal</span>
               </div>
             </Link>

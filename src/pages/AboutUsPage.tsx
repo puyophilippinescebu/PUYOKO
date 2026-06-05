@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '../lib/utils';
 
-import janEricImg1 from '../../Puyoko Team Pictures/Jan Eric.jpg';
-import janEricImg2 from '../../Puyoko Team Pictures/Jan Eric Barong.jpg';
+import janEricImg1 from '../../Puyoko Team Pictures/Jan Eric Profile.jpeg';
+import janEricImg2 from '../../Puyoko Team Pictures/Jan Eric Profile 2.jpeg';
 import malouJansonImg from '../../Puyoko Team Pictures/Malou Janson.png';
 import janeClaireImg from '../../Puyoko Team Pictures/Jane Claire.jpg';
 

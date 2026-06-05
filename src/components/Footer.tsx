@@ -9,7 +9,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col gap-6">
           <Link to="/" className="flex items-center gap-3">
             <img src="/puyoko-logo.png" alt="PUYOKO Logo" className="h-10 w-10 object-contain brightness-0 invert" />
-            <span className="font-display text-xl font-bold text-white">PUYOKO</span>
+            <span className="font-display text-xl font-bold tracking-[0.2em] uppercase text-white">PUYOKO</span>
           </Link>
           <p className="font-sans text-sm leading-relaxed text-white/70">
             Built with Heritage, Rooted in Cebu. Defining the next century of Filipino architectural excellence through premium property curation.

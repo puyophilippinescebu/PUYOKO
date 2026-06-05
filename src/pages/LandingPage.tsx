@@ -5,8 +5,8 @@ import { cn, getVideoEmbedUrl } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useMedia } from '../contexts/MediaContext';
 import { ContactForm } from '../components/ContactForm';
-import janEricImg1 from '../../Puyoko Team Pictures/Jan Eric.jpg';
-import janEricImg2 from '../../Puyoko Team Pictures/Jan Eric Barong.jpg';
+import janEricImg1 from '../../Puyoko Team Pictures/Jan Eric Profile.jpeg';
+import janEricImg2 from '../../Puyoko Team Pictures/Jan Eric Profile 2.jpeg';
 import mainPhotoImg from '../../Puyo Main Photo.jpg';
 
 export const LandingPage: React.FC = () => {
