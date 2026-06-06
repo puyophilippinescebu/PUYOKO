@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, LogOut, User, LayoutGrid, Check, X, Calendar, Hammer, BookOpen } from 'lucide-react';
+import { ShieldCheck, LogOut, User, LayoutGrid, Check, X, Calendar, Hammer, BookOpen, Menu } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useState, useRef, useEffect } from 'react';
@@ -15,6 +15,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const [profileOpen, setProfileOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(displayName);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +30,10 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => { setNameInput(displayName); }, [displayName]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleSaveName = () => {
     const trimmed = nameInput.trim();
@@ -157,8 +162,51 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                 </div>
               )}
             </div>
+
+            {/* Hamburger Menu (Mobile Only) */}
+            <button
+              onClick={() => setMobileMenuOpen(o => !o)}
+              className="md:hidden p-2 text-white/80 hover:text-white transition-colors focus:outline-none"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </nav>
+
+        {/* Mobile Dropdown Menu Drawer */}
+        {mobileMenuOpen && (
+          <div className="absolute top-full left-0 w-full bg-jade-deep border-t border-white/10 shadow-xl py-5 px-gutter z-[90] md:hidden animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col gap-3">
+              {adminLinks.map(({ name, path, icon: Icon }) => {
+                const isApprovals = name === 'Approvals';
+                const hasPending = isApprovals && requests.length > 0;
+
+                return (
+                  <Link
+                    key={name}
+                    to={path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center justify-between w-full font-mono text-[10px] font-bold uppercase tracking-widest py-3 border-b border-white/5 transition-colors',
+                      location.pathname.startsWith(path) ? 'text-primary-neon' : 'text-white/60'
+                    )}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <Icon className="h-4 w-4" />
+                      <span>{name}</span>
+                    </span>
+                    {hasPending && (
+                      <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 font-mono text-[8px] font-black text-white leading-none animate-pulse">
+                        {requests.length}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Page Content */}
