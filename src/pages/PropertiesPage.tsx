@@ -118,6 +118,8 @@ export const PropertiesPage: React.FC = () => {
     requests,
     rejectPropertyRequest,
     updatePropertyRequestProposedData,
+    archivePropertyRequest,
+    unarchivePropertyRequest,
     unsyncedRequestsCount,
     unsyncedPropertiesCount,
     syncUnsyncedRequests,
@@ -461,18 +463,23 @@ export const PropertiesPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
         {paginatedProperties.map(prop => {
           const isPending = (prop as any).isPendingCreation;
+          const matchingReq = isPending ? requests.find(r => r.propertyId === prop.id && r.type === 'CREATE') : undefined;
           return (
             <PropertyCard
               key={prop.id}
               property={prop}
               onClick={isPending ? undefined : () => navigate(`/property/${prop.id}`)}
               onEdit={isAllowedToEdit(prop) ? p => { setEditingProperty(prop); setIsFormOpen(true); } : undefined}
-              onDelete={isPending ? undefined : (isAllowedToEdit(prop) ? () => setPropertyToDelete(prop) : undefined)}
+              onDelete={isAllowedToEdit(prop) ? (isPending ? (matchingReq?.status === 'ARCHIVED' ? () => setPropertyToDelete(prop) : undefined) : () => setPropertyToDelete(prop)) : undefined}
               onArchive={isAllowedToEdit(prop) ? (isPending ? async () => {
-                const req = requests.find(r => r.propertyId === prop.id && r.type === 'CREATE');
-                if (req) {
-                  await rejectPropertyRequest(req.id);
-                  alert('Pending creation request cancelled/archived successfully.');
+                if (matchingReq) {
+                  if (matchingReq.status === 'ARCHIVED') {
+                    await unarchivePropertyRequest(prop.id);
+                    alert('Pending creation restored and submitted to Director for approval.');
+                  } else {
+                    await archivePropertyRequest(prop.id);
+                    alert('Pending creation archived on your dashboard. Removed from Director approvals queue.');
+                  }
                 }
               } : async () => {
                 if (userEmail === 'puyophilippinescebu@gmail.com') {
@@ -609,7 +616,14 @@ export const PropertiesPage: React.FC = () => {
         propertyName={propertyToDelete?.title}
         onConfirm={async () => {
           if (propertyToDelete) {
-            if (userEmail === 'puyophilippinescebu@gmail.com') {
+            const isPending = (propertyToDelete as any).isPendingCreation;
+            if (isPending) {
+              const req = requests.find(r => r.propertyId === propertyToDelete.id && r.type === 'CREATE');
+              if (req) {
+                await rejectPropertyRequest(req.id);
+                alert('Pending creation deleted successfully.');
+              }
+            } else if (userEmail === 'puyophilippinescebu@gmail.com') {
               deleteProperty(propertyToDelete.id);
             } else {
               const success = await submitPropertyRequest({

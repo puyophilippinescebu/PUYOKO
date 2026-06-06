@@ -64,7 +64,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           </div>
         )}
 
-        {isAuthenticated && pendingReq && (
+        {isAuthenticated && pendingReq && pendingReq.status === 'PENDING' && (
           <div 
             className={cn(
               "absolute left-4 bg-amber-600/95 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg border border-white/10 animate-pulse",

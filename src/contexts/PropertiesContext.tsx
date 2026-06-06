@@ -68,6 +68,8 @@ interface PropertiesContextType {
   approvePropertyRequest: (requestId: string) => Promise<void>;
   rejectPropertyRequest: (requestId: string) => Promise<void>;
   updatePropertyRequestProposedData: (propertyId: string, proposedData: Partial<Property>) => Promise<boolean>;
+  archivePropertyRequest: (propertyId: string) => Promise<boolean>;
+  unarchivePropertyRequest: (propertyId: string) => Promise<boolean>;
   unsyncedRequestsCount: number;
   unsyncedPropertiesCount: number;
   syncUnsyncedRequests: () => Promise<void>;
@@ -395,9 +397,12 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     const existingRequest = requests.find(r => r.propertyId === propertyId && r.type === 'CREATE');
     if (!existingRequest) return false;
 
+    const newRequestStatus = proposedData.status === 'Archived' ? 'ARCHIVED' : 'PENDING';
+
     const updatedRequest: PropertyRequest = {
       ...existingRequest,
       propertyName: proposedData.title || existingRequest.propertyName,
+      status: newRequestStatus,
       proposedData: {
         ...existingRequest.proposedData,
         ...proposedData
@@ -413,6 +418,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
         .from('property_requests')
         .update({
           propertyName: updatedRequest.propertyName,
+          status: newRequestStatus,
           proposedData: updatedRequest.proposedData
         })
         .eq('id', updatedRequest.id);
@@ -424,6 +430,78 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       console.error("Supabase update request failed! Saved locally:", err);
       addUnsyncedRequestId(updatedRequest.id);
       alert(`Warning: Updates saved locally but could not be synced to the cloud database.\n\nError: ${err.message || "Connection error"}`);
+      return false;
+    }
+  };
+
+  const archivePropertyRequest = async (propertyId: string): Promise<boolean> => {
+    const existingRequest = requests.find(r => r.propertyId === propertyId && r.type === 'CREATE');
+    if (!existingRequest) return false;
+
+    const updatedRequest: PropertyRequest = {
+      ...existingRequest,
+      status: 'ARCHIVED',
+      proposedData: {
+        ...existingRequest.proposedData,
+        status: 'Archived'
+      }
+    };
+
+    const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
+    setRequests(updatedRequests);
+    localStorage.setItem('puyoko_property_requests', JSON.stringify(updatedRequests));
+
+    try {
+      const { error } = await supabase
+        .from('property_requests')
+        .update({
+          status: 'ARCHIVED',
+          proposedData: updatedRequest.proposedData
+        })
+        .eq('id', updatedRequest.id);
+
+      if (error) throw error;
+      removeUnsyncedRequestId(updatedRequest.id);
+      return true;
+    } catch (err: any) {
+      console.error("Supabase archive request failed! Saved locally:", err);
+      addUnsyncedRequestId(updatedRequest.id);
+      return false;
+    }
+  };
+
+  const unarchivePropertyRequest = async (propertyId: string): Promise<boolean> => {
+    const existingRequest = requests.find(r => r.propertyId === propertyId && r.type === 'CREATE');
+    if (!existingRequest) return false;
+
+    const updatedRequest: PropertyRequest = {
+      ...existingRequest,
+      status: 'PENDING',
+      proposedData: {
+        ...existingRequest.proposedData,
+        status: 'Active'
+      }
+    };
+
+    const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
+    setRequests(updatedRequests);
+    localStorage.setItem('puyoko_property_requests', JSON.stringify(updatedRequests));
+
+    try {
+      const { error } = await supabase
+        .from('property_requests')
+        .update({
+          status: 'PENDING',
+          proposedData: updatedRequest.proposedData
+        })
+        .eq('id', updatedRequest.id);
+
+      if (error) throw error;
+      removeUnsyncedRequestId(updatedRequest.id);
+      return true;
+    } catch (err: any) {
+      console.error("Supabase unarchive request failed! Saved locally:", err);
+      addUnsyncedRequestId(updatedRequest.id);
       return false;
     }
   };
@@ -520,6 +598,8 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       approvePropertyRequest,
       rejectPropertyRequest,
       updatePropertyRequestProposedData,
+      archivePropertyRequest,
+      unarchivePropertyRequest,
       unsyncedRequestsCount,
       unsyncedPropertiesCount,
       syncUnsyncedRequests,

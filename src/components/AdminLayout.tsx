@@ -11,6 +11,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const navigate = useNavigate();
   const { logout, userEmail, displayName, updateDisplayName } = useAuth();
   const { requests } = useProperties();
+  const pendingRequestsCount = requests.filter(r => r.status === 'PENDING').length;
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -71,7 +72,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <div className="hidden md:flex items-center gap-6">
               {adminLinks.map(({ name, path, icon: Icon }) => {
                 const isApprovals = name === 'Approvals';
-                const hasPending = isApprovals && requests.length > 0;
+                const hasPending = isApprovals && pendingRequestsCount > 0;
 
                 return (
                   <Link
@@ -88,7 +89,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                     <span>{name}</span>
                     {hasPending && (
                       <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 font-mono text-[8px] font-black text-white leading-none animate-pulse">
-                        {requests.length}
+                        {pendingRequestsCount}
                       </span>
                     )}
                   </Link>
@@ -180,7 +181,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <div className="flex flex-col gap-3">
               {adminLinks.map(({ name, path, icon: Icon }) => {
                 const isApprovals = name === 'Approvals';
-                const hasPending = isApprovals && requests.length > 0;
+                const hasPending = isApprovals && pendingRequestsCount > 0;
 
                 return (
                   <Link
@@ -198,7 +199,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                     </span>
                     {hasPending && (
                       <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 font-mono text-[8px] font-black text-white leading-none animate-pulse">
-                        {requests.length}
+                        {pendingRequestsCount}
                       </span>
                     )}
                   </Link>

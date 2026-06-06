@@ -32,7 +32,7 @@ export interface PropertyRequest {
   requestedBy: string;
   requestedAt: string;
   proposedData?: Partial<Property>;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ARCHIVED';
 }
 
 export interface StatCard {

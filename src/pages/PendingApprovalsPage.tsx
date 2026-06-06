@@ -16,6 +16,8 @@ export const PendingApprovalsPage: React.FC = () => {
   const { properties, requests, approvePropertyRequest, rejectPropertyRequest } = useProperties();
   const [processingId, setProcessingId] = useState<string | null>(null);
 
+  const pendingRequests = requests.filter(r => r.status === 'PENDING');
+
   // Secure Guard: Direct redirect to properties if not director
   if (!isAuthenticated || userEmail !== 'puyophilippinescebu@gmail.com') {
     return <Navigate to="/admin/properties" replace />;
@@ -117,14 +119,14 @@ export const PendingApprovalsPage: React.FC = () => {
             <ClipboardList className="w-5 h-5 text-primary-light" />
             <div>
               <span className="block font-mono text-[8px] uppercase tracking-wider text-on-surface-variant/70 leading-none">Queue Size</span>
-              <span className="font-sans text-xs font-bold text-primary">{requests.length} Pending Actions</span>
+              <span className="font-sans text-xs font-bold text-primary">{pendingRequests.length} Pending Actions</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Requests Queue */}
-      {requests.length === 0 ? (
+      {pendingRequests.length === 0 ? (
         <div className="flex flex-col h-64 items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/30 text-center p-8 bg-white/50 select-none">
           <CheckCircle2 className="w-10 h-10 text-primary-light mb-3 animate-pulse" />
           <p className="font-display text-base font-bold text-primary">All Clear! No Pending Requests</p>
@@ -134,7 +136,7 @@ export const PendingApprovalsPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {requests.map(req => {
+          {pendingRequests.map(req => {
             const isCreate = req.type === 'CREATE';
             const isEdit = req.type === 'EDIT';
             const isDelete = req.type === 'DELETE';
