@@ -29,6 +29,31 @@ const removeUnsyncedId = (id: string) => {
   } catch (e) {}
 };
 
+const getUnsyncedRequestIds = (): string[] => {
+  try {
+    const ids = localStorage.getItem('puyoko_unsynced_request_ids');
+    return ids ? JSON.parse(ids) : [];
+  } catch (e) {
+    return [];
+  }
+};
+
+const addUnsyncedRequestId = (id: string) => {
+  try {
+    const ids = getUnsyncedRequestIds();
+    if (!ids.includes(id)) {
+      localStorage.setItem('puyoko_unsynced_request_ids', JSON.stringify([...ids, id]));
+    }
+  } catch (e) {}
+};
+
+const removeUnsyncedRequestId = (id: string) => {
+  try {
+    const ids = getUnsyncedRequestIds();
+    localStorage.setItem('puyoko_unsynced_request_ids', JSON.stringify(ids.filter(i => i !== id)));
+  } catch (e) {}
+};
+
 interface PropertiesContextType {
   properties: Property[];
   loading: boolean;
@@ -38,7 +63,7 @@ interface PropertiesContextType {
   deleteProperty: (id: string) => Promise<void>;
   syncAllPropertiesToSheets: () => Promise<void>;
   requests: PropertyRequest[];
-  submitPropertyRequest: (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>) => Promise<void>;
+  submitPropertyRequest: (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>) => Promise<boolean>;
   approvePropertyRequest: (requestId: string) => Promise<void>;
   rejectPropertyRequest: (requestId: string) => Promise<void>;
 }
@@ -171,8 +196,19 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
         .order('requestedAt', { ascending: false });
       if (error) throw error;
       if (data) {
-        setRequests(data);
-        localStorage.setItem('puyoko_property_requests', JSON.stringify(data));
+        const savedCache = localStorage.getItem('puyoko_property_requests');
+        let localRequests: PropertyRequest[] = [];
+        if (savedCache) {
+          try { localRequests = JSON.parse(savedCache) || []; } catch(e){}
+        }
+
+        // Smart Merge: Keep any locally created requests that failed to sync to the cloud database
+        const unsyncedRequestIds = getUnsyncedRequestIds();
+        const localUnsynced = localRequests.filter(r => unsyncedRequestIds.includes(r.id) && !data.some(d => d.id === r.id));
+        const merged = [...localUnsynced, ...data];
+
+        setRequests(merged);
+        localStorage.setItem('puyoko_property_requests', JSON.stringify(merged));
       }
     } catch (err) {
       console.warn("Supabase load requests failed, using cached requests.", err);
@@ -265,7 +301,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  const submitPropertyRequest = async (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>) => {
+  const submitPropertyRequest = async (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>): Promise<boolean> => {
     const requestId = `REQ-${Math.floor(Math.random() * 9000) + 1000}`;
     const newRequest: PropertyRequest = {
       ...req,
@@ -280,9 +316,13 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const { error } = await supabase.from('property_requests').insert([newRequest]);
       if (error) throw error;
+      removeUnsyncedRequestId(requestId);
+      return true;
     } catch (err: any) {
       console.error("Supabase insert request failed! Saved locally:", err);
+      addUnsyncedRequestId(requestId);
       alert(`Warning: Request saved locally in your browser but could not be uploaded to the cloud database.\n\nError: ${err.message || "Connection error"}`);
+      return false;
     }
   };
 

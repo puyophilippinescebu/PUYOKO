@@ -369,17 +369,19 @@ export const PropertiesPage: React.FC = () => {
             onClick={() => navigate(`/property/${prop.id}`)}
             onEdit={isAllowedToEdit(prop) ? p => { setEditingProperty(p); setIsFormOpen(true); } : undefined}
             onDelete={isAllowedToEdit(prop) ? () => setPropertyToDelete(prop) : undefined}
-            onArchive={isAllowedToEdit(prop) ? () => {
+            onArchive={isAllowedToEdit(prop) ? async () => {
               if (userEmail === 'puyophilippinescebu@gmail.com') {
                 updateProperty({ ...prop, status: prop.status === 'Archived' ? 'Active' : 'Archived' });
               } else {
-                submitPropertyRequest({
+                const success = await submitPropertyRequest({
                   type: 'ARCHIVE',
                   propertyId: prop.id,
                   propertyName: prop.title,
                   requestedBy: userEmail || 'unknown-agent'
                 });
-                alert('Request Submitted: Your request to archive this listing has been submitted to the Director.');
+                if (success) {
+                  alert('Request Submitted: Your request to archive this listing has been submitted to the Director.');
+                }
               }
             } : undefined}
           />
@@ -448,26 +450,28 @@ export const PropertiesPage: React.FC = () => {
       <PropertyFormModal
         isOpen={isFormOpen}
         onClose={() => { setIsFormOpen(false); setEditingProperty(undefined); }}
-        onSave={data => {
+        onSave={async data => {
           if (editingProperty) {
             if (userEmail === 'puyophilippinescebu@gmail.com') {
               updateProperty({ ...editingProperty, ...data });
             } else {
-              submitPropertyRequest({
+              const success = await submitPropertyRequest({
                 type: 'EDIT',
                 propertyId: editingProperty.id,
                 propertyName: editingProperty.title,
                 requestedBy: userEmail || 'unknown-agent',
                 proposedData: data
               });
-              alert('Request Submitted: Your edits have been submitted to the Director for approval.');
+              if (success) {
+                alert('Request Submitted: Your edits have been submitted to the Director for approval.');
+              }
             }
           } else {
             if (userEmail === 'puyophilippinescebu@gmail.com') {
               addProperty(data);
             } else {
               const propertyId = `PK-${Math.floor(Math.random() * 9000) + 1000}`;
-              submitPropertyRequest({
+              const success = await submitPropertyRequest({
                 type: 'CREATE',
                 propertyId: propertyId,
                 propertyName: data.title,
@@ -478,7 +482,9 @@ export const PropertiesPage: React.FC = () => {
                   createdBy: userEmail || 'unknown-agent'
                 }
               });
-              alert('Request Submitted: Your new property posting has been submitted to the Director for approval.');
+              if (success) {
+                alert('Request Submitted: Your new property posting has been submitted to the Director for approval.');
+              }
             }
           }
         }}
@@ -489,18 +495,20 @@ export const PropertiesPage: React.FC = () => {
         isOpen={!!propertyToDelete}
         onClose={() => setPropertyToDelete(null)}
         propertyName={propertyToDelete?.title}
-        onConfirm={() => {
+        onConfirm={async () => {
           if (propertyToDelete) {
             if (userEmail === 'puyophilippinescebu@gmail.com') {
               deleteProperty(propertyToDelete.id);
             } else {
-              submitPropertyRequest({
+              const success = await submitPropertyRequest({
                 type: 'DELETE',
                 propertyId: propertyToDelete.id,
                 propertyName: propertyToDelete.title,
                 requestedBy: userEmail || 'unknown-agent'
               });
-              alert('Request Submitted: Your request to delete this listing has been submitted to the Director.');
+              if (success) {
+                alert('Request Submitted: Your request to delete this listing has been submitted to the Director.');
+              }
             }
           }
         }}
