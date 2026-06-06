@@ -107,7 +107,43 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, 
 export const PropertiesPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, userEmail } = useAuth();
-  const { properties, loading, addProperty, updateProperty, deleteProperty, syncAllPropertiesToSheets, submitPropertyRequest } = useProperties();
+  const { 
+    properties, 
+    loading, 
+    addProperty, 
+    updateProperty, 
+    deleteProperty, 
+    syncAllPropertiesToSheets, 
+    submitPropertyRequest,
+    unsyncedRequestsCount,
+    unsyncedPropertiesCount,
+    syncUnsyncedRequests,
+    syncUnsyncedProperties,
+    lastSyncError
+  } = useProperties();
+
+  const [syncingRequests, setSyncingRequests] = useState(false);
+  const [syncingProperties, setSyncingProperties] = useState(false);
+
+  const handleRetrySyncRequests = async () => {
+    setSyncingRequests(true);
+    try {
+      await syncUnsyncedRequests();
+      alert('Unsynced requests synchronization complete.');
+    } finally {
+      setSyncingRequests(false);
+    }
+  };
+
+  const handleRetrySyncProperties = async () => {
+    setSyncingProperties(true);
+    try {
+      await syncUnsyncedProperties();
+      alert('Unsynced properties synchronization complete.');
+    } finally {
+      setSyncingProperties(false);
+    }
+  };
 
   const [editingProperty, setEditingProperty] = useState<Property | undefined>();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -185,6 +221,45 @@ export const PropertiesPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-container-max px-gutter py-10 md:py-20">
+      {/* Synchronization Diagnostics Banner */}
+      {(unsyncedRequestsCount > 0 || unsyncedPropertiesCount > 0) && (
+        <div className="mb-8 p-5 rounded-lg border border-amber-300 bg-amber-50/90 text-amber-950 text-xs font-sans shadow-md space-y-3 animate-pulse relative z-50">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h4 className="font-bold text-amber-900 text-sm uppercase tracking-wide">Database Synchronization Delay / 数据库未同步警告</h4>
+              <p className="leading-relaxed">
+                You have locally saved items that could not be uploaded to Supabase. This happens when there is a connection issue, or if Row Level Security (RLS) is blocking the writes.
+              </p>
+              {lastSyncError && (
+                <div className="bg-black/5 p-2 rounded font-mono text-[10px] break-all border border-black/5 text-red-800">
+                  Last Database Error: {lastSyncError}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-4 pt-1 flex-wrap">
+            {unsyncedRequestsCount > 0 && (
+              <button
+                disabled={syncingRequests}
+                onClick={handleRetrySyncRequests}
+                className="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-colors rounded-sm active:scale-95 disabled:opacity-60 cursor-pointer flex items-center gap-1.5"
+              >
+                {syncingRequests ? 'Syncing...' : `Retry Syncing ${unsyncedRequestsCount} Pending Request(s)`}
+              </button>
+            )}
+            {unsyncedPropertiesCount > 0 && (
+              <button
+                disabled={syncingProperties}
+                onClick={handleRetrySyncProperties}
+                className="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-widest transition-colors rounded-sm active:scale-95 disabled:opacity-60 cursor-pointer flex items-center gap-1.5"
+              >
+                {syncingProperties ? 'Syncing...' : `Retry Syncing ${unsyncedPropertiesCount} Direct Property Listing(s)`}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       {/* Admin Control Panel Card */}
       {isAuthenticated && (
         <div className="mb-10 rounded-sm border border-outline/30 bg-white/95 frosted-jade p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8 divide-y md:divide-y-0 md:divide-x divide-outline/20">

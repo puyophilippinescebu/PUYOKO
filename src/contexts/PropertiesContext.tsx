@@ -67,6 +67,11 @@ interface PropertiesContextType {
   submitPropertyRequest: (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>) => Promise<boolean>;
   approvePropertyRequest: (requestId: string) => Promise<void>;
   rejectPropertyRequest: (requestId: string) => Promise<void>;
+  unsyncedRequestsCount: number;
+  unsyncedPropertiesCount: number;
+  syncUnsyncedRequests: () => Promise<void>;
+  syncUnsyncedProperties: () => Promise<void>;
+  lastSyncError: string | null;
 }
 
 const PropertiesContext = createContext<PropertiesContextType | undefined>(undefined);
@@ -76,6 +81,15 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   const [requests, setRequests] = useState<PropertyRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const { userEmail } = useAuth();
+
+  const [unsyncedRequestsCount, setUnsyncedRequestsCount] = useState(0);
+  const [unsyncedPropertiesCount, setUnsyncedPropertiesCount] = useState(0);
+  const [lastSyncError, setLastSyncError] = useState<string | null>(null);
+
+  const updateUnsyncedCounts = () => {
+    setUnsyncedRequestsCount(getUnsyncedRequestIds().length);
+    setUnsyncedPropertiesCount(getUnsyncedIds().length);
+  };
 
   // Helper to sync property change with Google Sheets via script URL
   const syncWithGoogleSheets = async (action: 'CREATE' | 'UPDATE' | 'DELETE', property: Property) => {
@@ -183,6 +197,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       console.warn("Supabase background revalidation failed, using cached listings.", err);
     } finally {
       setLoading(false);
+      updateUnsyncedCounts();
     }
   };
 
@@ -214,6 +229,8 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       }
     } catch (err) {
       console.warn("Supabase load requests failed, using cached requests.", err);
+    } finally {
+      updateUnsyncedCounts();
     }
   };
 
@@ -373,6 +390,84 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
+  const syncUnsyncedRequests = async () => {
+    const unsyncedIds = getUnsyncedRequestIds();
+    if (unsyncedIds.length === 0) return;
+
+    const saved = localStorage.getItem('puyoko_property_requests');
+    if (!saved) return;
+
+    let localRequests: PropertyRequest[] = [];
+    try { localRequests = JSON.parse(saved) || []; } catch(e){}
+
+    let successCount = 0;
+    let finalError = null;
+
+    for (const req of localRequests) {
+      if (unsyncedIds.includes(req.id)) {
+        try {
+          const { error } = await supabase.from('property_requests').insert([req]);
+          if (error) throw error;
+          removeUnsyncedRequestId(req.id);
+          successCount++;
+        } catch (err: any) {
+          console.error(`Failed to sync request ${req.id}:`, err);
+          finalError = err.message || String(err);
+        }
+      }
+    }
+
+    updateUnsyncedCounts();
+    if (finalError) {
+      setLastSyncError(finalError);
+    } else {
+      setLastSyncError(null);
+    }
+
+    if (successCount > 0) {
+      await fetchRequests();
+    }
+  };
+
+  const syncUnsyncedProperties = async () => {
+    const unsyncedIds = getUnsyncedIds();
+    if (unsyncedIds.length === 0) return;
+
+    const saved = localStorage.getItem('puyoko_properties');
+    if (!saved) return;
+
+    let localProperties: Property[] = [];
+    try { localProperties = JSON.parse(saved) || []; } catch(e){}
+
+    let successCount = 0;
+    let finalError = null;
+
+    for (const prop of localProperties) {
+      if (unsyncedIds.includes(prop.id)) {
+        try {
+          const { error } = await supabase.from('properties').insert([prop]);
+          if (error) throw error;
+          removeUnsyncedId(prop.id);
+          successCount++;
+        } catch (err: any) {
+          console.error(`Failed to sync property ${prop.id}:`, err);
+          finalError = err.message || String(err);
+        }
+      }
+    }
+
+    updateUnsyncedCounts();
+    if (finalError) {
+      setLastSyncError(finalError);
+    } else {
+      setLastSyncError(null);
+    }
+
+    if (successCount > 0) {
+      await fetchProperties();
+    }
+  };
+
   return (
     <PropertiesContext.Provider value={{ 
       properties, 
@@ -385,7 +480,12 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       requests,
       submitPropertyRequest,
       approvePropertyRequest,
-      rejectPropertyRequest
+      rejectPropertyRequest,
+      unsyncedRequestsCount,
+      unsyncedPropertiesCount,
+      syncUnsyncedRequests,
+      syncUnsyncedProperties,
+      lastSyncError
     }}>
       {children}
     </PropertiesContext.Provider>
