@@ -41,6 +41,10 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     { name: 'Schedule', path: '/admin/schedule', icon: Calendar },
   ];
 
+  if (userEmail === 'puyophilippinescebu@gmail.com') {
+    adminLinks.push({ name: 'Approvals', path: '/admin/approvals', icon: ShieldCheck });
+  }
+
   return (
     <div className="min-h-screen bg-[#f4f6f4] flex flex-col">
       {/* Admin Top Bar */}

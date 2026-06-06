@@ -20,6 +20,19 @@ export interface Property {
   videoUrl?: string;
   pricePeriod?: string;
   originalPrice?: number;
+  accommodatedBy?: string;
+  createdBy?: string;
+}
+
+export interface PropertyRequest {
+  id: string;
+  propertyId: string;
+  propertyName: string;
+  type: 'EDIT' | 'DELETE' | 'ARCHIVE';
+  requestedBy: string;
+  requestedAt: string;
+  proposedData?: Partial<Property>;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 export interface StatCard {

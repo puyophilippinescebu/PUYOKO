@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Property } from '../types';
 import { useProperties } from '../contexts/PropertiesContext';
+import { useAuth } from '../contexts/AuthContext';
+import { normalizeAgentName } from '../lib/utils';
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -12,7 +14,17 @@ interface PropertyFormModalProps {
 
 export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, onClose, onSave, initialData }) => {
   const { properties } = useProperties();
+  const { userEmail } = useAuth();
+  
   const uniqueCities = Array.from(new Set(properties.map(p => p.city).filter(Boolean)));
+  const uniqueAgents = Array.from(
+    new Set(
+      properties
+        .map(p => p.accommodatedBy)
+        .filter((name): name is string => !!name)
+        .map(normalizeAgentName)
+    )
+  ).sort();
 
   const [formData, setFormData] = useState<Partial<Property>>({
     title: '',
@@ -32,7 +44,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     tags: [],
     videoUrl: '',
     pricePeriod: '',
-    originalPrice: 0
+    originalPrice: 0,
+    accommodatedBy: '',
+    createdBy: ''
   });
 
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -44,7 +58,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
         ...initialData,
         videoUrl: initialData.videoUrl || '',
         pricePeriod: initialData.pricePeriod || '',
-        originalPrice: initialData.originalPrice || 0
+        originalPrice: initialData.originalPrice || 0,
+        accommodatedBy: initialData.accommodatedBy || '',
+        createdBy: initialData.createdBy || ''
       });
       setImageUrls(initialData.images || []);
       if (initialData.landmarks) {
@@ -56,7 +72,8 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     } else {
       setFormData({
         title: '', price: 0, currency: 'PHP', status: 'Active', city: '', address: '',
-        type: 'For Sale', bedrooms: 0, bathrooms: 0, area: 0, description: '', landmarks: '', mapsLink: '', images: [], tags: [], videoUrl: '', pricePeriod: '', originalPrice: 0
+        type: 'For Sale', bedrooms: 0, bathrooms: 0, area: 0, description: '', landmarks: '', mapsLink: '', images: [], tags: [], videoUrl: '', pricePeriod: '', originalPrice: 0,
+        accommodatedBy: '', createdBy: ''
       });
       setImageUrls([]);
       setLandmarksList(['']);
@@ -102,6 +119,8 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     const finalData = {
       ...formData,
       images: imageUrls,
+      accommodatedBy: formData.accommodatedBy ? normalizeAgentName(formData.accommodatedBy) : '',
+      createdBy: formData.createdBy || userEmail || '',
       pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
       originalPrice: formData.originalPrice || null
     };
@@ -119,6 +138,8 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     const finalData = {
       ...formData,
       images: imageUrls,
+      accommodatedBy: formData.accommodatedBy ? normalizeAgentName(formData.accommodatedBy) : '',
+      createdBy: formData.createdBy || userEmail || '',
       pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
       status: 'Archived' as const,
       originalPrice: formData.originalPrice || null
@@ -250,6 +271,22 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
               <div>
                 <label className={labelClass}>Full Address</label>
                 <input required type="text" className={inputClass} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
+              </div>
+              <div>
+                <label className={labelClass}>Accommodating Agent</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Jane Claire Saladaga"
+                  className={inputClass} 
+                  list="agents-datalist"
+                  value={formData.accommodatedBy || ''} 
+                  onChange={e => setFormData({...formData, accommodatedBy: e.target.value})} 
+                />
+                <datalist id="agents-datalist">
+                  {uniqueAgents.map(agent => (
+                    <option key={agent} value={agent} />
+                  ))}
+                </datalist>
               </div>
               
               <div className="md:col-span-2">

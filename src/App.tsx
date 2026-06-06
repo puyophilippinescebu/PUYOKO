@@ -27,6 +27,7 @@ import { useAuth } from './contexts/AuthContext';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { MediaPage } from './pages/MediaPage';
 import { AdminSchedule } from './pages/AdminSchedule';
+import { PendingApprovalsPage } from './pages/PendingApprovalsPage';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -63,6 +64,7 @@ export default function App() {
                         <Route path="projects" element={<PageTransition><ProjectsPage /></PageTransition>} />
                         <Route path="media" element={<PageTransition><MediaPage /></PageTransition>} />
                         <Route path="schedule" element={<PageTransition><AdminSchedule /></PageTransition>} />
+                        <Route path="approvals" element={<PageTransition><PendingApprovalsPage /></PageTransition>} />
                         <Route path="" element={<Navigate to="properties" replace />} />
                         <Route path="*" element={<Navigate to="properties" replace />} />
                       </Routes>

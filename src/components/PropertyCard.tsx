@@ -122,32 +122,38 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
       </div>
 
       {/* Admin Action Toolbar */}
-      {isAuthenticated && (
+      {isAuthenticated && (onArchive || onEdit || onDelete) && (
         <div className="flex border-t border-outline/10 bg-surface-muted/30">
-          <button
-            onClick={(e) => { e.stopPropagation(); onArchive?.(property.id); }}
-            className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-orange-600 hover:bg-orange-50/50 hover:text-orange-700 transition-colors border-r border-outline/10"
-            title={property.status === 'Archived' ? 'Unarchive Property' : 'Archive Property'}
-          >
-            {property.status === 'Archived' ? <ArchiveRestore className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
-            <span>{property.status === 'Archived' ? 'Restore' : 'Archive'}</span>
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onEdit?.(property); }}
-            className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-primary hover:bg-primary/5 transition-colors border-r border-outline/10"
-            title="Edit Property Details"
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-            <span>Edit</span>
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
-            className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
-            title="Delete Property"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Delete</span>
-          </button>
+          {onArchive && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onArchive(property.id); }}
+              className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-orange-600 hover:bg-orange-50/50 hover:text-orange-700 transition-colors border-r border-outline/10"
+              title={property.status === 'Archived' ? 'Unarchive Property' : 'Archive Property'}
+            >
+              {property.status === 'Archived' ? <ArchiveRestore className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
+              <span>{property.status === 'Archived' ? 'Restore' : 'Archive'}</span>
+            </button>
+          )}
+          {onEdit && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onEdit(property); }}
+              className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-primary hover:bg-primary/5 transition-colors border-r border-outline/10"
+              title="Edit Property Details"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              <span>Edit</span>
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(property.id); }}
+              className="flex-grow flex items-center justify-center gap-2 py-3.5 text-[10px] font-mono font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+              title="Delete Property"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete</span>
+            </button>
+          )}
         </div>
       )}
     </div>

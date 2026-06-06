@@ -135,4 +135,15 @@ export function normalizeLocation(loc: string): string {
   return clean;
 }
 
+export function normalizeAgentName(name: string): string {
+  if (!name) return '';
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 

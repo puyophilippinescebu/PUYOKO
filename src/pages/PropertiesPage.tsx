@@ -106,12 +106,18 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export const PropertiesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const { properties, loading, addProperty, updateProperty, deleteProperty, syncAllPropertiesToSheets } = useProperties();
+  const { isAuthenticated, userEmail } = useAuth();
+  const { properties, loading, addProperty, updateProperty, deleteProperty, syncAllPropertiesToSheets, submitPropertyRequest } = useProperties();
 
   const [editingProperty, setEditingProperty] = useState<Property | undefined>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
+
+  const isAllowedToEdit = (property: Property) => {
+    if (!isAuthenticated || !userEmail) return false;
+    if (userEmail === 'puyophilippinescebu@gmail.com') return true;
+    return !property.createdBy || property.createdBy === userEmail;
+  };
 
   const [listingType, setListingType] = useState<string>('All Properties');
   const [selectedCity, setSelectedCity] = useState('All Cities');
@@ -361,9 +367,21 @@ export const PropertiesPage: React.FC = () => {
             key={prop.id}
             property={prop}
             onClick={() => navigate(`/property/${prop.id}`)}
-            onEdit={p => { setEditingProperty(p); setIsFormOpen(true); }}
-            onDelete={() => setPropertyToDelete(prop)}
-            onArchive={() => updateProperty({ ...prop, status: prop.status === 'Archived' ? 'Active' : 'Archived' })}
+            onEdit={isAllowedToEdit(prop) ? p => { setEditingProperty(p); setIsFormOpen(true); } : undefined}
+            onDelete={isAllowedToEdit(prop) ? () => setPropertyToDelete(prop) : undefined}
+            onArchive={isAllowedToEdit(prop) ? () => {
+              if (userEmail === 'puyophilippinescebu@gmail.com') {
+                updateProperty({ ...prop, status: prop.status === 'Archived' ? 'Active' : 'Archived' });
+              } else {
+                submitPropertyRequest({
+                  type: 'ARCHIVE',
+                  propertyId: prop.id,
+                  propertyName: prop.title,
+                  requestedBy: userEmail || 'unknown-agent'
+                });
+                alert('Request Submitted: Your request to archive this listing has been submitted to the Director.');
+              }
+            } : undefined}
           />
         ))}
       </div>
@@ -431,8 +449,22 @@ export const PropertiesPage: React.FC = () => {
         isOpen={isFormOpen}
         onClose={() => { setIsFormOpen(false); setEditingProperty(undefined); }}
         onSave={data => {
-          if (editingProperty) updateProperty({ ...editingProperty, ...data });
-          else addProperty(data);
+          if (editingProperty) {
+            if (userEmail === 'puyophilippinescebu@gmail.com') {
+              updateProperty({ ...editingProperty, ...data });
+            } else {
+              submitPropertyRequest({
+                type: 'EDIT',
+                propertyId: editingProperty.id,
+                propertyName: editingProperty.title,
+                requestedBy: userEmail || 'unknown-agent',
+                proposedData: data
+              });
+              alert('Request Submitted: Your edits have been submitted to the Director for approval.');
+            }
+          } else {
+            addProperty(data);
+          }
         }}
         initialData={editingProperty}
       />
@@ -441,7 +473,21 @@ export const PropertiesPage: React.FC = () => {
         isOpen={!!propertyToDelete}
         onClose={() => setPropertyToDelete(null)}
         propertyName={propertyToDelete?.title}
-        onConfirm={() => { if (propertyToDelete) deleteProperty(propertyToDelete.id); }}
+        onConfirm={() => {
+          if (propertyToDelete) {
+            if (userEmail === 'puyophilippinescebu@gmail.com') {
+              deleteProperty(propertyToDelete.id);
+            } else {
+              submitPropertyRequest({
+                type: 'DELETE',
+                propertyId: propertyToDelete.id,
+                propertyName: propertyToDelete.title,
+                requestedBy: userEmail || 'unknown-agent'
+              });
+              alert('Request Submitted: Your request to delete this listing has been submitted to the Director.');
+            }
+          }
+        }}
       />
     </div>
   );

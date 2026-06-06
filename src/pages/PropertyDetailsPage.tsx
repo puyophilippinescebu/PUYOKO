@@ -391,6 +391,18 @@ export const PropertyDetailsPage: React.FC = () => {
               <p className="font-sans text-sm leading-relaxed text-on-surface-variant">{property.description}</p>
             </div>
 
+            {property.accommodatedBy && (
+              <div className="mb-6 border-t border-outline/10 pt-4 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-display font-extrabold text-primary select-none shrink-0">
+                  {property.accommodatedBy.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h4 className="font-display text-[9px] font-bold uppercase tracking-widest text-on-surface-variant/50 leading-none mb-1">Accommodated By</h4>
+                  <p className="font-sans text-sm font-bold text-primary leading-none">{property.accommodatedBy}</p>
+                </div>
+              </div>
+            )}
+
             <div>
               <h4 className="mb-2 font-display text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Location</h4>
               <div className="mb-4 flex items-start gap-3">

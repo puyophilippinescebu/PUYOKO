@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Property } from '../types';
+import { Property, PropertyRequest } from '../types';
 import { MOCK_PROPERTIES } from '../data';
+import { normalizeAgentName } from '../lib/utils';
 
 const getUnsyncedIds = (): string[] => {
   try {
@@ -36,12 +37,17 @@ interface PropertiesContextType {
   updateProperty: (prop: Property) => Promise<void>;
   deleteProperty: (id: string) => Promise<void>;
   syncAllPropertiesToSheets: () => Promise<void>;
+  requests: PropertyRequest[];
+  submitPropertyRequest: (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>) => Promise<void>;
+  approvePropertyRequest: (requestId: string) => Promise<void>;
+  rejectPropertyRequest: (requestId: string) => Promise<void>;
 }
 
 const PropertiesContext = createContext<PropertiesContextType | undefined>(undefined);
 
 export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [properties, setProperties] = useState<Property[]>([]);
+  const [requests, setRequests] = useState<PropertyRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Helper to sync property change with Google Sheets via script URL
@@ -153,13 +159,37 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
+  const fetchRequests = async () => {
+    const saved = localStorage.getItem('puyoko_property_requests');
+    if (saved) {
+      try { setRequests(JSON.parse(saved) || []); } catch (e) {}
+    }
+    try {
+      const { data, error } = await supabase
+        .from('property_requests')
+        .select('*')
+        .order('requestedAt', { ascending: false });
+      if (error) throw error;
+      if (data) {
+        setRequests(data);
+        localStorage.setItem('puyoko_property_requests', JSON.stringify(data));
+      }
+    } catch (err) {
+      console.warn("Supabase load requests failed, using cached requests.", err);
+    }
+  };
+
   useEffect(() => {
     fetchProperties();
+    fetchRequests();
 
     // Cross-tab synchronization
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'puyoko_properties' && e.newValue) {
         setProperties(JSON.parse(e.newValue));
+      }
+      if (e.key === 'puyoko_property_requests' && e.newValue) {
+        setRequests(JSON.parse(e.newValue));
       }
     };
     
@@ -175,7 +205,11 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const addProperty = async (newProp: Omit<Property, 'id'>) => {
     const propertyId = `PK-${Math.floor(Math.random() * 9000) + 1000}`;
-    const propertyToInsert = { ...newProp, id: propertyId } as Property;
+    const normalizedProp = {
+      ...newProp,
+      accommodatedBy: newProp.accommodatedBy ? normalizeAgentName(newProp.accommodatedBy) : ''
+    };
+    const propertyToInsert = { ...normalizedProp, id: propertyId } as Property;
     
     persistState([propertyToInsert, ...properties]);
     syncWithGoogleSheets('CREATE', propertyToInsert);
@@ -192,12 +226,16 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const updateProperty = async (updatedProp: Property) => {
-    const updated = properties.map(p => p.id === updatedProp.id ? updatedProp : p);
+    const normalizedProp = {
+      ...updatedProp,
+      accommodatedBy: updatedProp.accommodatedBy ? normalizeAgentName(updatedProp.accommodatedBy) : ''
+    };
+    const updated = properties.map(p => p.id === updatedProp.id ? normalizedProp : p);
     persistState(updated);
-    syncWithGoogleSheets('UPDATE', updatedProp);
+    syncWithGoogleSheets('UPDATE', normalizedProp);
 
     try {
-      const { error } = await supabase.from('properties').update(updatedProp).eq('id', updatedProp.id);
+      const { error } = await supabase.from('properties').update(normalizedProp).eq('id', updatedProp.id);
       if (error) throw error;
       removeUnsyncedId(updatedProp.id);
     } catch (err: any) {
@@ -226,8 +264,84 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
+  const submitPropertyRequest = async (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>) => {
+    const requestId = `REQ-${Math.floor(Math.random() * 9000) + 1000}`;
+    const newRequest: PropertyRequest = {
+      ...req,
+      id: requestId,
+      requestedAt: new Date().toISOString(),
+      status: 'PENDING'
+    };
+    const updatedRequests = [newRequest, ...requests];
+    setRequests(updatedRequests);
+    localStorage.setItem('puyoko_property_requests', JSON.stringify(updatedRequests));
+
+    try {
+      const { error } = await supabase.from('property_requests').insert([newRequest]);
+      if (error) throw error;
+    } catch (err: any) {
+      console.error("Supabase insert request failed! Saved locally:", err);
+      alert(`Warning: Request saved locally in your browser but could not be uploaded to the cloud database.\n\nError: ${err.message || "Connection error"}`);
+    }
+  };
+
+  const approvePropertyRequest = async (requestId: string) => {
+    const request = requests.find(r => r.id === requestId);
+    if (!request) return;
+
+    if (request.type === 'ARCHIVE') {
+      const prop = properties.find(p => p.id === request.propertyId);
+      if (prop) {
+        await updateProperty({ ...prop, status: 'Archived' });
+      }
+    } else if (request.type === 'DELETE') {
+      await deleteProperty(request.propertyId);
+    } else if (request.type === 'EDIT' && request.proposedData) {
+      const prop = properties.find(p => p.id === request.propertyId);
+      if (prop) {
+        await updateProperty({ ...prop, ...request.proposedData } as Property);
+      }
+    }
+
+    const filteredRequests = requests.filter(r => r.id !== requestId);
+    setRequests(filteredRequests);
+    localStorage.setItem('puyoko_property_requests', JSON.stringify(filteredRequests));
+
+    try {
+      const { error } = await supabase.from('property_requests').delete().eq('id', requestId);
+      if (error) throw error;
+    } catch (err) {
+      console.error("Supabase delete request failed:", err);
+    }
+  };
+
+  const rejectPropertyRequest = async (requestId: string) => {
+    const filteredRequests = requests.filter(r => r.id !== requestId);
+    setRequests(filteredRequests);
+    localStorage.setItem('puyoko_property_requests', JSON.stringify(filteredRequests));
+
+    try {
+      const { error } = await supabase.from('property_requests').delete().eq('id', requestId);
+      if (error) throw error;
+    } catch (err) {
+      console.error("Supabase reject/delete request failed:", err);
+    }
+  };
+
   return (
-    <PropertiesContext.Provider value={{ properties, loading, fetchProperties, addProperty, updateProperty, deleteProperty, syncAllPropertiesToSheets }}>
+    <PropertiesContext.Provider value={{ 
+      properties, 
+      loading, 
+      fetchProperties, 
+      addProperty, 
+      updateProperty, 
+      deleteProperty, 
+      syncAllPropertiesToSheets,
+      requests,
+      submitPropertyRequest,
+      approvePropertyRequest,
+      rejectPropertyRequest
+    }}>
       {children}
     </PropertiesContext.Provider>
   );
