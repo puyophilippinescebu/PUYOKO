@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Property } from '../types';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -111,6 +111,20 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  const moveImage = (index: number, direction: 'left' | 'right') => {
+    if (direction === 'left' && index === 0) return;
+    if (direction === 'right' && index === imageUrls.length - 1) return;
+
+    const newUrls = [...imageUrls];
+    const targetIndex = direction === 'left' ? index - 1 : index + 1;
+    // Swap
+    const temp = newUrls[index];
+    newUrls[index] = newUrls[targetIndex];
+    newUrls[targetIndex] = temp;
+
+    setImageUrls(newUrls);
   };
 
 
@@ -372,10 +386,30 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                         <button
                           type="button"
                           onClick={() => setImageUrls(urls => urls.filter((_, i) => i !== index))}
-                          className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                          className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10"
                         >
                           <X className="w-3 h-3" />
                         </button>
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 bg-white/95 backdrop-blur-sm border border-outline/25 px-1.5 py-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity rounded-sm z-10">
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={() => moveImage(index, 'left')}
+                            className="p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                            title="Move Left"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === imageUrls.length - 1}
+                            onClick={() => moveImage(index, 'right')}
+                            className="p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                            title="Move Right"
+                          >
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
