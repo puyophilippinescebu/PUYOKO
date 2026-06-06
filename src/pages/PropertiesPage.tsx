@@ -115,6 +115,7 @@ export const PropertiesPage: React.FC = () => {
     deleteProperty, 
     syncAllPropertiesToSheets, 
     submitPropertyRequest,
+    requests,
     unsyncedRequestsCount,
     unsyncedPropertiesCount,
     syncUnsyncedRequests,
@@ -192,8 +193,26 @@ export const PropertiesPage: React.FC = () => {
     }
   };
 
+  const agentPendingCreations = useMemo(() => {
+    if (!isAuthenticated || !userEmail) return [];
+    
+    // Filter requests of type 'CREATE' that belong to the current agent
+    return requests
+      .filter(r => r.type === 'CREATE' && r.requestedBy === userEmail)
+      .map(r => ({
+        ...r.proposedData,
+        id: r.propertyId,
+        isPendingCreation: true,
+        images: r.proposedData?.images || []
+      } as unknown as Property));
+  }, [requests, isAuthenticated, userEmail]);
+
+  const mergedProperties = useMemo(() => {
+    return [...agentPendingCreations, ...properties];
+  }, [properties, agentPendingCreations]);
+
   const filteredProperties = useMemo(() => {
-    return properties.filter(p => {
+    return mergedProperties.filter(p => {
       if (!isAuthenticated && p.status === 'Archived') return false;
       const matchesType = listingType === 'All Properties' || p.type === listingType;
       const matchesCity = selectedCity === 'All Cities' || normalizeLocation(p.city) === selectedCity;
@@ -202,7 +221,7 @@ export const PropertiesPage: React.FC = () => {
         p.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesType && matchesCity && matchesSearch;
     });
-  }, [properties, listingType, selectedCity, searchQuery, isAuthenticated]);
+  }, [mergedProperties, listingType, selectedCity, searchQuery, isAuthenticated]);
 
   const paginatedProperties = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -216,7 +235,7 @@ export const PropertiesPage: React.FC = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const cities = ['All Cities', ...Array.from(new Set(properties.map(p => normalizeLocation(p.city)))).filter(Boolean).sort()];
+  const cities = ['All Cities', ...Array.from(new Set(mergedProperties.map(p => normalizeLocation(p.city)))).filter(Boolean).sort()];
   const types = ['All Properties', 'For Sale', 'For Rent'];
 
   return (
@@ -437,30 +456,33 @@ export const PropertiesPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
-        {paginatedProperties.map(prop => (
-          <PropertyCard
-            key={prop.id}
-            property={prop}
-            onClick={() => navigate(`/property/${prop.id}`)}
-            onEdit={isAllowedToEdit(prop) ? p => { setEditingProperty(p); setIsFormOpen(true); } : undefined}
-            onDelete={isAllowedToEdit(prop) ? () => setPropertyToDelete(prop) : undefined}
-            onArchive={isAllowedToEdit(prop) ? async () => {
-              if (userEmail === 'puyophilippinescebu@gmail.com') {
-                updateProperty({ ...prop, status: prop.status === 'Archived' ? 'Active' : 'Archived' });
-              } else {
-                const success = await submitPropertyRequest({
-                  type: 'ARCHIVE',
-                  propertyId: prop.id,
-                  propertyName: prop.title,
-                  requestedBy: userEmail || 'unknown-agent'
-                });
-                if (success) {
-                  alert('Request Submitted: Your request to archive this listing has been submitted to the Director.');
+        {paginatedProperties.map(prop => {
+          const isPending = (prop as any).isPendingCreation;
+          return (
+            <PropertyCard
+              key={prop.id}
+              property={prop}
+              onClick={isPending ? undefined : () => navigate(`/property/${prop.id}`)}
+              onEdit={isPending ? undefined : (isAllowedToEdit(prop) ? p => { setEditingProperty(p); setIsFormOpen(true); } : undefined)}
+              onDelete={isPending ? undefined : (isAllowedToEdit(prop) ? () => setPropertyToDelete(prop) : undefined)}
+              onArchive={isPending ? undefined : (isAllowedToEdit(prop) ? async () => {
+                if (userEmail === 'puyophilippinescebu@gmail.com') {
+                  updateProperty({ ...prop, status: prop.status === 'Archived' ? 'Active' : 'Archived' });
+                } else {
+                  const success = await submitPropertyRequest({
+                    type: 'ARCHIVE',
+                    propertyId: prop.id,
+                    propertyName: prop.title,
+                    requestedBy: userEmail || 'unknown-agent'
+                  });
+                  if (success) {
+                    alert('Request Submitted: Your request to archive this listing has been submitted to the Director.');
+                  }
                 }
-              }
-            } : undefined}
-          />
-        ))}
+              } : undefined)}
+            />
+          );
+        })}
       </div>
 
       {/* Pagination UI */}

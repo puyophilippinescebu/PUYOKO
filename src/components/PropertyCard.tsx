@@ -31,14 +31,17 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
 
   return (
     <div
-      className="group cursor-pointer overflow-hidden rounded-sm border border-outline/30 bg-white shadow-sm transition-all duration-500 hover:shadow-2xl hover:border-primary/20"
+      className={cn(
+        "group overflow-hidden rounded-sm border border-outline/30 bg-white shadow-sm transition-all duration-500",
+        onClick ? "cursor-pointer hover:shadow-2xl hover:border-primary/20" : "cursor-default"
+      )}
       onClick={() => onClick?.(property)}
     >
       <div className="relative aspect-[16/10] overflow-hidden">
         {property.images[0]?.startsWith('data:video/') || property.images[0]?.endsWith('.mp4') || property.images[0]?.endsWith('.mov') || property.images[0]?.endsWith('.webm') ? (
           <video
             src={property.images[0]}
-            className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            className={cn("h-full w-full object-cover transition-transform duration-1000", onClick && "group-hover:scale-105")}
             muted
             playsInline
             autoPlay
@@ -48,7 +51,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           <img
             src={property.images[0]}
             alt={property.title}
-            className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
+            className={cn("h-full w-full object-cover transition-transform duration-1000", onClick && "group-hover:scale-110")}
           />
         )}
         <div className="absolute left-4 top-4 sm:left-6 sm:top-6 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm max-w-[85%] truncate" title={`${property.type} / ${normalizeLocation(property.city)}`}>
