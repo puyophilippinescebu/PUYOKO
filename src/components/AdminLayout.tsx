@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShieldCheck, LogOut, User, LayoutGrid, Check, X, Calendar, Hammer, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useProperties } from '../contexts/PropertiesContext';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '../lib/utils';
 
@@ -9,6 +10,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, userEmail, displayName, updateDisplayName } = useAuth();
+  const { requests } = useProperties();
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -62,21 +64,31 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <div className="hidden md:block h-6 w-px bg-white/20 mx-2" />
             {/* Nav Links */}
             <div className="hidden md:flex items-center gap-6">
-              {adminLinks.map(({ name, path, icon: Icon }) => (
-                <Link
-                  key={name}
-                  to={path}
-                  className={cn(
-                    'flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest transition-all',
-                    location.pathname.startsWith(path)
-                      ? 'text-primary-neon'
-                      : 'text-white/60 hover:text-white'
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {name}
-                </Link>
-              ))}
+              {adminLinks.map(({ name, path, icon: Icon }) => {
+                const isApprovals = name === 'Approvals';
+                const hasPending = isApprovals && requests.length > 0;
+
+                return (
+                  <Link
+                    key={name}
+                    to={path}
+                    className={cn(
+                      'flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest transition-all',
+                      location.pathname.startsWith(path)
+                        ? 'text-primary-neon'
+                        : 'text-white/60 hover:text-white'
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    <span>{name}</span>
+                    {hasPending && (
+                      <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 font-mono text-[8px] font-black text-white leading-none animate-pulse">
+                        {requests.length}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
