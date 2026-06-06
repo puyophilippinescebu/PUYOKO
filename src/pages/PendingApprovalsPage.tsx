@@ -135,6 +135,7 @@ export const PendingApprovalsPage: React.FC = () => {
       ) : (
         <div className="space-y-6">
           {requests.map(req => {
+            const isCreate = req.type === 'CREATE';
             const isEdit = req.type === 'EDIT';
             const isDelete = req.type === 'DELETE';
             const isArchive = req.type === 'ARCHIVE';
@@ -155,7 +156,9 @@ export const PendingApprovalsPage: React.FC = () => {
                           ? 'bg-red-500/10 text-red-700 border-red-500/15' 
                           : isArchive 
                             ? 'bg-amber-500/10 text-amber-700 border-amber-500/15'
-                            : 'bg-blue-500/10 text-blue-700 border-blue-500/15'
+                            : isCreate
+                              ? 'bg-green-500/10 text-green-700 border-green-500/15'
+                              : 'bg-blue-500/10 text-blue-700 border-blue-500/15'
                       }`}>
                         {req.type} Request
                       </span>
@@ -208,6 +211,78 @@ export const PendingApprovalsPage: React.FC = () => {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {isCreate && req.proposedData && (
+                  <div className="border border-outline/20 rounded-xl bg-background-warm/30 p-5 space-y-4">
+                    <span className="block font-mono text-[8px] font-extrabold text-primary-light uppercase tracking-widest border-b border-outline/10 pb-2">
+                      Proposed New Property Listing Details / 新房源详情
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div className="space-y-2">
+                        <div>
+                          <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Title</span>
+                          <span className="font-sans font-bold text-primary">{req.proposedData.title}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Price</span>
+                          <span className="font-mono font-bold text-primary">
+                            {req.proposedData.currency || 'PHP'} {req.proposedData.price?.toLocaleString()}
+                            {req.proposedData.pricePeriod ? ` / ${req.proposedData.pricePeriod}` : ''}
+                          </span>
+                          {req.proposedData.originalPrice ? (
+                            <span className="block text-[10px] font-mono text-outline/50 line-through">
+                              Original: {req.proposedData.currency || 'PHP'} {req.proposedData.originalPrice?.toLocaleString()}
+                            </span>
+                          ) : null}
+                        </div>
+                        <div>
+                          <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Type / Status</span>
+                          <span className="font-sans text-primary font-semibold">
+                            {req.proposedData.type} — <span className="text-primary-light font-bold">{req.proposedData.status}</span>
+                          </span>
+                        </div>
+                        <div>
+                          <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Location</span>
+                          <span className="font-sans text-primary">{req.proposedData.address}, {req.proposedData.city}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div>
+                          <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Accommodating Agent</span>
+                          <span className="font-sans font-bold text-primary">{req.proposedData.accommodatedBy || 'Not Assigned'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Specs</span>
+                          <span className="font-mono text-primary font-semibold">
+                            {req.proposedData.bedrooms} Beds | {req.proposedData.bathrooms} Baths | {req.proposedData.area} sqm
+                          </span>
+                        </div>
+                        {req.proposedData.landmarks ? (
+                          <div>
+                            <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Landmarks</span>
+                            <span className="font-sans text-primary whitespace-pre-line leading-relaxed">{req.proposedData.landmarks}</span>
+                          </div>
+                        ) : null}
+                        {req.proposedData.images && req.proposedData.images.length > 0 ? (
+                          <div>
+                            <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Media Files</span>
+                            <span className="font-sans text-primary-light font-semibold">
+                              {req.proposedData.images.length} Image(s)/Video(s) uploaded
+                            </span>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {req.proposedData.description ? (
+                        <div className="md:col-span-2 pt-2 border-t border-outline/10">
+                          <span className="block text-[9px] font-mono text-outline uppercase tracking-wider mb-1">Description</span>
+                          <p className="font-sans text-primary/80 leading-relaxed whitespace-pre-wrap">{req.proposedData.description}</p>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 )}
 

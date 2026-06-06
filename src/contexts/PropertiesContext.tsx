@@ -33,7 +33,7 @@ interface PropertiesContextType {
   properties: Property[];
   loading: boolean;
   fetchProperties: () => Promise<void>;
-  addProperty: (prop: Omit<Property, 'id'>) => Promise<void>;
+  addProperty: (prop: Omit<Property, 'id'> & { id?: string }) => Promise<void>;
   updateProperty: (prop: Property) => Promise<void>;
   deleteProperty: (id: string) => Promise<void>;
   syncAllPropertiesToSheets: () => Promise<void>;
@@ -203,13 +203,14 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     localStorage.setItem('puyoko_properties', JSON.stringify(newProperties));
   };
 
-  const addProperty = async (newProp: Omit<Property, 'id'>) => {
-    const propertyId = `PK-${Math.floor(Math.random() * 9000) + 1000}`;
+  const addProperty = async (newProp: Omit<Property, 'id'> & { id?: string }) => {
+    const propertyId = newProp.id || `PK-${Math.floor(Math.random() * 9000) + 1000}`;
     const normalizedProp = {
       ...newProp,
       accommodatedBy: newProp.accommodatedBy ? normalizeAgentName(newProp.accommodatedBy) : ''
     };
-    const propertyToInsert = { ...normalizedProp, id: propertyId } as Property;
+    const { id, ...restProp } = normalizedProp;
+    const propertyToInsert = { ...restProp, id: propertyId } as Property;
     
     persistState([propertyToInsert, ...properties]);
     syncWithGoogleSheets('CREATE', propertyToInsert);
@@ -301,6 +302,8 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       if (prop) {
         await updateProperty({ ...prop, ...request.proposedData } as Property);
       }
+    } else if (request.type === 'CREATE' && request.proposedData) {
+      await addProperty({ ...request.proposedData, id: request.propertyId } as any);
     }
 
     const filteredRequests = requests.filter(r => r.id !== requestId);

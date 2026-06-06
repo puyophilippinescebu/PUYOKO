@@ -28,7 +28,7 @@ export interface PropertyRequest {
   id: string;
   propertyId: string;
   propertyName: string;
-  type: 'EDIT' | 'DELETE' | 'ARCHIVE';
+  type: 'CREATE' | 'EDIT' | 'DELETE' | 'ARCHIVE';
   requestedBy: string;
   requestedAt: string;
   proposedData?: Partial<Property>;

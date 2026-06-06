@@ -463,7 +463,23 @@ export const PropertiesPage: React.FC = () => {
               alert('Request Submitted: Your edits have been submitted to the Director for approval.');
             }
           } else {
-            addProperty(data);
+            if (userEmail === 'puyophilippinescebu@gmail.com') {
+              addProperty(data);
+            } else {
+              const propertyId = `PK-${Math.floor(Math.random() * 9000) + 1000}`;
+              submitPropertyRequest({
+                type: 'CREATE',
+                propertyId: propertyId,
+                propertyName: data.title,
+                requestedBy: userEmail || 'unknown-agent',
+                proposedData: {
+                  ...data,
+                  status: data.status || 'Active',
+                  createdBy: userEmail || 'unknown-agent'
+                }
+              });
+              alert('Request Submitted: Your new property posting has been submitted to the Director for approval.');
+            }
           }
         }}
         initialData={editingProperty}

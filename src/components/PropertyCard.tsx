@@ -68,7 +68,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
               property.status === 'Archived' ? "top-20 sm:top-22" : "top-12 sm:top-14"
             )}
           >
-            Pending {pendingReq.type === 'EDIT' ? 'Edit' : pendingReq.type === 'DELETE' ? 'Delete' : 'Archive'} Approval
+            Pending {pendingReq.type === 'EDIT' ? 'Edit' : pendingReq.type === 'DELETE' ? 'Delete' : pendingReq.type === 'ARCHIVE' ? 'Archive' : 'Creation'} Approval
           </div>
         )}
       </div>
