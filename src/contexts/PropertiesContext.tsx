@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Property, PropertyRequest } from '../types';
 import { MOCK_PROPERTIES } from '../data';
 import { normalizeAgentName } from '../lib/utils';
+import { useAuth } from './AuthContext';
 
 const getUnsyncedIds = (): string[] => {
   try {
@@ -74,6 +75,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   const [properties, setProperties] = useState<Property[]>([]);
   const [requests, setRequests] = useState<PropertyRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const { userEmail } = useAuth();
 
   // Helper to sync property change with Google Sheets via script URL
   const syncWithGoogleSheets = async (action: 'CREATE' | 'UPDATE' | 'DELETE', property: Property) => {
@@ -231,7 +233,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [userEmail]);
 
   // Helper to persist state
   const persistState = (newProperties: Property[]) => {
