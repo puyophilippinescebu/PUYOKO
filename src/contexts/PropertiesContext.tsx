@@ -67,6 +67,7 @@ interface PropertiesContextType {
   submitPropertyRequest: (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>) => Promise<boolean>;
   approvePropertyRequest: (requestId: string) => Promise<void>;
   rejectPropertyRequest: (requestId: string) => Promise<void>;
+  updatePropertyRequestProposedData: (propertyId: string, proposedData: Partial<Property>) => Promise<boolean>;
   unsyncedRequestsCount: number;
   unsyncedPropertiesCount: number;
   syncUnsyncedRequests: () => Promise<void>;
@@ -390,6 +391,43 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
+  const updatePropertyRequestProposedData = async (propertyId: string, proposedData: Partial<Property>): Promise<boolean> => {
+    const existingRequest = requests.find(r => r.propertyId === propertyId && r.type === 'CREATE');
+    if (!existingRequest) return false;
+
+    const updatedRequest: PropertyRequest = {
+      ...existingRequest,
+      propertyName: proposedData.title || existingRequest.propertyName,
+      proposedData: {
+        ...existingRequest.proposedData,
+        ...proposedData
+      }
+    };
+
+    const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
+    setRequests(updatedRequests);
+    localStorage.setItem('puyoko_property_requests', JSON.stringify(updatedRequests));
+
+    try {
+      const { error } = await supabase
+        .from('property_requests')
+        .update({
+          propertyName: updatedRequest.propertyName,
+          proposedData: updatedRequest.proposedData
+        })
+        .eq('id', updatedRequest.id);
+
+      if (error) throw error;
+      removeUnsyncedRequestId(updatedRequest.id);
+      return true;
+    } catch (err: any) {
+      console.error("Supabase update request failed! Saved locally:", err);
+      addUnsyncedRequestId(updatedRequest.id);
+      alert(`Warning: Updates saved locally but could not be synced to the cloud database.\n\nError: ${err.message || "Connection error"}`);
+      return false;
+    }
+  };
+
   const syncUnsyncedRequests = async () => {
     const unsyncedIds = getUnsyncedRequestIds();
     if (unsyncedIds.length === 0) return;
@@ -406,7 +444,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     for (const req of localRequests) {
       if (unsyncedIds.includes(req.id)) {
         try {
-          const { error } = await supabase.from('property_requests').insert([req]);
+          const { error } = await supabase.from('property_requests').upsert(req);
           if (error) throw error;
           removeUnsyncedRequestId(req.id);
           successCount++;
@@ -481,6 +519,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       submitPropertyRequest,
       approvePropertyRequest,
       rejectPropertyRequest,
+      updatePropertyRequestProposedData,
       unsyncedRequestsCount,
       unsyncedPropertiesCount,
       syncUnsyncedRequests,

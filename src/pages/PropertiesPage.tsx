@@ -116,6 +116,8 @@ export const PropertiesPage: React.FC = () => {
     syncAllPropertiesToSheets, 
     submitPropertyRequest,
     requests,
+    rejectPropertyRequest,
+    updatePropertyRequestProposedData,
     unsyncedRequestsCount,
     unsyncedPropertiesCount,
     syncUnsyncedRequests,
@@ -153,7 +155,8 @@ export const PropertiesPage: React.FC = () => {
   const isAllowedToEdit = (property: Property) => {
     if (!isAuthenticated || !userEmail) return false;
     if (userEmail === 'puyophilippinescebu@gmail.com') return true;
-    return !property.createdBy || property.createdBy === userEmail;
+    if ((property as any).isPendingCreation) return true;
+    return property.createdBy === userEmail;
   };
 
   const [listingType, setListingType] = useState<string>('All Properties');
@@ -463,9 +466,15 @@ export const PropertiesPage: React.FC = () => {
               key={prop.id}
               property={prop}
               onClick={isPending ? undefined : () => navigate(`/property/${prop.id}`)}
-              onEdit={isPending ? undefined : (isAllowedToEdit(prop) ? p => { setEditingProperty(p); setIsFormOpen(true); } : undefined)}
+              onEdit={isAllowedToEdit(prop) ? p => { setEditingProperty(prop); setIsFormOpen(true); } : undefined}
               onDelete={isPending ? undefined : (isAllowedToEdit(prop) ? () => setPropertyToDelete(prop) : undefined)}
-              onArchive={isPending ? undefined : (isAllowedToEdit(prop) ? async () => {
+              onArchive={isAllowedToEdit(prop) ? (isPending ? async () => {
+                const req = requests.find(r => r.propertyId === prop.id && r.type === 'CREATE');
+                if (req) {
+                  await rejectPropertyRequest(req.id);
+                  alert('Pending creation request cancelled/archived successfully.');
+                }
+              } : async () => {
                 if (userEmail === 'puyophilippinescebu@gmail.com') {
                   updateProperty({ ...prop, status: prop.status === 'Archived' ? 'Active' : 'Archived' });
                 } else {
@@ -479,7 +488,7 @@ export const PropertiesPage: React.FC = () => {
                     alert('Request Submitted: Your request to archive this listing has been submitted to the Director.');
                   }
                 }
-              } : undefined)}
+              }) : undefined}
             />
           );
         })}
@@ -549,7 +558,13 @@ export const PropertiesPage: React.FC = () => {
         onClose={() => { setIsFormOpen(false); setEditingProperty(undefined); }}
         onSave={async data => {
           if (editingProperty) {
-            if (userEmail === 'puyophilippinescebu@gmail.com') {
+            const isPending = (editingProperty as any).isPendingCreation;
+            if (isPending) {
+              const success = await updatePropertyRequestProposedData(editingProperty.id, data);
+              if (success) {
+                alert('Request Updated: Your pending property creation details have been updated.');
+              }
+            } else if (userEmail === 'puyophilippinescebu@gmail.com') {
               updateProperty({ ...editingProperty, ...data });
             } else {
               const success = await submitPropertyRequest({
