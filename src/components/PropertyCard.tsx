@@ -3,6 +3,7 @@ import { MapPin, Bed, Bath, Square, Heart, Edit2, Trash2, Archive, ArchiveRestor
 import { Property } from '../types';
 import { cn, normalizeLocation } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
+import { useProperties } from '../contexts/PropertiesContext';
 
 interface PropertyCardProps {
   property: Property;
@@ -14,6 +15,9 @@ interface PropertyCardProps {
 
 export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, onEdit, onDelete, onArchive }) => {
   const { isAuthenticated } = useAuth();
+  const { requests } = useProperties();
+  const pendingReq = requests.find(r => r.propertyId === property.id);
+
   const formattedPrice = new Intl.NumberFormat(
     property.currency === 'USD' ? 'en-US' :
     property.currency === 'EUR' ? 'de-DE' :
@@ -54,6 +58,17 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
         {property.status === 'Archived' && (
           <div className="absolute left-4 top-12 sm:left-6 sm:top-14 bg-red-600/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg">
             Archived
+          </div>
+        )}
+
+        {isAuthenticated && pendingReq && (
+          <div 
+            className={cn(
+              "absolute left-4 bg-amber-600/95 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg border border-white/10 animate-pulse",
+              property.status === 'Archived' ? "top-20 sm:top-22" : "top-12 sm:top-14"
+            )}
+          >
+            Pending {pendingReq.type === 'EDIT' ? 'Edit' : pendingReq.type === 'DELETE' ? 'Delete' : 'Archive'} Approval
           </div>
         )}
       </div>
