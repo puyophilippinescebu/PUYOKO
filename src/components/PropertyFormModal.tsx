@@ -8,7 +8,7 @@ import { normalizeAgentName } from '../lib/utils';
 interface PropertyFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (property: any) => void;
+  onSave: (property: any) => Promise<void> | void;
   initialData?: Property;
 }
 
@@ -51,6 +51,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
 
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [landmarksList, setLandmarksList] = useState<string[]>(['']);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -128,38 +129,52 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
   };
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalData = {
-      ...formData,
-      images: imageUrls,
-      accommodatedBy: formData.accommodatedBy ? normalizeAgentName(formData.accommodatedBy) : '',
-      createdBy: formData.createdBy || userEmail || '',
-      pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
-      originalPrice: formData.originalPrice || null
-    };
-    onSave(finalData);
-    onClose();
+    setSubmitting(true);
+    try {
+      const finalData = {
+        ...formData,
+        images: imageUrls,
+        accommodatedBy: formData.accommodatedBy ? normalizeAgentName(formData.accommodatedBy) : '',
+        createdBy: formData.createdBy || userEmail || '',
+        pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
+        originalPrice: formData.originalPrice || null
+      };
+      await onSave(finalData);
+      onClose();
+    } catch (err) {
+      console.error("Failed to save property:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSaveArchived = (e: React.MouseEvent) => {
+  const handleSaveArchived = async (e: React.MouseEvent) => {
     e.preventDefault();
     const form = document.getElementById('property-form') as HTMLFormElement;
     if (form && !form.checkValidity()) {
       form.reportValidity();
       return;
     }
-    const finalData = {
-      ...formData,
-      images: imageUrls,
-      accommodatedBy: formData.accommodatedBy ? normalizeAgentName(formData.accommodatedBy) : '',
-      createdBy: formData.createdBy || userEmail || '',
-      pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
-      status: 'Archived' as const,
-      originalPrice: formData.originalPrice || null
-    };
-    onSave(finalData);
-    onClose();
+    setSubmitting(true);
+    try {
+      const finalData = {
+        ...formData,
+        images: imageUrls,
+        accommodatedBy: formData.accommodatedBy ? normalizeAgentName(formData.accommodatedBy) : '',
+        createdBy: formData.createdBy || userEmail || '',
+        pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
+        status: 'Archived' as const,
+        originalPrice: formData.originalPrice || null
+      };
+      await onSave(finalData);
+      onClose();
+    } catch (err) {
+      console.error("Failed to save archived property:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputClass = "w-full border-b border-outline/30 bg-transparent py-2 focus:border-primary outline-none transition-colors text-sm font-sans";
@@ -432,20 +447,21 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
         </div>
 
         <div className="border-t border-outline/10 p-6 flex justify-end gap-4 bg-background-warm/50 flex-wrap">
-          <button type="button" onClick={onClose} className="px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-widest text-on-surface hover:bg-black/5 transition-colors active:scale-95">
+          <button type="button" disabled={submitting} onClick={onClose} className="px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-widest text-on-surface hover:bg-black/5 transition-colors active:scale-95 disabled:opacity-50">
             Cancel
           </button>
           {!initialData && (
             <button 
               type="button" 
+              disabled={submitting}
               onClick={handleSaveArchived} 
-              className="border-2 border-orange-600/35 text-orange-600 hover:bg-orange-50 px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-widest transition-colors active:scale-95"
+              className="border-2 border-orange-600/35 text-orange-600 hover:bg-orange-50 px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-widest transition-colors active:scale-95 disabled:opacity-50"
             >
-              Save as Archived
+              {submitting ? "Saving..." : "Save as Archived"}
             </button>
           )}
-          <button type="submit" form="property-form" className="bg-primary text-white px-8 py-3 font-mono text-[10px] font-bold uppercase tracking-widest hover:bg-primary-light transition-colors active:scale-95 shadow-lg">
-            {initialData ? "Save Changes" : "Publish Property"}
+          <button type="submit" form="property-form" disabled={submitting} className="bg-primary text-white px-8 py-3 font-mono text-[10px] font-bold uppercase tracking-widest hover:bg-primary-light transition-colors active:scale-95 shadow-lg disabled:opacity-50">
+            {submitting ? "Saving..." : (initialData ? "Save Changes" : "Publish Property")}
           </button>
         </div>
       </div>

@@ -572,7 +572,7 @@ export const PropertiesPage: React.FC = () => {
                 alert('Request Updated: Your pending property creation details have been updated.');
               }
             } else if (userEmail === 'puyophilippinescebu@gmail.com') {
-              updateProperty({ ...editingProperty, ...data });
+              await updateProperty({ ...editingProperty, ...data });
             } else {
               const success = await submitPropertyRequest({
                 type: 'EDIT',
@@ -587,7 +587,7 @@ export const PropertiesPage: React.FC = () => {
             }
           } else {
             if (userEmail === 'puyophilippinescebu@gmail.com') {
-              addProperty(data);
+              await addProperty(data);
             } else {
               const propertyId = `PK-${Math.floor(Math.random() * 9000) + 1000}`;
               const success = await submitPropertyRequest({

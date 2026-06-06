@@ -416,12 +416,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const { error } = await supabase
         .from('property_requests')
-        .update({
-          propertyName: updatedRequest.propertyName,
-          status: newRequestStatus,
-          proposedData: updatedRequest.proposedData
-        })
-        .eq('id', updatedRequest.id);
+        .upsert(updatedRequest);
 
       if (error) throw error;
       removeUnsyncedRequestId(updatedRequest.id);
@@ -454,11 +449,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const { error } = await supabase
         .from('property_requests')
-        .update({
-          status: 'ARCHIVED',
-          proposedData: updatedRequest.proposedData
-        })
-        .eq('id', updatedRequest.id);
+        .upsert(updatedRequest);
 
       if (error) throw error;
       removeUnsyncedRequestId(updatedRequest.id);
@@ -490,11 +481,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const { error } = await supabase
         .from('property_requests')
-        .update({
-          status: 'PENDING',
-          proposedData: updatedRequest.proposedData
-        })
-        .eq('id', updatedRequest.id);
+        .upsert(updatedRequest);
 
       if (error) throw error;
       removeUnsyncedRequestId(updatedRequest.id);
