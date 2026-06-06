@@ -18,7 +18,7 @@ const addUnsyncedId = (id: string) => {
   try {
     const ids = getUnsyncedIds();
     if (!ids.includes(id)) {
-      localStorage.setItem('puyoko_unsynced_ids', JSON.stringify([...ids, id]));
+      safeSetItem('puyoko_unsynced_ids', JSON.stringify([...ids, id]));
     }
   } catch (e) {}
 };
@@ -26,7 +26,7 @@ const addUnsyncedId = (id: string) => {
 const removeUnsyncedId = (id: string) => {
   try {
     const ids = getUnsyncedIds();
-    localStorage.setItem('puyoko_unsynced_ids', JSON.stringify(ids.filter(i => i !== id)));
+    safeSetItem('puyoko_unsynced_ids', JSON.stringify(ids.filter(i => i !== id)));
   } catch (e) {}
 };
 
@@ -43,7 +43,7 @@ const addUnsyncedRequestId = (id: string) => {
   try {
     const ids = getUnsyncedRequestIds();
     if (!ids.includes(id)) {
-      localStorage.setItem('puyoko_unsynced_request_ids', JSON.stringify([...ids, id]));
+      safeSetItem('puyoko_unsynced_request_ids', JSON.stringify([...ids, id]));
     }
   } catch (e) {}
 };
@@ -51,8 +51,16 @@ const addUnsyncedRequestId = (id: string) => {
 const removeUnsyncedRequestId = (id: string) => {
   try {
     const ids = getUnsyncedRequestIds();
-    localStorage.setItem('puyoko_unsynced_request_ids', JSON.stringify(ids.filter(i => i !== id)));
+    safeSetItem('puyoko_unsynced_request_ids', JSON.stringify(ids.filter(i => i !== id)));
   } catch (e) {}
+};
+
+const safeSetItem = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.warn(`localStorage.setItem failed for key "${key}":`, e);
+  }
 };
 
 interface PropertiesContextType {
@@ -168,7 +176,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
 
     if (!loadedFromCache) {
       setProperties(MOCK_PROPERTIES);
-      localStorage.setItem('puyoko_properties', JSON.stringify(MOCK_PROPERTIES));
+      safeSetItem('puyoko_properties', JSON.stringify(MOCK_PROPERTIES));
       setLoading(false);
     }
 
@@ -194,7 +202,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
         const merged = [...localUnsynced, ...data];
 
         setProperties(merged);
-        localStorage.setItem('puyoko_properties', JSON.stringify(merged));
+        safeSetItem('puyoko_properties', JSON.stringify(merged));
       }
     } catch (err) {
       console.warn("Supabase background revalidation failed, using cached listings.", err);
@@ -228,7 +236,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
         const merged = [...localUnsynced, ...data];
 
         setRequests(merged);
-        localStorage.setItem('puyoko_property_requests', JSON.stringify(merged));
+        safeSetItem('puyoko_property_requests', JSON.stringify(merged));
       }
     } catch (err) {
       console.warn("Supabase load requests failed, using cached requests.", err);
@@ -258,7 +266,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   // Helper to persist state
   const persistState = (newProperties: Property[]) => {
     setProperties(newProperties);
-    localStorage.setItem('puyoko_properties', JSON.stringify(newProperties));
+    safeSetItem('puyoko_properties', JSON.stringify(newProperties));
   };
 
   const addProperty = async (newProp: Omit<Property, 'id'> & { id?: string }) => {
@@ -333,7 +341,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     };
     const updatedRequests = [newRequest, ...requests];
     setRequests(updatedRequests);
-    localStorage.setItem('puyoko_property_requests', JSON.stringify(updatedRequests));
+    safeSetItem('puyoko_property_requests', JSON.stringify(updatedRequests));
 
     try {
       const { error } = await supabase.from('property_requests').insert([newRequest]);
@@ -370,7 +378,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const filteredRequests = requests.filter(r => r.id !== requestId);
     setRequests(filteredRequests);
-    localStorage.setItem('puyoko_property_requests', JSON.stringify(filteredRequests));
+    safeSetItem('puyoko_property_requests', JSON.stringify(filteredRequests));
 
     try {
       const { error } = await supabase.from('property_requests').delete().eq('id', requestId);
@@ -383,7 +391,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   const rejectPropertyRequest = async (requestId: string) => {
     const filteredRequests = requests.filter(r => r.id !== requestId);
     setRequests(filteredRequests);
-    localStorage.setItem('puyoko_property_requests', JSON.stringify(filteredRequests));
+    safeSetItem('puyoko_property_requests', JSON.stringify(filteredRequests));
 
     try {
       const { error } = await supabase.from('property_requests').delete().eq('id', requestId);
@@ -411,7 +419,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
     setRequests(updatedRequests);
-    localStorage.setItem('puyoko_property_requests', JSON.stringify(updatedRequests));
+    safeSetItem('puyoko_property_requests', JSON.stringify(updatedRequests));
 
     try {
       const { error } = await supabase
@@ -444,7 +452,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
     setRequests(updatedRequests);
-    localStorage.setItem('puyoko_property_requests', JSON.stringify(updatedRequests));
+    safeSetItem('puyoko_property_requests', JSON.stringify(updatedRequests));
 
     try {
       const { error } = await supabase
@@ -476,7 +484,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
     setRequests(updatedRequests);
-    localStorage.setItem('puyoko_property_requests', JSON.stringify(updatedRequests));
+    safeSetItem('puyoko_property_requests', JSON.stringify(updatedRequests));
 
     try {
       const { error } = await supabase
