@@ -156,31 +156,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  const fetchProperties = async () => {
-    // 1. Instant Load from Cache or MOCK_PROPERTIES (Stale-While-Revalidate pattern)
-    const saved = localStorage.getItem('puyoko_properties');
-    let loadedFromCache = false;
-
-    if (saved) {
-      try {
-        const parsedSaved = JSON.parse(saved);
-        if (parsedSaved && parsedSaved.length > 0) {
-          setProperties(parsedSaved);
-          setLoading(false);
-          loadedFromCache = true;
-        }
-      } catch (e) {
-        console.error("Failed to parse saved properties");
-      }
-    }
-
-    if (!loadedFromCache) {
-      setProperties(MOCK_PROPERTIES);
-      safeSetItem('puyoko_properties', JSON.stringify(MOCK_PROPERTIES));
-      setLoading(false);
-    }
-
-    // 2. Background Revalidation from Supabase
+  const fetchPropertiesFromServer = async () => {
     try {
       const { data, error } = await supabase
         .from('properties')
@@ -204,24 +180,19 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
         setProperties(merged);
         safeSetItem('puyoko_properties', JSON.stringify(merged));
       }
-    } catch (err) {
-      console.warn("Supabase background revalidation failed, using cached listings.", err);
-    } finally {
-      setLoading(false);
-      updateUnsyncedCounts();
+    } catch (err: any) {
+      console.error("Failed to fetch properties from server:", err);
+      throw new Error(`Failed to load updated properties: ${err.message || String(err)}`);
     }
   };
 
-  const fetchRequests = async () => {
-    const saved = localStorage.getItem('puyoko_property_requests');
-    if (saved) {
-      try { setRequests(JSON.parse(saved) || []); } catch (e) {}
-    }
+  const fetchRequestsFromServer = async () => {
     try {
       const { data, error } = await supabase
         .from('property_requests')
         .select('*')
         .order('requestedAt', { ascending: false });
+
       if (error) throw error;
       if (data) {
         const savedCache = localStorage.getItem('puyoko_property_requests');
@@ -238,8 +209,59 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
         setRequests(merged);
         safeSetItem('puyoko_property_requests', JSON.stringify(merged));
       }
+    } catch (err: any) {
+      console.error("Failed to fetch requests from server:", err);
+      throw new Error(`Failed to load updated requests: ${err.message || String(err)}`);
+    }
+  };
+
+  const fetchProperties = async () => {
+    // 1. Instant Load from Cache
+    const saved = localStorage.getItem('puyoko_properties');
+    let loadedFromCache = false;
+
+    if (saved) {
+      try {
+        const parsedSaved = JSON.parse(saved);
+        if (parsedSaved && parsedSaved.length > 0) {
+          setProperties(parsedSaved);
+          setLoading(false);
+          loadedFromCache = true;
+        }
+      } catch (e) {
+        console.error("Failed to parse saved properties");
+      }
+    }
+
+    if (!loadedFromCache) {
+      setLoading(true);
+    }
+
+    // 2. Background Revalidation from Supabase
+    try {
+      await fetchPropertiesFromServer();
     } catch (err) {
-      console.warn("Supabase load requests failed, using cached requests.", err);
+      console.warn("Supabase background revalidation failed, using cached listings.", err);
+      if (!loadedFromCache) {
+        setProperties(MOCK_PROPERTIES);
+        safeSetItem('puyoko_properties', JSON.stringify(MOCK_PROPERTIES));
+      }
+    } finally {
+      setLoading(false);
+      updateUnsyncedCounts();
+    }
+  };
+
+  const fetchRequests = async () => {
+    const saved = localStorage.getItem('puyoko_property_requests');
+    if (saved) {
+      try { setRequests(JSON.parse(saved) || []); } catch (e) {}
+    }
+    
+    try {
+      await fetchRequestsFromServer();
+    } catch (err) {
+      console.warn("Supabase load requests failed:", err);
     } finally {
       updateUnsyncedCounts();
     }
@@ -277,19 +299,34 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     };
     const { id, ...restProp } = normalizedProp;
     const propertyToInsert = { ...restProp, id: propertyId } as Property;
-    
-    persistState([propertyToInsert, ...properties]);
-    syncWithGoogleSheets('CREATE', propertyToInsert);
 
-    try {
-      const { error } = await supabase.from('properties').insert([propertyToInsert]);
-      if (error) throw error;
-      removeUnsyncedId(propertyId);
-    } catch (err: any) {
-      console.error("Supabase add failed! The listing is kept in your browser local storage but was not saved to the cloud database:", err);
-      addUnsyncedId(propertyId);
-      alert(`Warning: Could not save to cloud database.\n\nError: ${err.message || "Column mismatch or connection error"}\n\nYour changes are saved locally for now so you won't lose them, but please run the SQL command in Supabase to add the missing columns.`);
+    // 1. Write to database first
+    const { error } = await supabase.from('properties').insert([propertyToInsert]);
+    if (error) {
+      console.error("Supabase add failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to save listing to cloud database."}`);
     }
+
+    // 2. Poll verify until visible
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('properties').select('id').eq('id', propertyId);
+      if (data && data.length > 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The listing was saved but is not queryable from the database yet.");
+    }
+
+    // 3. Force re-fetch from server
+    await fetchPropertiesFromServer();
+
+    // 4. Sync sheets
+    syncWithGoogleSheets('CREATE', propertyToInsert);
+    removeUnsyncedId(propertyId);
   };
 
   const updateProperty = async (updatedProp: Property) => {
@@ -297,37 +334,67 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       ...updatedProp,
       accommodatedBy: updatedProp.accommodatedBy ? normalizeAgentName(updatedProp.accommodatedBy) : ''
     };
-    const updated = properties.map(p => p.id === updatedProp.id ? normalizedProp : p);
-    persistState(updated);
-    syncWithGoogleSheets('UPDATE', normalizedProp);
 
-    try {
-      const { error } = await supabase.from('properties').update(normalizedProp).eq('id', updatedProp.id);
-      if (error) throw error;
-      removeUnsyncedId(updatedProp.id);
-    } catch (err: any) {
-      console.error("Supabase update failed! The update is kept in your browser local storage but was not saved to the cloud database:", err);
-      addUnsyncedId(updatedProp.id);
-      alert(`Warning: Could not save updates to cloud database.\n\nError: ${err.message || "Connection error"}\n\nYour changes are saved locally for now so you won't lose them.`);
+    // 1. Write to database first
+    const { error } = await supabase.from('properties').update(normalizedProp).eq('id', updatedProp.id);
+    if (error) {
+      console.error("Supabase update failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to update listing in cloud database."}`);
     }
+
+    // 2. Poll verify until visible
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('properties').select('title').eq('id', updatedProp.id);
+      if (data && data.length > 0 && data[0].title === updatedProp.title) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The updates were saved but are not queryable from the database yet.");
+    }
+
+    // 3. Force re-fetch from server
+    await fetchPropertiesFromServer();
+
+    // 4. Sync sheets
+    syncWithGoogleSheets('UPDATE', normalizedProp);
+    removeUnsyncedId(updatedProp.id);
   };
 
   const deleteProperty = async (id: string) => {
     const propertyToDelete = properties.find(p => p.id === id);
-    const filtered = properties.filter(p => p.id !== id);
-    persistState(filtered);
-    removeUnsyncedId(id);
 
-    if (propertyToDelete) {
-      syncWithGoogleSheets('DELETE', propertyToDelete);
+    // 1. Write to database first
+    const { error } = await supabase.from('properties').delete().eq('id', id);
+    if (error) {
+      console.error("Supabase delete failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to delete listing from cloud database."}`);
     }
 
-    try {
-      const { error } = await supabase.from('properties').delete().eq('id', id);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase delete failed! The deletion is kept in your browser local storage but was not saved to the cloud database:", err);
-      alert("Warning: Could not save deletion to cloud database. Your changes are saved locally for now but will be lost if you reload.");
+    // 2. Poll verify until deleted
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('properties').select('id').eq('id', id);
+      if (!data || data.length === 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The listing was deleted in cloud but is still queryable.");
+    }
+
+    // 3. Force re-fetch from server
+    await fetchPropertiesFromServer();
+
+    // 4. Sync sheets
+    removeUnsyncedId(id);
+    if (propertyToDelete) {
+      syncWithGoogleSheets('DELETE', propertyToDelete);
     }
   };
 
@@ -339,66 +406,109 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       requestedAt: new Date().toISOString(),
       status: 'PENDING'
     };
-    const updatedRequests = [newRequest, ...requests];
-    setRequests(updatedRequests);
-    safeSetItem('puyoko_property_requests', JSON.stringify(updatedRequests));
 
-    try {
-      const { error } = await supabase.from('property_requests').insert([newRequest]);
-      if (error) throw error;
-      removeUnsyncedRequestId(requestId);
-      return true;
-    } catch (err: any) {
-      console.error("Supabase insert request failed! Saved locally:", err);
-      addUnsyncedRequestId(requestId);
-      alert(`Warning: Request saved locally in your browser but could not be uploaded to the cloud database.\n\nError: ${err.message || "Connection error"}`);
-      return false;
+    // 1. Write to database first
+    const { error } = await supabase.from('property_requests').insert([newRequest]);
+    if (error) {
+      console.error("Supabase insert request failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to submit request to cloud database."}`);
     }
+
+    // 2. Poll verify until visible
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('property_requests').select('id').eq('id', requestId);
+      if (data && data.length > 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The request was sent but is not queryable from the database yet.");
+    }
+
+    // 3. Force re-fetch requests from server
+    await fetchRequestsFromServer();
+    removeUnsyncedRequestId(requestId);
+    return true;
   };
 
   const approvePropertyRequest = async (requestId: string) => {
     const request = requests.find(r => r.id === requestId);
     if (!request) return;
 
-    if (request.type === 'ARCHIVE') {
-      const prop = properties.find(p => p.id === request.propertyId);
-      if (prop) {
-        await updateProperty({ ...prop, status: 'Archived' });
-      }
-    } else if (request.type === 'DELETE') {
-      await deleteProperty(request.propertyId);
-    } else if (request.type === 'EDIT' && request.proposedData) {
-      const prop = properties.find(p => p.id === request.propertyId);
-      if (prop) {
-        await updateProperty({ ...prop, ...request.proposedData } as Property);
-      }
-    } else if (request.type === 'CREATE' && request.proposedData) {
-      await addProperty({ ...request.proposedData, id: request.propertyId } as any);
-    }
-
-    const filteredRequests = requests.filter(r => r.id !== requestId);
-    setRequests(filteredRequests);
-    safeSetItem('puyoko_property_requests', JSON.stringify(filteredRequests));
-
+    // 1. Apply changes in database first and wait
     try {
-      const { error } = await supabase.from('property_requests').delete().eq('id', requestId);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase delete request failed:", err);
+      if (request.type === 'ARCHIVE') {
+        const prop = properties.find(p => p.id === request.propertyId);
+        if (prop) {
+          await updateProperty({ ...prop, status: 'Archived' });
+        }
+      } else if (request.type === 'DELETE') {
+        await deleteProperty(request.propertyId);
+      } else if (request.type === 'EDIT' && request.proposedData) {
+        const prop = properties.find(p => p.id === request.propertyId);
+        if (prop) {
+          await updateProperty({ ...prop, ...request.proposedData } as Property);
+        }
+      } else if (request.type === 'CREATE' && request.proposedData) {
+        await addProperty({ ...request.proposedData, id: request.propertyId } as any);
+      }
+    } catch (err: any) {
+      console.error("Failed to apply property change on approval:", err);
+      throw new Error(`Failed to apply changes: ${err.message || "Database write failed."}`);
     }
+
+    // 2. Delete request from Supabase
+    const { error: deleteError } = await supabase.from('property_requests').delete().eq('id', requestId);
+    if (deleteError) {
+      console.error("Supabase delete request failed:", deleteError);
+      throw new Error(`Database error: Failed to clear request from queue: ${deleteError.message}`);
+    }
+
+    // 3. Poll verify until request is deleted
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('property_requests').select('id').eq('id', requestId);
+      if (!data || data.length === 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The changes were applied but the pending request is still in the queue.");
+    }
+
+    // 4. Force re-fetch requests from server
+    await fetchRequestsFromServer();
   };
 
   const rejectPropertyRequest = async (requestId: string) => {
-    const filteredRequests = requests.filter(r => r.id !== requestId);
-    setRequests(filteredRequests);
-    safeSetItem('puyoko_property_requests', JSON.stringify(filteredRequests));
-
-    try {
-      const { error } = await supabase.from('property_requests').delete().eq('id', requestId);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase reject/delete request failed:", err);
+    // 1. Delete request from Supabase
+    const { error } = await supabase.from('property_requests').delete().eq('id', requestId);
+    if (error) {
+      console.error("Supabase reject/delete request failed:", error);
+      throw new Error(`Database error: Failed to reject request in cloud database: ${error.message}`);
     }
+
+    // 2. Poll verify until request is deleted
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('property_requests').select('id').eq('id', requestId);
+      if (!data || data.length === 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The request was rejected in cloud but is still in queue.");
+    }
+
+    // 3. Force re-fetch requests from server
+    await fetchRequestsFromServer();
   };
 
   const updatePropertyRequestProposedData = async (propertyId: string, proposedData: Partial<Property>): Promise<boolean> => {
@@ -417,24 +527,22 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       }
     };
 
+    // 1. Write to database first
+    const { error } = await supabase
+      .from('property_requests')
+      .upsert(updatedRequest);
+
+    if (error) {
+      console.error("Supabase update request failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to update request details in cloud database."}`);
+    }
+
+    // 2. Update state and cache on success
     const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
     setRequests(updatedRequests);
     safeSetItem('puyoko_property_requests', JSON.stringify(updatedRequests));
-
-    try {
-      const { error } = await supabase
-        .from('property_requests')
-        .upsert(updatedRequest);
-
-      if (error) throw error;
-      removeUnsyncedRequestId(updatedRequest.id);
-      return true;
-    } catch (err: any) {
-      console.error("Supabase update request failed! Saved locally:", err);
-      addUnsyncedRequestId(updatedRequest.id);
-      alert(`Warning: Updates saved locally but could not be synced to the cloud database.\n\nError: ${err.message || "Connection error"}`);
-      return false;
-    }
+    removeUnsyncedRequestId(updatedRequest.id);
+    return true;
   };
 
   const archivePropertyRequest = async (propertyId: string): Promise<boolean> => {
@@ -450,23 +558,22 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       }
     };
 
+    // 1. Write to database first
+    const { error } = await supabase
+      .from('property_requests')
+      .upsert(updatedRequest);
+
+    if (error) {
+      console.error("Supabase archive request failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to archive request."}`);
+    }
+
+    // 2. Update state and cache on success
     const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
     setRequests(updatedRequests);
     safeSetItem('puyoko_property_requests', JSON.stringify(updatedRequests));
-
-    try {
-      const { error } = await supabase
-        .from('property_requests')
-        .upsert(updatedRequest);
-
-      if (error) throw error;
-      removeUnsyncedRequestId(updatedRequest.id);
-      return true;
-    } catch (err: any) {
-      console.error("Supabase archive request failed! Saved locally:", err);
-      addUnsyncedRequestId(updatedRequest.id);
-      return false;
-    }
+    removeUnsyncedRequestId(updatedRequest.id);
+    return true;
   };
 
   const unarchivePropertyRequest = async (propertyId: string): Promise<boolean> => {
@@ -482,23 +589,22 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       }
     };
 
+    // 1. Write to database first
+    const { error } = await supabase
+      .from('property_requests')
+      .upsert(updatedRequest);
+
+    if (error) {
+      console.error("Supabase unarchive request failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to restore pending creation."}`);
+    }
+
+    // 2. Update state and cache on success
     const updatedRequests = requests.map(r => r.id === updatedRequest.id ? updatedRequest : r);
     setRequests(updatedRequests);
     safeSetItem('puyoko_property_requests', JSON.stringify(updatedRequests));
-
-    try {
-      const { error } = await supabase
-        .from('property_requests')
-        .upsert(updatedRequest);
-
-      if (error) throw error;
-      removeUnsyncedRequestId(updatedRequest.id);
-      return true;
-    } catch (err: any) {
-      console.error("Supabase unarchive request failed! Saved locally:", err);
-      addUnsyncedRequestId(updatedRequest.id);
-      return false;
-    }
+    removeUnsyncedRequestId(updatedRequest.id);
+    return true;
   };
 
   const syncUnsyncedRequests = async () => {

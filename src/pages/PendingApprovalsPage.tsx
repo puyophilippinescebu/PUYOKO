@@ -27,6 +27,10 @@ export const PendingApprovalsPage: React.FC = () => {
     setProcessingId(id);
     try {
       await approvePropertyRequest(id);
+      alert('Request successfully approved and applied!');
+    } catch (err: any) {
+      console.error("Approval failed:", err);
+      alert(`Approval Failed: ${err.message || "Failed to approve request."}`);
     } finally {
       setProcessingId(null);
     }
@@ -36,6 +40,10 @@ export const PendingApprovalsPage: React.FC = () => {
     setProcessingId(id);
     try {
       await rejectPropertyRequest(id);
+      alert('Request successfully rejected.');
+    } catch (err: any) {
+      console.error("Rejection failed:", err);
+      alert(`Rejection Failed: ${err.message || "Failed to reject request."}`);
     } finally {
       setProcessingId(null);
     }

@@ -6,10 +6,55 @@ import { BlogPost, EventPost } from '../contexts/MediaContext';
 interface MediaFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
+  onSave: (data: any) => Promise<void>;
   type: 'blog' | 'event';
   initialData?: any;
 }
+
+const compressImage = (base64Str: string, maxWidth = 1200, maxHeight = 1200): Promise<string> => {
+  return new Promise((resolve) => {
+    if (!base64Str || !base64Str.startsWith('data:image/')) {
+      resolve(base64Str);
+      return;
+    }
+
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(base64Str);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+      resolve(compressedDataUrl);
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
+};
 
 export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose, onSave, type, initialData }) => {
   const [blogData, setBlogData] = useState<Partial<BlogPost>>({
@@ -25,6 +70,8 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
   const [tagsInput, setTagsInput] = useState<string>('');
   const [highlightsInput, setHighlightsInput] = useState<string>('');
   const [imageUrl, setImageUrl] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -50,6 +97,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
       setTagsInput('');
       setHighlightsInput('');
     }
+    setError(null);
   }, [initialData, isOpen, type]);
 
   if (!isOpen) return null;
@@ -58,32 +106,50 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
+    setIsSaving(true);
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImageUrl(reader.result as string);
+    reader.onloadend = async () => {
+      try {
+        const compressed = await compressImage(reader.result as string);
+        setImageUrl(compressed);
+      } catch (err) {
+        console.error("Compression failed:", err);
+        setImageUrl(reader.result as string);
+      } finally {
+        setIsSaving(false);
+      }
     };
     reader.readAsDataURL(files[0]);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (type === 'blog') {
-      const tagsList = tagsInput.split(',').map(tag => tag.trim()).filter(Boolean);
-      onSave({
-        ...blogData,
-        image: imageUrl || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80', // Fallback
-        tags: tagsList,
-        date: blogData.date || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-      });
-    } else {
-      const highlightsList = highlightsInput.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
-      onSave({
-        ...eventData,
-        image: imageUrl || 'https://images.unsplash.com/photo-1511520790967-6880c858b0a1?auto=format&fit=crop&w=800&q=80', // Fallback
-        highlights: highlightsList
-      });
+    setIsSaving(true);
+    setError(null);
+    try {
+      if (type === 'blog') {
+        const tagsList = tagsInput.split(',').map(tag => tag.trim()).filter(Boolean);
+        await onSave({
+          ...blogData,
+          image: imageUrl || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80', // Fallback
+          tags: tagsList,
+          date: blogData.date || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        });
+      } else {
+        const highlightsList = highlightsInput.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
+        await onSave({
+          ...eventData,
+          image: imageUrl || 'https://images.unsplash.com/photo-1511520790967-6880c858b0a1?auto=format&fit=crop&w=800&q=80', // Fallback
+          highlights: highlightsList
+        });
+      }
+      onClose();
+    } catch (err: any) {
+      console.error("Supabase write failed:", err);
+      setError(err.message || "Failed to publish post. Please check your internet connection and database setup.");
+    } finally {
+      setIsSaving(false);
     }
-    onClose();
   };
 
   const inputClass = "w-full border-b border-outline/30 bg-transparent py-2 focus:border-primary outline-none transition-colors text-sm font-sans";
@@ -92,19 +158,26 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-jade-deep/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-jade-deep/40 backdrop-blur-sm" onClick={isSaving ? undefined : onClose} />
       
       <div className="relative w-full max-w-2xl bg-white/95 frosted-jade border border-outline/20 shadow-2xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between border-b border-outline/10 p-6">
           <h2 className="font-display text-2xl font-light text-primary tracking-wide">
             {initialData ? (type === 'blog' ? "Edit Blog Post" : "Edit Event Details") : (type === 'blog' ? "Publish Blog Post" : "Publish Expo & Event")}
           </h2>
-          <button onClick={onClose} className="text-outline hover:text-primary transition-colors active:scale-95 border-0 bg-transparent cursor-pointer">
+          <button onClick={onClose} disabled={isSaving} className="text-outline hover:text-primary transition-colors active:scale-95 border-0 bg-transparent cursor-pointer disabled:opacity-30">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="overflow-y-auto p-8 flex-1">
+          {error && (
+            <div className="mb-6 p-4 rounded bg-red-50 border border-red-200 text-red-800 text-xs font-sans">
+              <span className="font-bold uppercase tracking-wider block mb-1">Failed to publish / 发布失败</span>
+              {error}
+            </div>
+          )}
+
           <form id="media-form" onSubmit={handleSubmit} className="space-y-6">
             
             {type === 'blog' ? (
@@ -115,6 +188,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                     <label className={labelClass}>Article Title</label>
                     <input 
                       required 
+                      disabled={isSaving}
                       type="text" 
                       className={inputClass} 
                       value={blogData.title || ''} 
@@ -124,6 +198,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                   <div>
                     <label className={labelClass}>Category</label>
                     <select 
+                      disabled={isSaving}
                       className={selectClass} 
                       value={blogData.category || 'Buying Guides'} 
                       onChange={e => setBlogData({...blogData, category: e.target.value})}
@@ -141,6 +216,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                     <label className={labelClass}>Author Name</label>
                     <input 
                       required 
+                      disabled={isSaving}
                       type="text" 
                       className={inputClass} 
                       value={blogData.author || ''} 
@@ -151,6 +227,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                     <label className={labelClass}>Read Time (e.g. 5 min read)</label>
                     <input 
                       required 
+                      disabled={isSaving}
                       type="text" 
                       className={inputClass} 
                       value={blogData.readTime || ''} 
@@ -163,6 +240,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                   <label className={labelClass}>Short Excerpt (Summary)</label>
                   <input 
                     required 
+                    disabled={isSaving}
                     type="text" 
                     placeholder="Provide a brief summary of the article..."
                     className={inputClass} 
@@ -175,9 +253,10 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                   <label className={labelClass}>Full Article Content</label>
                   <textarea 
                     required 
+                    disabled={isSaving}
                     rows={8}
                     placeholder="Write your article content here..."
-                    className="w-full border border-outline/30 bg-transparent p-4 rounded-sm focus:border-primary outline-none transition-colors text-sm font-sans leading-relaxed resize-y" 
+                    className="w-full border border-outline/30 bg-transparent p-4 rounded-sm focus:border-primary outline-none transition-colors text-sm font-sans leading-relaxed resize-y disabled:opacity-50" 
                     value={blogData.content || ''} 
                     onChange={e => setBlogData({...blogData, content: e.target.value})} 
                   />
@@ -186,6 +265,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                 <div>
                   <label className={labelClass}>Tags (comma-separated, e.g. Heritage, Design, Cebu)</label>
                   <input 
+                    disabled={isSaving}
                     type="text" 
                     placeholder="Real Estate, Buying, Invest"
                     className={inputClass} 
@@ -202,6 +282,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                     <label className={labelClass}>Event Title</label>
                     <input 
                       required 
+                      disabled={isSaving}
                       type="text" 
                       className={inputClass} 
                       value={eventData.title || ''} 
@@ -211,6 +292,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                   <div>
                     <label className={labelClass}>Event Category</label>
                     <select 
+                      disabled={isSaving}
                       className={selectClass} 
                       value={eventData.category || 'Open House'} 
                       onChange={e => setEventData({...eventData, category: e.target.value as any})}
@@ -228,6 +310,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                     <label className={labelClass}>Date (e.g. June 6, 2026)</label>
                     <input 
                       required 
+                      disabled={isSaving}
                       type="text" 
                       placeholder="e.g. June 6, 2026"
                       className={inputClass} 
@@ -239,6 +322,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                     <label className={labelClass}>Time Slot (e.g. 9:00 AM - 4:00 PM)</label>
                     <input 
                       required 
+                      disabled={isSaving}
                       type="text" 
                       placeholder="e.g. 9:00 AM - 4:00 PM"
                       className={inputClass} 
@@ -252,6 +336,7 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                   <label className={labelClass}>Location Address</label>
                   <input 
                     required 
+                    disabled={isSaving}
                     type="text" 
                     placeholder="e.g. Yanessa Country Homes, Consolacion, Cebu"
                     className={inputClass} 
@@ -264,9 +349,10 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                   <label className={labelClass}>Event Description</label>
                   <textarea 
                     required 
+                    disabled={isSaving}
                     rows={4}
                     placeholder="Provide a comprehensive description of the event, itinerary, or agenda..."
-                    className="w-full border border-outline/30 bg-transparent p-4 rounded-sm focus:border-primary outline-none transition-colors text-sm font-sans leading-relaxed resize-y" 
+                    className="w-full border border-outline/30 bg-transparent p-4 rounded-sm focus:border-primary outline-none transition-colors text-sm font-sans leading-relaxed resize-y disabled:opacity-50" 
                     value={eventData.description || ''} 
                     onChange={e => setEventData({...eventData, description: e.target.value})} 
                   />
@@ -275,9 +361,10 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
                 <div>
                   <label className={labelClass}>Event Highlights (one per line)</label>
                   <textarea 
+                    disabled={isSaving}
                     rows={4}
                     placeholder="e.g.&#10;Complimentary Visayan buffet&#10;Founder keynote speech&#10;Special event reservation discounts"
-                    className="w-full border border-outline/30 bg-transparent p-4 rounded-sm focus:border-primary outline-none transition-colors text-sm font-sans leading-relaxed resize-y" 
+                    className="w-full border border-outline/30 bg-transparent p-4 rounded-sm focus:border-primary outline-none transition-colors text-sm font-sans leading-relaxed resize-y disabled:opacity-50" 
                     value={highlightsInput} 
                     onChange={e => setHighlightsInput(e.target.value)} 
                   />
@@ -290,9 +377,10 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
               <label className={labelClass}>Featured Cover Image</label>
               <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <input 
+                  disabled={isSaving}
                   type="file" 
                   accept="image/*"
-                  className={inputClass + " flex-1 file:mr-4 file:rounded-sm file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-mono file:uppercase file:tracking-widest file:text-primary hover:file:bg-primary/20"} 
+                  className={inputClass + " flex-1 file:mr-4 file:rounded-sm file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-mono file:uppercase file:tracking-widest file:text-primary hover:file:bg-primary/20 disabled:opacity-50"} 
                   onChange={handleImageUpload} 
                 />
                 {imageUrl && (
@@ -310,17 +398,19 @@ export const MediaFormModal: React.FC<MediaFormModalProps> = ({ isOpen, onClose,
         <div className="border-t border-outline/10 p-6 flex justify-end gap-4 bg-background-warm/50">
           <button 
             type="button" 
+            disabled={isSaving}
             onClick={onClose}
-            className="px-6 py-3 border border-outline/30 font-mono text-[9px] uppercase tracking-widest text-on-surface-variant hover:bg-outline/5 transition-all active:scale-95 cursor-pointer rounded-sm bg-transparent outline-none"
+            className="px-6 py-3 border border-outline/30 font-mono text-[9px] uppercase tracking-widest text-on-surface-variant hover:bg-outline/5 transition-all active:scale-95 cursor-pointer rounded-sm bg-transparent outline-none disabled:opacity-50"
           >
             Cancel
           </button>
           <button 
             type="submit" 
             form="media-form"
-            className="px-8 py-3 bg-primary text-white font-mono text-[9px] uppercase tracking-widest hover:bg-primary-light transition-all active:scale-95 cursor-pointer rounded-sm shadow-md border-0 outline-none"
+            disabled={isSaving}
+            className="px-8 py-3 bg-primary text-white font-mono text-[9px] uppercase tracking-widest hover:bg-primary-light transition-all active:scale-95 cursor-pointer rounded-sm shadow-md border-0 outline-none disabled:opacity-50 flex items-center gap-2"
           >
-            {initialData ? "Save Changes" : (type === 'blog' ? "Publish Article" : "Create Event")}
+            {isSaving ? "Saving..." : (initialData ? "Save Changes" : (type === 'blog' ? "Publish Article" : "Create Event"))}
           </button>
         </div>
       </div>

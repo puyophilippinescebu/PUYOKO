@@ -130,10 +130,17 @@ export const MediaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       const { data, error } = await supabase.from('blogs').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      if (data && data.length > 0) {
-        setBlogs(data);
+      if (data) {
+        const mappedData = data.map((blog: any) => {
+          const { read_time, ...rest } = blog;
+          return {
+            ...rest,
+            readTime: read_time || blog.readTime || ''
+          } as BlogPost;
+        });
+        setBlogs(mappedData);
         blogsSuccess = true;
-        localStorage.setItem('puyoko_blogs', JSON.stringify(data));
+        localStorage.setItem('puyoko_blogs', JSON.stringify(mappedData));
       }
     } catch (err) {
       console.warn("Supabase blogs fetch failed, falling back to local cache.", err);
@@ -143,7 +150,7 @@ export const MediaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      if (data && data.length > 0) {
+      if (data) {
         setEvents(data);
         eventsSuccess = true;
         localStorage.setItem('puyoko_events', JSON.stringify(data));
@@ -197,93 +204,177 @@ export const MediaProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const addBlog = async (newBlog: Omit<BlogPost, 'id'>) => {
     const blogId = `BLOG-${Math.floor(Math.random() * 9000) + 1000}`;
-    const blogToInsert = { ...newBlog, id: blogId } as BlogPost;
-    const updated = [blogToInsert, ...blogs];
-    
-    setBlogs(updated);
-    localStorage.setItem('puyoko_blogs', JSON.stringify(updated));
+    const { readTime, ...rest } = newBlog;
+    const blogToInsert = { 
+      ...rest, 
+      id: blogId,
+      read_time: readTime 
+    };
 
-    try {
-      const { error } = await supabase.from('blogs').insert([blogToInsert]);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase blog write failed:", err);
-      alert("Warning: Could not save blog to cloud database. Saved locally for now but will be lost if you reload.");
+    // 1. Write to database first
+    const { error } = await supabase.from('blogs').insert([blogToInsert]);
+    if (error) {
+      console.error("Supabase blog write failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to save blog to cloud database."}`);
     }
+
+    // 2. Poll verify until visible
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('blogs').select('id').eq('id', blogId);
+      if (data && data.length > 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The blog post was saved but is not queryable from the database yet.");
+    }
+
+    // 3. Force re-fetch from server to update state and cache
+    await fetchMedia();
   };
 
   const updateBlog = async (updatedBlog: BlogPost) => {
-    const updated = blogs.map(b => b.id === updatedBlog.id ? updatedBlog : b);
-    setBlogs(updated);
-    localStorage.setItem('puyoko_blogs', JSON.stringify(updated));
+    const { readTime, ...rest } = updatedBlog;
+    const blogToUpdate = {
+      ...rest,
+      read_time: readTime
+    };
 
-    try {
-      const { error } = await supabase.from('blogs').update(updatedBlog).eq('id', updatedBlog.id);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase blog update failed:", err);
-      alert("Warning: Could not save blog updates to cloud database. Saved locally for now but will be lost if you reload.");
+    // 1. Write to database first
+    const { error } = await supabase.from('blogs').update(blogToUpdate).eq('id', updatedBlog.id);
+    if (error) {
+      console.error("Supabase blog update failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to update blog in cloud database."}`);
     }
+
+    // 2. Poll verify until visible and matches title
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('blogs').select('title').eq('id', updatedBlog.id);
+      if (data && data.length > 0 && data[0].title === updatedBlog.title) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The updates were saved but are not queryable from the database yet.");
+    }
+
+    // 3. Force re-fetch from server
+    await fetchMedia();
   };
 
   const deleteBlog = async (id: string) => {
-    const filtered = blogs.filter(b => b.id !== id);
-    setBlogs(filtered);
-    localStorage.setItem('puyoko_blogs', JSON.stringify(filtered));
-
-    try {
-      const { error } = await supabase.from('blogs').delete().eq('id', id);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase blog delete failed:", err);
-      alert("Warning: Could not save blog deletion to cloud. Saved locally for now.");
+    // 1. Write to database first
+    const { error } = await supabase.from('blogs').delete().eq('id', id);
+    if (error) {
+      console.error("Supabase blog delete failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to delete blog from cloud database."}`);
     }
+
+    // 2. Poll verify until deleted
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('blogs').select('id').eq('id', id);
+      if (!data || data.length === 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The blog was deleted in cloud but is still queryable.");
+    }
+
+    // 3. Force re-fetch from server
+    await fetchMedia();
   };
 
   const addEvent = async (newEvent: Omit<EventPost, 'id'>) => {
     const eventId = `EVENT-${Math.floor(Math.random() * 9000) + 1000}`;
     const eventToInsert = { ...newEvent, id: eventId } as EventPost;
-    const updated = [eventToInsert, ...events];
 
-    setEvents(updated);
-    localStorage.setItem('puyoko_events', JSON.stringify(updated));
-
-    try {
-      const { error } = await supabase.from('events').insert([eventToInsert]);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase event write failed:", err);
-      alert("Warning: Could not save event to cloud database. Saved locally for now but will be lost if you reload.");
+    // 1. Write to database first
+    const { error } = await supabase.from('events').insert([eventToInsert]);
+    if (error) {
+      console.error("Supabase event write failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to save event to cloud database."}`);
     }
+
+    // 2. Poll verify until visible
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('events').select('id').eq('id', eventId);
+      if (data && data.length > 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The event was saved but is not queryable from the database yet.");
+    }
+
+    // 3. Force re-fetch from server
+    await fetchMedia();
   };
 
   const updateEvent = async (updatedEvent: EventPost) => {
-    const updated = events.map(e => e.id === updatedEvent.id ? updatedEvent : e);
-    setEvents(updated);
-    localStorage.setItem('puyoko_events', JSON.stringify(updated));
-
-    try {
-      const { error } = await supabase.from('events').update(updatedEvent).eq('id', updatedEvent.id);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase event update failed:", err);
-      alert("Warning: Could not save event updates to cloud database. Saved locally for now but will be lost if you reload.");
+    // 1. Write to database first
+    const { error } = await supabase.from('events').update(updatedEvent).eq('id', updatedEvent.id);
+    if (error) {
+      console.error("Supabase event update failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to update event in cloud database."}`);
     }
+
+    // 2. Poll verify until visible and matches title
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('events').select('title').eq('id', updatedEvent.id);
+      if (data && data.length > 0 && data[0].title === updatedEvent.title) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The updates were saved but are not queryable from the database yet.");
+    }
+
+    // 3. Force re-fetch from server
+    await fetchMedia();
   };
 
   const deleteEvent = async (id: string) => {
-    const filtered = events.filter(e => e.id !== id);
-    setEvents(filtered);
-    localStorage.setItem('puyoko_events', JSON.stringify(filtered));
-
-    try {
-      const { error } = await supabase.from('events').delete().eq('id', id);
-      if (error) throw error;
-    } catch (err) {
-      console.error("Supabase event delete failed:", err);
-      alert("Warning: Could not save event deletion to cloud. Saved locally for now.");
+    // 1. Write to database first
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (error) {
+      console.error("Supabase event delete failed:", error);
+      throw new Error(`Database error: ${error.message || "Failed to delete event from cloud database."}`);
     }
+
+    // 2. Poll verify until deleted
+    let verified = false;
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase.from('events').select('id').eq('id', id);
+      if (!data || data.length === 0) {
+        verified = true;
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!verified) {
+      throw new Error("Verification failed: The event was deleted in cloud but is still queryable.");
+    }
+
+    // 3. Force re-fetch from server
+    await fetchMedia();
   };
+
 
   return (
     <MediaContext.Provider value={{

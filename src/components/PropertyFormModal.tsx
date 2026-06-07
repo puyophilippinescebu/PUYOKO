@@ -97,6 +97,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [landmarksList, setLandmarksList] = useState<string[]>(['']);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -124,6 +125,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       setImageUrls([]);
       setLandmarksList(['']);
     }
+    setError(null);
   }, [initialData, isOpen]);
 
   if (!isOpen) return null;
@@ -179,6 +181,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setError(null);
     try {
       const finalData = {
         ...formData,
@@ -190,8 +193,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       };
       await onSave(finalData);
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save property:", err);
+      setError(err.message || "Failed to save property. Please check your database connection or schema.");
     } finally {
       setSubmitting(false);
     }
@@ -205,6 +209,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       return;
     }
     setSubmitting(true);
+    setError(null);
     try {
       const finalData = {
         ...formData,
@@ -217,8 +222,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       };
       await onSave(finalData);
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save archived property:", err);
+      setError(err.message || "Failed to save archived property listing.");
     } finally {
       setSubmitting(false);
     }
@@ -229,19 +235,25 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-jade-deep/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-jade-deep/40 backdrop-blur-sm" onClick={submitting ? undefined : onClose} />
       
       <div className="relative w-full max-w-2xl bg-white/95 frosted-jade border border-outline/20 shadow-2xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between border-b border-outline/10 p-6">
           <h2 className="font-display text-2xl font-light text-primary tracking-wide">
             {initialData ? "Edit Property" : "Add New Property"}
           </h2>
-          <button onClick={onClose} className="text-outline hover:text-primary transition-colors active:scale-95">
+          <button onClick={onClose} disabled={submitting} className="text-outline hover:text-primary transition-colors active:scale-95 disabled:opacity-30">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="overflow-y-auto p-8 flex-1">
+          {error && (
+            <div className="mb-6 p-4 rounded bg-red-50 border border-red-200 text-red-800 text-xs font-sans">
+              <span className="font-bold uppercase tracking-wider block mb-1">Failed to Save Property / 保存失败</span>
+              {error}
+            </div>
+          )}
           <form id="property-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">

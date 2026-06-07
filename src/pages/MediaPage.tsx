@@ -94,12 +94,17 @@ export const MediaPage: React.FC = () => {
 
   const handleDeleteConfirm = async () => {
     if (!itemToDelete) return;
-    if (itemToDelete.type === 'blog') {
-      await deleteBlog(itemToDelete.id);
-    } else {
-      await deleteEvent(itemToDelete.id);
+    try {
+      if (itemToDelete.type === 'blog') {
+        await deleteBlog(itemToDelete.id);
+      } else {
+        await deleteEvent(itemToDelete.id);
+      }
+      setItemToDelete(null);
+    } catch (err: any) {
+      console.error("Failed to delete item:", err);
+      alert(`Delete Failed: ${err.message || "Could not delete from database."}`);
     }
-    setItemToDelete(null);
   };
 
   return (
