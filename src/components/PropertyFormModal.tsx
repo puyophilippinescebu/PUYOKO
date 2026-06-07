@@ -3,7 +3,7 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Property } from '../types';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useAuth } from '../contexts/AuthContext';
-import { normalizeAgentName } from '../lib/utils';
+import { normalizeAgentName, cn } from '../lib/utils';
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -103,6 +103,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
   const [amenitiesVideoUrl, setAmenitiesVideoUrl] = useState<string>('');
   const [amenitiesInput, setAmenitiesInput] = useState<string>('');
 
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [draggedType, setDraggedType] = useState<'property' | 'amenity' | null>(null);
+
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -173,18 +176,37 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     });
   };
 
-  const moveImage = (index: number, direction: 'left' | 'right') => {
-    if (direction === 'left' && index === 0) return;
-    if (direction === 'right' && index === imageUrls.length - 1) return;
+  const handleDragStart = (e: React.DragEvent, index: number, type: 'property' | 'amenity') => {
+    setDraggedIndex(index);
+    setDraggedType(type);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
 
-    const newUrls = [...imageUrls];
-    const targetIndex = direction === 'left' ? index - 1 : index + 1;
-    // Swap
-    const temp = newUrls[index];
-    newUrls[index] = newUrls[targetIndex];
-    newUrls[targetIndex] = temp;
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
 
-    setImageUrls(newUrls);
+  const handleDrop = (e: React.DragEvent, targetIndex: number, type: 'property' | 'amenity') => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedType !== type || draggedIndex === targetIndex) return;
+
+    if (type === 'property') {
+      const newUrls = [...imageUrls];
+      const draggedItem = newUrls[draggedIndex];
+      newUrls.splice(draggedIndex, 1);
+      newUrls.splice(targetIndex, 0, draggedItem);
+      setImageUrls(newUrls);
+    } else {
+      const newUrls = [...amenitiesImages];
+      const draggedItem = newUrls[draggedIndex];
+      newUrls.splice(draggedIndex, 1);
+      newUrls.splice(targetIndex, 0, draggedItem);
+      setAmenitiesImages(newUrls);
+    }
+
+    setDraggedIndex(null);
+    setDraggedType(null);
   };
 
   const handleAmenitiesImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,20 +222,6 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       };
       reader.readAsDataURL(file);
     });
-  };
-
-  const moveAmenitiesImage = (index: number, direction: 'left' | 'right') => {
-    if (direction === 'left' && index === 0) return;
-    if (direction === 'right' && index === amenitiesImages.length - 1) return;
-
-    const newUrls = [...amenitiesImages];
-    const targetIndex = direction === 'left' ? index - 1 : index + 1;
-    // Swap
-    const temp = newUrls[index];
-    newUrls[index] = newUrls[targetIndex];
-    newUrls[targetIndex] = temp;
-
-    setAmenitiesImages(newUrls);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -490,43 +498,36 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                 {imageUrls.length > 0 && (
                   <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
                     {imageUrls.map((url, index) => (
-                      <div key={index} className="relative h-32 w-48 shrink-0 overflow-hidden rounded-sm border border-outline/30 group">
+                      <div 
+                        key={index} 
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index, 'property')}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index, 'property')}
+                        className={cn(
+                          "relative h-32 w-48 shrink-0 overflow-hidden rounded-sm border border-outline/30 group cursor-grab active:cursor-grabbing hover:border-primary transition-all duration-200",
+                          draggedIndex === index && draggedType === 'property' ? "opacity-30 border-dashed border-primary scale-95" : ""
+                        )}
+                      >
                         {url.startsWith('data:video/') || url.endsWith('.mp4') || url.endsWith('.mov') || url.endsWith('.webm') ? (
-                          <div className="relative h-full w-full bg-black">
+                          <div className="relative h-full w-full bg-black pointer-events-none">
                             <video src={url} className="h-full w-full object-cover" muted playsInline />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/35 pointer-events-none">
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/35">
                               <span className="font-mono text-[8px] font-bold text-white uppercase tracking-widest bg-primary px-2 py-0.5 rounded-sm">VIDEO</span>
                             </div>
                           </div>
                         ) : (
-                          <img src={url} alt={`Preview ${index + 1}`} className="h-full w-full object-cover" />
+                          <img src={url} alt={`Preview ${index + 1}`} className="h-full w-full object-cover pointer-events-none select-none" />
                         )}
                         <button
                           type="button"
                           onClick={() => setImageUrls(urls => urls.filter((_, i) => i !== index))}
-                          className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10"
+                          className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10 cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 bg-white/95 backdrop-blur-sm border border-outline/25 px-1.5 py-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity rounded-sm z-10">
-                          <button
-                            type="button"
-                            disabled={index === 0}
-                            onClick={() => moveImage(index, 'left')}
-                            className="p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                            title="Move Left"
-                          >
-                            <ChevronLeft className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={index === imageUrls.length - 1}
-                            onClick={() => moveImage(index, 'right')}
-                            className="p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                            title="Move Right"
-                          >
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-2 py-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity rounded-sm z-10 pointer-events-none">
+                          <span className="font-mono text-[7px] font-bold text-white uppercase tracking-widest select-none">Drag to Reorder</span>
                         </div>
                       </div>
                     ))}
@@ -560,43 +561,36 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                 {amenitiesImages.length > 0 && (
                   <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
                     {amenitiesImages.map((url, index) => (
-                      <div key={index} className="relative h-32 w-48 shrink-0 overflow-hidden rounded-sm border border-outline/30 group">
+                      <div 
+                        key={index} 
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index, 'amenity')}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index, 'amenity')}
+                        className={cn(
+                          "relative h-32 w-48 shrink-0 overflow-hidden rounded-sm border border-outline/30 group cursor-grab active:cursor-grabbing hover:border-primary transition-all duration-200",
+                          draggedIndex === index && draggedType === 'amenity' ? "opacity-30 border-dashed border-primary scale-95" : ""
+                        )}
+                      >
                         {url.startsWith('data:video/') || url.endsWith('.mp4') || url.endsWith('.mov') || url.endsWith('.webm') ? (
-                          <div className="relative h-full w-full bg-black">
+                          <div className="relative h-full w-full bg-black pointer-events-none">
                             <video src={url} className="h-full w-full object-cover" muted playsInline />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/35 pointer-events-none">
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/35">
                               <span className="font-mono text-[8px] font-bold text-white uppercase tracking-widest bg-primary px-2 py-0.5 rounded-sm">VIDEO</span>
                             </div>
                           </div>
                         ) : (
-                          <img src={url} alt={`Amenities Preview ${index + 1}`} className="h-full w-full object-cover" />
+                          <img src={url} alt={`Amenities Preview ${index + 1}`} className="h-full w-full object-cover pointer-events-none select-none" />
                         )}
                         <button
                           type="button"
                           onClick={() => setAmenitiesImages(urls => urls.filter((_, i) => i !== index))}
-                          className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10"
+                          className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10 cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 bg-white/95 backdrop-blur-sm border border-outline/25 px-1.5 py-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity rounded-sm z-10">
-                          <button
-                            type="button"
-                            disabled={index === 0}
-                            onClick={() => moveAmenitiesImage(index, 'left')}
-                            className="p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                            title="Move Left"
-                          >
-                            <ChevronLeft className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={index === amenitiesImages.length - 1}
-                            onClick={() => moveAmenitiesImage(index, 'right')}
-                            className="p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                            title="Move Right"
-                          >
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-2 py-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity rounded-sm z-10 pointer-events-none">
+                          <span className="font-mono text-[7px] font-bold text-white uppercase tracking-widest select-none">Drag to Reorder</span>
                         </div>
                       </div>
                     ))}

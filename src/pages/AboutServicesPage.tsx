@@ -72,7 +72,7 @@ export const AboutServicesPage: React.FC = () => {
       description: 'We protect and preserve your legacy. Our comprehensive property stewardship services provide meticulous maintenance and upkeep, ensuring that every minimalist detail, landscape, and structural element remains pristine and functions flawlessly.',
       highlights: [
         'Routine preventative maintenance inspections and reporting',
-        'Landscape curation and structural integrity stewardship',
+        'Managing landscape design and property preservation.',
         'Coordination of local contractors for repairs and technical tasks',
         'Proactive asset preservation for remote owners and investors'
       ]
@@ -84,7 +84,7 @@ export const AboutServicesPage: React.FC = () => {
       chineseTranslation: '企业伙伴关系',
       tagline: 'Bespoke Corporate Property Solutions',
       icon: Building2,
-      description: 'We build tailored corporate partnerships to support local and multinational organizations. From executive housing and relocation assistance to commercial property acquisitions, we streamline operations with elite corporate real estate support.',
+      description: 'We partner with local and overseas organizations to simplify their corporate real estate needs. From executive relocation and housing to commercial property acquisitions, we handle the complexities so your operations run seamlessly',
       highlights: [
         'Customized relocation packages for multinational executives',
         'Corporate housing leases and strategic asset portfolios',
