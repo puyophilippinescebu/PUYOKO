@@ -153,7 +153,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Materials Module - Natural Tones Design Layout */}
+      {/* Services Module - Natural Tones Design Layout */}
       <section className="bg-primary text-white pt-24 pb-32 relative mt-16 md:mt-24">
         {/* Curvy Top Divider */}
         <div className="absolute bottom-full left-0 w-full overflow-hidden leading-none flex items-end -mb-[2px]">
@@ -165,36 +165,37 @@ export const LandingPage: React.FC = () => {
         <div className="mx-auto max-w-container-max px-gutter grid lg:grid-cols-2 gap-20 items-center">
           <div>
             <div className="mb-8 flex items-center gap-4">
-              <span className="text-primary-neon text-xs font-mono tracking-[0.4em] uppercase">PUYOKO / 祥</span>
+              <span className="text-primary-neon text-xs font-mono tracking-[0.4em] uppercase">SERVICES / 服务</span>
               <div className="h-[1px] w-20 bg-primary-neon/30"></div>
             </div>
-            <h2 className="font-display text-5xl font-light mb-8 text-white">Rooted in <span className="italic-serif text-primary-neon">Permanence</span></h2>
+            <h2 className="font-display text-5xl font-light mb-8 text-white">Our Core <span className="italic-serif text-primary-neon">Services</span></h2>
             <div className="space-y-6 font-sans text-lg text-white/80 leading-relaxed max-w-md">
               <p>
-                Started from humble freelance marketing solutions, we have blossomed into Cebu's premier boutique real estate agency.
+                Puyoko Premium Estates offers a comprehensive suite of real estate solutions. From trusted advisory to bespoke design and corporate alliances, we ensure seamless transactions and preservation.
               </p>
               <p>
-                Serving families who value both the heavy foundations of the past and the light, glass-filled future of Cebuano living.
+                We collaborate with Cebu's top-tier accredited brokers and design visionaries to deliver high-production results that honor Visayan heritage.
               </p>
             </div>
             <button 
-              onClick={() => navigate('/about')}
-              className="mt-12 px-10 py-4 border border-white/30 font-mono text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-primary transition-all active:scale-95"
+              onClick={() => navigate('/about/services')}
+              className="mt-12 px-10 py-4 border border-white/30 font-mono text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-primary transition-all active:scale-95 cursor-pointer"
             >
-              Details / 细节
+              Explore Services / 探索服务
             </button>
           </div>
           
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-10 space-y-10">
-            <h3 className="uppercase tracking-[0.4em] text-xs font-bold text-primary-neon">Materials / 材料</h3>
+            <h3 className="uppercase tracking-[0.4em] text-xs font-bold text-primary-neon">Ecosystem / 服务体系</h3>
             <div className="space-y-8">
               {[
-                { name: "Capiz Shell / 窗", val: "78% Integrated" },
-                { name: "Narra Wood / 木", val: "Sustainable Sourced" },
-                { name: "Adobe Stone / 石", val: "Local Extraction" }
+                { name: "Brokerage & Advisory / 房产经纪", val: "Accredited Realty" },
+                { name: "Interior Design / 室内设计", val: "Silent Luxury" },
+                { name: "Property Stewardship / 物业托管", val: "Preserving Legacy" },
+                { name: "Corporate Alliances / 企业伙伴", val: "Tailored Solutions" }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <span className="text-lg italic-serif">{item.name}</span>
+                  <span className="text-base italic-serif">{item.name}</span>
                   <span className="text-[10px] font-mono uppercase tracking-widest text-primary-neon">{item.val}</span>
                 </div>
               ))}
