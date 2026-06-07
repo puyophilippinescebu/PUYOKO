@@ -351,13 +351,10 @@ export const LandingPage: React.FC = () => {
             <h2 className="font-display text-4xl font-light text-primary mb-6">Jan Eric <span className="italic-serif text-primary-light">Saladaga</span></h2>
             <div className="space-y-6 font-sans text-on-surface-variant text-lg leading-relaxed">
               <p>
-                As the founder of Puyoko, Jan Eric brings a unique perspective to Cebu's real estate market. 
-                Combining a deep respect for Filipino heritage with a sharp eye for modern architectural potential, 
-                he has built a platform dedicated to properties that tell a story.
+                Started building his brand at 22 while on his internship, his journey into real estate began with a profound appreciation for the local spaces in Cebu. Starting as a visionary looking to bridge the gap between historic Filipino homes and modern living, he founded Puyoko to redefine what a luxury real estate experience should be.
               </p>
               <p>
-                Under his leadership, Puyoko transcends traditional real estate brokerage, acting instead as a curator 
-                of spaces where history and future prosperity intersect seamlessly.
+                His philosophy is simple: a home is not just a structure, but a canvas for life's most important moments. Under his guidance, Puyoko has grown into a trusted name for discerning clients seeking properties that offer both heritage and modernity.
               </p>
             </div>
             <button 
