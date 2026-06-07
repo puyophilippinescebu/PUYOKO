@@ -22,6 +22,9 @@ export interface Property {
   originalPrice?: number;
   accommodatedBy?: string;
   createdBy?: string;
+  amenities?: string[];
+  amenitiesImages?: string[];
+  amenitiesVideoUrl?: string;
 }
 
 export interface PropertyRequest {

@@ -286,6 +286,65 @@ export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, on
                   </p>
                 </div>
 
+                {/* Features & Amenities List */}
+                {property.amenities && property.amenities.length > 0 && (
+                  <div className="mb-10 border-t border-outline/10 pt-6">
+                    <h4 className="mb-4 font-mono text-[10px] font-bold uppercase tracking-widest text-on-surface">Features & Amenities</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {property.amenities.map((amenity, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-sm text-on-surface-variant">
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
+                          <span className="font-sans font-medium">{amenity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Amenities Tour & Gallery */}
+                {((property.amenitiesImages && property.amenitiesImages.length > 0) || property.amenitiesVideoUrl) && (
+                  <div className="mb-12 border-t border-outline/10 pt-6">
+                    <h4 className="mb-4 font-mono text-[10px] font-bold uppercase tracking-widest text-on-surface">Amenities Gallery</h4>
+                    
+                    <div className="space-y-6">
+                      {/* Amenities Video walkthrough if present */}
+                      {property.amenitiesVideoUrl && (
+                        <div className="aspect-video w-full overflow-hidden rounded-xl bg-black relative border border-outline/15 shadow-sm">
+                          {(() => {
+                            const embedData = getVideoEmbedUrl(property.amenitiesVideoUrl);
+                            return embedData ? (
+                              <iframe
+                                src={embedData.embedUrl}
+                                title="Amenities Video Walkthrough"
+                                className="w-full h-full border-0 absolute inset-0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <video src={property.amenitiesVideoUrl} controls className="w-full h-full absolute inset-0" />
+                            );
+                          })()}
+                        </div>
+                      )}
+
+                      {/* Amenities Images grid */}
+                      {property.amenitiesImages && property.amenitiesImages.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {property.amenitiesImages.map((imgUrl, idx) => (
+                            <div key={idx} className="group relative aspect-video overflow-hidden rounded-lg bg-surface-muted border border-outline/15 cursor-pointer shadow-sm hover:shadow-md transition-shadow">
+                              {imgUrl.startsWith('data:video/') || imgUrl.endsWith('.mp4') || imgUrl.endsWith('.mov') || imgUrl.endsWith('.webm') ? (
+                                <video src={imgUrl} className="h-full w-full object-cover" muted playsInline />
+                              ) : (
+                                <img src={imgUrl} alt={`Amenities ${idx + 1}`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-auto grid grid-cols-2 gap-4">
                   <button className="bg-primary py-4 font-mono text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-primary-light btn-press">
                     Schedule a Viewing

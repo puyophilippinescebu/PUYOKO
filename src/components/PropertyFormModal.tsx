@@ -99,6 +99,10 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [amenitiesImages, setAmenitiesImages] = useState<string[]>([]);
+  const [amenitiesVideoUrl, setAmenitiesVideoUrl] = useState<string>('');
+  const [amenitiesInput, setAmenitiesInput] = useState<string>('');
+
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -110,6 +114,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
         createdBy: initialData.createdBy || ''
       });
       setImageUrls(initialData.images || []);
+      setAmenitiesImages(initialData.amenitiesImages || []);
+      setAmenitiesVideoUrl(initialData.amenitiesVideoUrl || '');
+      setAmenitiesInput(initialData.amenities ? initialData.amenities.join(', ') : '');
       if (initialData.landmarks) {
         const parsed = initialData.landmarks.split(/\r?\n/).filter(Boolean);
         setLandmarksList(parsed.length > 0 ? parsed : ['']);
@@ -123,6 +130,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
         accommodatedBy: '', createdBy: ''
       });
       setImageUrls([]);
+      setAmenitiesImages([]);
+      setAmenitiesVideoUrl('');
+      setAmenitiesInput('');
       setLandmarksList(['']);
     }
     setError(null);
@@ -177,6 +187,34 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     setImageUrls(newUrls);
   };
 
+  const handleAmenitiesImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const resultStr = reader.result as string;
+        const compressed = await compressImage(resultStr);
+        setAmenitiesImages(prev => [...prev, compressed]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const moveAmenitiesImage = (index: number, direction: 'left' | 'right') => {
+    if (direction === 'left' && index === 0) return;
+    if (direction === 'right' && index === amenitiesImages.length - 1) return;
+
+    const newUrls = [...amenitiesImages];
+    const targetIndex = direction === 'left' ? index - 1 : index + 1;
+    // Swap
+    const temp = newUrls[index];
+    newUrls[index] = newUrls[targetIndex];
+    newUrls[targetIndex] = temp;
+
+    setAmenitiesImages(newUrls);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +224,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       const finalData = {
         ...formData,
         images: imageUrls,
+        amenities: amenitiesInput.split(',').map(a => a.trim()).filter(Boolean),
+        amenitiesImages: amenitiesImages,
+        amenitiesVideoUrl: amenitiesVideoUrl,
         accommodatedBy: formData.accommodatedBy ? normalizeAgentName(formData.accommodatedBy) : '',
         createdBy: formData.createdBy || userEmail || '',
         pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
@@ -214,6 +255,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       const finalData = {
         ...formData,
         images: imageUrls,
+        amenities: amenitiesInput.split(',').map(a => a.trim()).filter(Boolean),
+        amenitiesImages: amenitiesImages,
+        amenitiesVideoUrl: amenitiesVideoUrl,
         accommodatedBy: formData.accommodatedBy ? normalizeAgentName(formData.accommodatedBy) : '',
         createdBy: formData.createdBy || userEmail || '',
         pricePeriod: formData.type === 'For Sale' ? '' : formData.pricePeriod,
@@ -488,6 +532,81 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Features & Amenities */}
+              <div className="md:col-span-2 border-t border-outline/10 pt-6">
+                <label className={labelClass}>Features & Amenities (Comma-separated)</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Swimming Pool, Fitness Gym, 24/7 Security, Playground, Clubhouse" 
+                  className={inputClass} 
+                  value={amenitiesInput} 
+                  onChange={e => setAmenitiesInput(e.target.value)} 
+                />
+              </div>
+
+              {/* Amenities Images & Video Section */}
+              <div className="md:col-span-2">
+                <label className={labelClass}>Amenities Images</label>
+                <input 
+                  type="file" 
+                  accept="image/*,video/*" 
+                  multiple
+                  className={inputClass + " file:mr-4 file:rounded-sm file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-mono file:uppercase file:tracking-widest file:text-primary hover:file:bg-primary/20"} 
+                  onChange={handleAmenitiesImageUpload} 
+                />
+
+                {amenitiesImages.length > 0 && (
+                  <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+                    {amenitiesImages.map((url, index) => (
+                      <div key={index} className="relative h-32 w-48 shrink-0 overflow-hidden rounded-sm border border-outline/30 group">
+                        {url.startsWith('data:video/') || url.endsWith('.mp4') || url.endsWith('.mov') || url.endsWith('.webm') ? (
+                          <div className="relative h-full w-full bg-black">
+                            <video src={url} className="h-full w-full object-cover" muted playsInline />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/35 pointer-events-none">
+                              <span className="font-mono text-[8px] font-bold text-white uppercase tracking-widest bg-primary px-2 py-0.5 rounded-sm">VIDEO</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <img src={url} alt={`Amenities Preview ${index + 1}`} className="h-full w-full object-cover" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setAmenitiesImages(urls => urls.filter((_, i) => i !== index))}
+                          className="absolute top-2 right-2 bg-red-500/90 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 bg-white/95 backdrop-blur-sm border border-outline/25 px-1.5 py-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity rounded-sm z-10">
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={() => moveAmenitiesImage(index, 'left')}
+                            className="p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                            title="Move Left"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === amenitiesImages.length - 1}
+                            onClick={() => moveAmenitiesImage(index, 'right')}
+                            className="p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                            title="Move Right"
+                          >
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className={labelClass}>Amenities Video Tour URL</label>
+                <input type="url" placeholder="e.g. YouTube/Vimeo tour link of amenities" className={inputClass} value={amenitiesVideoUrl} onChange={e => setAmenitiesVideoUrl(e.target.value)} />
               </div>
 
               <div className="md:col-span-2">
