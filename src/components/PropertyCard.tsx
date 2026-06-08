@@ -41,7 +41,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
         {property.images[0]?.startsWith('data:video/') || property.images[0]?.endsWith('.mp4') || property.images[0]?.endsWith('.mov') || property.images[0]?.endsWith('.webm') ? (
           <video
             src={property.images[0]}
-            className={cn("h-full w-full object-cover transition-transform duration-1000", onClick && "group-hover:scale-105")}
+            className={cn(
+              "h-full w-full object-cover transition-transform duration-1000", 
+              onClick && "group-hover:scale-105",
+              property.status === 'Unavailable' && "grayscale-[50%] opacity-90"
+            )}
             muted
             playsInline
             autoPlay
@@ -51,7 +55,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           <img
             src={property.images[0]}
             alt={property.title}
-            className={cn("h-full w-full object-cover transition-transform duration-1000", onClick && "group-hover:scale-110")}
+            className={cn(
+              "h-full w-full object-cover transition-transform duration-1000", 
+              onClick && "group-hover:scale-110",
+              property.status === 'Unavailable' && "grayscale-[50%] opacity-90"
+            )}
           />
         )}
         <div className="absolute left-4 top-4 sm:left-6 sm:top-6 bg-white/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-primary uppercase tracking-[0.25em] border border-outline/15 shadow-sm max-w-[85%] truncate" title={`${property.type} / ${normalizeLocation(property.city)}`}>
@@ -61,8 +69,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
         {['Archived', 'Unavailable'].includes(property.status) && (
           <div className={cn(
             "absolute left-4 top-12 sm:left-6 sm:top-14 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg",
-            property.status === 'Archived' && "bg-red-600/90",
-            property.status === 'Unavailable' && "bg-red-600/90"
+            property.status === 'Archived' && "bg-[#4B5563]/90 border border-white/10",
+            property.status === 'Unavailable' && "bg-[#5D6B65]/95 border border-white/10"
           )}>
             {property.status}
           </div>

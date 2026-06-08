@@ -155,13 +155,13 @@ export const PropertyDetailsPage: React.FC = () => {
       >
         {isVideo ? (
           <div className="relative h-full w-full">
-            <video src={img} className="h-full w-full object-cover" muted playsInline />
+            <video src={img} className={cn("h-full w-full object-cover", property.status === 'Unavailable' && "grayscale-[50%] opacity-90")} muted playsInline />
             <div className="absolute inset-0 flex items-center justify-center bg-black/25">
               <span className="font-mono text-[7px] font-bold text-white uppercase tracking-widest bg-primary px-1.5 py-0.5 rounded-sm">VIDEO</span>
             </div>
           </div>
         ) : (
-          <img src={img} alt={`${property.title} - ${idx + 1}`} className="h-full w-full object-cover transition-transform hover:scale-105 duration-300" />
+          <img src={img} alt={`${property.title} - ${idx + 1}`} className={cn("h-full w-full object-cover transition-transform hover:scale-105 duration-300", property.status === 'Unavailable' && "grayscale-[50%] opacity-90")} />
         )}
       </div>
     );
@@ -181,7 +181,7 @@ export const PropertyDetailsPage: React.FC = () => {
       >
         {isVideo ? (
           <div className="relative h-full w-full bg-black">
-            <video src={firstImg} className="h-full w-full object-cover" muted playsInline autoPlay loop />
+            <video src={firstImg} className={cn("h-full w-full object-cover", property.status === 'Unavailable' && "grayscale-[50%] opacity-90")} muted playsInline autoPlay loop />
             <div className="absolute inset-0 flex items-center justify-center bg-black/15 pointer-events-none">
               <span className="font-mono text-[9px] font-bold text-white uppercase tracking-widest bg-primary px-3 py-1.5 rounded-full border border-white/20 shadow-md">PLAY TOUR</span>
             </div>
@@ -190,7 +190,7 @@ export const PropertyDetailsPage: React.FC = () => {
           <img 
             src={firstImg} 
             alt={property.title} 
-            className="h-full w-full object-cover transition-transform hover:scale-[1.02] duration-500" 
+            className={cn("h-full w-full object-cover transition-transform hover:scale-[1.02] duration-500", property.status === 'Unavailable' && "grayscale-[50%] opacity-90")} 
           />
         )}
         {property.videoUrl && (
@@ -447,13 +447,13 @@ export const PropertyDetailsPage: React.FC = () => {
  
               <div className="flex flex-col gap-2">
                 {property.status === 'Unavailable' && (
-                  <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-red-800 text-xs font-sans mb-2 flex items-start gap-2.5">
-                    <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+                  <div className="p-4 rounded-xl border border-outline/20 bg-surface-muted/60 text-on-surface-variant text-xs font-sans mb-2 flex items-start gap-2.5 backdrop-blur-sm select-none">
+                    <AlertTriangle className="h-4 w-4 text-outline/80 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold uppercase tracking-wider block mb-0.5">
+                      <span className="font-bold uppercase tracking-wider block mb-0.5 text-primary">
                         Temporarily Unavailable
                       </span>
-                      <p className="text-red-700/90 leading-normal">
+                      <p className="text-on-surface-variant/90 leading-normal">
                         This estate is currently not available and cannot be toured or leased at this time.
                       </p>
                     </div>
