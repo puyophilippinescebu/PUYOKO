@@ -171,7 +171,7 @@ export const LandingPage: React.FC = () => {
             <h2 className="font-display text-5xl font-light mb-8 text-white">Our Core <span className="italic-serif text-primary-neon">Services</span></h2>
             <div className="space-y-6 font-sans text-lg text-white/80 leading-relaxed max-w-md">
               <p>
-                Puyoko Premium Estates offers a comprehensive suite of real estate solutions. From trusted advisory to bespoke design and corporate alliances, we ensure seamless transactions and preservation.
+                Puyoko Premium Estates offers a comprehensive suite of real estate solutions. From lease properties and contractual operations to strategic advertising and alliances, we ensure seamless transactions and preservation.
               </p>
               <p>
                 We collaborate with Cebu's top-tier accredited brokers and design visionaries to deliver high-production results that honor Visayan heritage.
@@ -189,10 +189,11 @@ export const LandingPage: React.FC = () => {
             <h3 className="uppercase tracking-[0.4em] text-xs font-bold text-primary-neon">Ecosystem / 服务体系</h3>
             <div className="space-y-8">
               {[
-                { name: "Brokerage & Advisory / 房产经纪", val: "Accredited Realty" },
-                { name: "Interior Design / 室内设计", val: "Silent Luxury" },
-                { name: "Property Stewardship / 物业托管", val: "Preserving Legacy" },
-                { name: "Corporate Alliances / 企业伙伴", val: "Tailored Solutions" }
+                { name: "Lease Properties", val: "Accredited Realty" },
+                { name: "Contractual Operations", val: "Silent Luxury" },
+                { name: "Digital Advertising & Lead Generation", val: "Strategic Reach" },
+                { name: "Property Stewardship & Maintenance", val: "Preserving Legacy" },
+                { name: "Partnership & Alliances", val: "Tailored Solutions" }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between border-b border-white/10 pb-4">
                   <span className="text-base italic-serif">{item.name}</span>

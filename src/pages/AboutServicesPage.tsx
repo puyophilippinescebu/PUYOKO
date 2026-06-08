@@ -20,8 +20,8 @@ export const AboutServicesPage: React.FC = () => {
     {
       id: 'brokerage',
       num: '01',
-      title: 'Brokerage & Advisory',
-      chineseTranslation: '房产经纪与咨询',
+      title: 'Lease Properties',
+      chineseTranslation: '',
       tagline: 'Accredited Expertise for Discerning Transactions',
       icon: Award,
       description: 'We partner exclusively with Cebu’s most prestigious, accredited realtors to guarantee security and elite-level expertise. Whether you are acquiring a permanent estate, finding a temporary sanctuary, or listing your own property, our job is to connect you with the region\'s most coveted spaces and quality services.',
@@ -35,8 +35,8 @@ export const AboutServicesPage: React.FC = () => {
     {
       id: 'interior',
       num: '02',
-      title: 'Interior Design & Contracting',
-      chineseTranslation: '室内设计与施工',
+      title: 'Contractual Operations',
+      chineseTranslation: '',
       tagline: 'Curating Spaces of Silent Luxury',
       icon: Paintbrush,
       description: 'In partnership with local design visionaries, we craft minimalist, culturally resonant interiors. From conceptual spatial planning to interior contracting and execution, we curate environments that balance modern functionality with the organic warmth of local craftsmanship.',
@@ -50,8 +50,8 @@ export const AboutServicesPage: React.FC = () => {
     {
       id: 'marketing',
       num: '03',
-      title: 'Strategic Asset Marketing',
-      chineseTranslation: '资产战略营销',
+      title: 'Digital Advertising & Lead Generation',
+      chineseTranslation: '',
       tagline: 'Elevating Properties into Coveted Narratives',
       icon: Megaphone,
       description: 'We transform real estate assets into compelling lifestyle stories. Through professional high-production visuals, immersive digital media, and strategic target market positioning, we showcase Cebu’s premier developments to local and international connoisseurs.',
@@ -65,8 +65,8 @@ export const AboutServicesPage: React.FC = () => {
     {
       id: 'maintenance',
       num: '04',
-      title: 'Property Stewardship & Upkeep',
-      chineseTranslation: '物业托管与维护',
+      title: 'Property Stewardship & Maintenance',
+      chineseTranslation: '',
       tagline: 'Preserving the Integrity of Your Investment',
       icon: ShieldCheck,
       description: 'We protect and preserve your legacy. Our comprehensive property stewardship services provide meticulous maintenance and upkeep, ensuring that every minimalist detail, landscape, and structural element remains pristine and functions flawlessly.',
@@ -80,8 +80,8 @@ export const AboutServicesPage: React.FC = () => {
     {
       id: 'corporate',
       num: '05',
-      title: 'Corporate Alliances',
-      chineseTranslation: '企业伙伴关系',
+      title: 'Partnership & Alliances',
+      chineseTranslation: '',
       tagline: 'Bespoke Corporate Property Solutions',
       icon: Building2,
       description: 'We partner with local and overseas organizations to simplify their corporate real estate needs. From executive relocation and housing to commercial property acquisitions, we handle the complexities so your operations run seamlessly',
@@ -168,9 +168,11 @@ export const AboutServicesPage: React.FC = () => {
             {/* Header info */}
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-primary-light text-xs font-mono tracking-widest uppercase">{activeService.chineseTranslation}</span>
-                </div>
+                {activeService.chineseTranslation && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-primary-light text-xs font-mono tracking-widest uppercase">{activeService.chineseTranslation}</span>
+                  </div>
+                )}
                 <h2 className="font-display text-3xl font-light text-primary tracking-tight">
                   {activeService.title}
                 </h2>
