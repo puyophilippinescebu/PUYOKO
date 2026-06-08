@@ -196,7 +196,7 @@ export const LandingPage: React.FC = () => {
                 { name: "Partnership & Alliances", val: "Tailored Solutions" }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <span className="text-base italic-serif">{item.name}</span>
+                  <span className="text-base font-display font-light tracking-wide text-white/90">{item.name}</span>
                   <span className="text-[10px] font-mono uppercase tracking-widest text-primary-neon">{item.val}</span>
                 </div>
               ))}
