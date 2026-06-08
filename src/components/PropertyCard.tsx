@@ -58,9 +58,13 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           {property.type} / {normalizeLocation(property.city)}
         </div>
 
-        {property.status === 'Archived' && (
-          <div className="absolute left-4 top-12 sm:left-6 sm:top-14 bg-red-600/90 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg">
-            Archived
+        {['Archived', 'Unavailable'].includes(property.status) && (
+          <div className={cn(
+            "absolute left-4 top-12 sm:left-6 sm:top-14 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold text-white uppercase tracking-[0.25em] shadow-lg",
+            property.status === 'Archived' && "bg-red-600/90",
+            property.status === 'Unavailable' && "bg-red-600/90"
+          )}>
+            {property.status}
           </div>
         )}
 

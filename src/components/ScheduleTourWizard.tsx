@@ -235,6 +235,7 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
 
   // Filtered Properties for Step 1
   const filteredProperties = properties.filter(p => {
+    if (['Unavailable', 'Archived'].includes(p.status)) return false;
     if (filterType !== 'All' && p.type !== filterType) return false;
     if (filterCity !== 'All' && normalizeLocation(p.city) !== filterCity) return false;
     if (filterPriceRange !== 'All') {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, ExternalLink, Link as LinkIcon, Check, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, ExternalLink, Link as LinkIcon, Check, X, AlertTriangle } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
 import { cn, getVideoEmbedUrl } from '../lib/utils';
 import { supabase } from '../lib/supabaseClient';
@@ -446,11 +446,30 @@ export const PropertyDetailsPage: React.FC = () => {
               </div>
  
               <div className="flex flex-col gap-2">
+                {property.status === 'Unavailable' && (
+                  <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-red-800 text-xs font-sans mb-2 flex items-start gap-2.5">
+                    <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold uppercase tracking-wider block mb-0.5">
+                        Temporarily Unavailable
+                      </span>
+                      <p className="text-red-700/90 leading-normal">
+                        This estate is currently not available and cannot be toured or leased at this time.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <button
+                  disabled={property.status === 'Unavailable'}
                   onClick={() => navigate(`/schedule?propertyId=${encodeURIComponent(property.id)}`)}
-                  className="w-full rounded-full bg-primary py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest text-white transition-all hover:bg-primary-light active:scale-95"
+                  className={cn(
+                    "w-full rounded-full py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest text-white transition-all active:scale-95",
+                    property.status === 'Unavailable'
+                      ? "bg-outline/35 text-on-surface-variant/50 cursor-not-allowed"
+                      : "bg-primary hover:bg-primary-light"
+                  )}
                 >
-                  Schedule Viewing
+                  {property.status === 'Unavailable' ? 'Unavailable' : 'Schedule Viewing'}
                 </button>
                 <button
                   onClick={() => navigate(`/contact?propertyId=${encodeURIComponent(property.id)}&inquiryType=General%20Inquiry`)}
