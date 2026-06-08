@@ -101,7 +101,7 @@ export const LandingPage: React.FC = () => {
           {/* Column 1: Schedule Tour */}
           <div 
             onClick={() => navigate('/schedule')}
-            className="group relative flex flex-col items-center p-10 bg-white hover:bg-[#E8F3EF]/20 rounded-lg border border-[#a5c1b5]/35 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
+            className="group relative flex flex-col items-center p-10 bg-white hover:bg-[#E8F3EF] rounded-lg border border-[#a5c1b5]/35 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
           >
             {/* Animated Gradient Icon Container */}
             <div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 shadow-md group-hover:scale-110 group-hover:shadow-primary/20 mb-6">
@@ -130,7 +130,7 @@ export const LandingPage: React.FC = () => {
           {/* Column 2: Contact Us */}
           <div 
             onClick={() => navigate('/contact')}
-            className="group relative flex flex-col items-center p-10 bg-white hover:bg-[#E8F3EF]/20 rounded-lg border border-[#a5c1b5]/35 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
+            className="group relative flex flex-col items-center p-10 bg-white hover:bg-[#E8F3EF] rounded-lg border border-[#a5c1b5]/35 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
           >
             {/* Animated Gradient Icon Container */}
             <div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 shadow-md group-hover:scale-110 group-hover:shadow-primary/20 mb-6">
