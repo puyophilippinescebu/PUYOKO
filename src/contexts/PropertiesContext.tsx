@@ -243,8 +243,8 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     } catch (err) {
       console.warn("Supabase background revalidation failed, using cached listings.", err);
       if (!loadedFromCache) {
-        setProperties(MOCK_PROPERTIES);
-        safeSetItem('puyoko_properties', JSON.stringify(MOCK_PROPERTIES));
+        setProperties([]);
+        safeSetItem('puyoko_properties', JSON.stringify([]));
       }
     } finally {
       setLoading(false);
