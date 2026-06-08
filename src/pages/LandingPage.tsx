@@ -94,14 +94,14 @@ export const LandingPage: React.FC = () => {
       <section className="py-24 bg-white jade-wash-bg border-b border-outline/10 select-none overflow-hidden relative">
         {/* Faded Jade Landscape Background Image */}
         <div 
-          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50"
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
           style={{ backgroundImage: `url('/jade-bg.jpg')` }}
         />
         <div className="mx-auto max-w-container-max px-gutter grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
           {/* Column 1: Schedule Tour */}
           <div 
             onClick={() => navigate('/schedule')}
-            className="group relative flex flex-col items-center p-10 bg-white/40 hover:bg-[#E8F3EF]/50 backdrop-blur-xs rounded-lg border border-[#a5c1b5]/30 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
+            className="group relative flex flex-col items-center p-10 bg-white hover:bg-[#E8F3EF]/20 rounded-lg border border-[#a5c1b5]/35 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
           >
             {/* Animated Gradient Icon Container */}
             <div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 shadow-md group-hover:scale-110 group-hover:shadow-primary/20 mb-6">
@@ -130,7 +130,7 @@ export const LandingPage: React.FC = () => {
           {/* Column 2: Contact Us */}
           <div 
             onClick={() => navigate('/contact')}
-            className="group relative flex flex-col items-center p-10 bg-white/40 hover:bg-[#E8F3EF]/50 backdrop-blur-xs rounded-lg border border-[#a5c1b5]/30 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
+            className="group relative flex flex-col items-center p-10 bg-white hover:bg-[#E8F3EF]/20 rounded-lg border border-[#a5c1b5]/35 hover:border-primary-light/45 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer text-center"
           >
             {/* Animated Gradient Icon Container */}
             <div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 shadow-md group-hover:scale-110 group-hover:shadow-primary/20 mb-6">
@@ -159,7 +159,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Services Module - Natural Tones Design Layout */}
-      <section className="bg-primary text-white pt-24 pb-32 relative mt-16 md:mt-24">
+      <section className="bg-primary text-white pt-24 pb-32 relative">
         {/* Curvy Top Divider */}
         <div className="absolute bottom-full left-0 w-full overflow-hidden leading-none flex items-end -mb-[2px]">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-[60px] md:h-[120px] text-primary fill-current translate-y-[2px]">
