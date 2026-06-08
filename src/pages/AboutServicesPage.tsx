@@ -87,7 +87,7 @@ export const AboutServicesPage: React.FC = () => {
       description: 'We partner with local and overseas organizations to simplify their corporate real estate needs. From executive relocation and housing to commercial property acquisitions, we handle the complexities so your operations run seamlessly',
       highlights: [
         'Customized relocation packages for multinational executives',
-        'Corporate housing leases and strategic asset portfolios',
+        'Feasibility study proposals and market research delivered to clients',
         'Dedicated corporate liaison for seamless account management',
         'Preferred rates and priority support for partner entities'
       ]
