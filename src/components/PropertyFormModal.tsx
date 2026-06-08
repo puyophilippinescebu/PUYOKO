@@ -166,6 +166,14 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     if (!files) return;
     
     Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) {
+        alert(`File "${file.name}" is not an image. Please upload images only.`);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`File "${file.name}" is too large. Max allowed size is 5MB.`);
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = async () => {
         const resultStr = reader.result as string;
@@ -214,6 +222,14 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     if (!files) return;
     
     Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) {
+        alert(`File "${file.name}" is not an image. Please upload images only.`);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`File "${file.name}" is too large. Max allowed size is 5MB.`);
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = async () => {
         const resultStr = reader.result as string;
@@ -487,10 +503,10 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className={labelClass}>Images & Videos</label>
+                <label className={labelClass}>Images</label>
                 <input 
                   type="file" 
-                  accept="image/*,video/*" 
+                  accept="image/*" 
                   multiple
                   className={inputClass + " file:mr-4 file:rounded-sm file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-mono file:uppercase file:tracking-widest file:text-primary hover:file:bg-primary/20"} 
                   onChange={handleImageUpload} 
@@ -553,7 +569,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                 <label className={labelClass}>Amenities Images</label>
                 <input 
                   type="file" 
-                  accept="image/*,video/*" 
+                  accept="image/*" 
                   multiple
                   className={inputClass + " file:mr-4 file:rounded-sm file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-mono file:uppercase file:tracking-widest file:text-primary hover:file:bg-primary/20"} 
                   onChange={handleAmenitiesImageUpload} 
