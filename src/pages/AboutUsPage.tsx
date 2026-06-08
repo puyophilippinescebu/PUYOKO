@@ -137,11 +137,11 @@ export const AboutUsPage: React.FC = () => {
             <div className="relative w-48 h-48 mx-auto mb-6 overflow-hidden rounded-full border border-outline/30 shadow-lg">
               <img 
                 src={janeClaireImg} 
-                alt="Jane Claire Saladaga" 
+                alt="Jane Claire Barcenas" 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
-            <h3 className="font-display text-2xl text-primary mb-2">Jane Claire Saladaga</h3>
+            <h3 className="font-display text-2xl text-primary mb-2">Jane Claire Barcenas</h3>
             <p className="font-mono text-xs uppercase tracking-widest text-primary-light mb-4">Project Manager</p>
             <p className="font-sans text-on-surface-variant max-w-sm mx-auto mb-4">
               Jane's expertise in architectural coordination and client relations brings a seamless experience to our clients, turning complex visions into reality.
