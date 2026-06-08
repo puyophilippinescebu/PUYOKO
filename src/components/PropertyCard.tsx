@@ -44,7 +44,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
             className={cn(
               "h-full w-full object-cover transition-transform duration-1000", 
               onClick && "group-hover:scale-105",
-              property.status === 'Unavailable' && "grayscale-[50%] opacity-90"
+              property.status === 'Unavailable' && "grayscale-[80%] opacity-90"
             )}
             muted
             playsInline
@@ -58,7 +58,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
             className={cn(
               "h-full w-full object-cover transition-transform duration-1000", 
               onClick && "group-hover:scale-110",
-              property.status === 'Unavailable' && "grayscale-[50%] opacity-90"
+              property.status === 'Unavailable' && "grayscale-[80%] opacity-90"
             )}
           />
         )}

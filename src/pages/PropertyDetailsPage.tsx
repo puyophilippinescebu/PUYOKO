@@ -155,13 +155,13 @@ export const PropertyDetailsPage: React.FC = () => {
       >
         {isVideo ? (
           <div className="relative h-full w-full">
-            <video src={img} className={cn("h-full w-full object-cover", property.status === 'Unavailable' && "grayscale-[50%] opacity-90")} muted playsInline />
+            <video src={img} className={cn("h-full w-full object-cover", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")} muted playsInline />
             <div className="absolute inset-0 flex items-center justify-center bg-black/25">
               <span className="font-mono text-[7px] font-bold text-white uppercase tracking-widest bg-primary px-1.5 py-0.5 rounded-sm">VIDEO</span>
             </div>
           </div>
         ) : (
-          <img src={img} alt={`${property.title} - ${idx + 1}`} className={cn("h-full w-full object-cover transition-transform hover:scale-105 duration-300", property.status === 'Unavailable' && "grayscale-[50%] opacity-90")} />
+          <img src={img} alt={`${property.title} - ${idx + 1}`} className={cn("h-full w-full object-cover transition-transform hover:scale-105 duration-300", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")} />
         )}
       </div>
     );
@@ -181,7 +181,7 @@ export const PropertyDetailsPage: React.FC = () => {
       >
         {isVideo ? (
           <div className="relative h-full w-full bg-black">
-            <video src={firstImg} className={cn("h-full w-full object-cover", property.status === 'Unavailable' && "grayscale-[50%] opacity-90")} muted playsInline autoPlay loop />
+            <video src={firstImg} className={cn("h-full w-full object-cover", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")} muted playsInline autoPlay loop />
             <div className="absolute inset-0 flex items-center justify-center bg-black/15 pointer-events-none">
               <span className="font-mono text-[9px] font-bold text-white uppercase tracking-widest bg-primary px-3 py-1.5 rounded-full border border-white/20 shadow-md">PLAY TOUR</span>
             </div>
@@ -190,7 +190,7 @@ export const PropertyDetailsPage: React.FC = () => {
           <img 
             src={firstImg} 
             alt={property.title} 
-            className={cn("h-full w-full object-cover transition-transform hover:scale-[1.02] duration-500", property.status === 'Unavailable' && "grayscale-[50%] opacity-90")} 
+            className={cn("h-full w-full object-cover transition-transform hover:scale-[1.02] duration-500", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")} 
           />
         )}
         {property.videoUrl && (
@@ -248,7 +248,7 @@ export const PropertyDetailsPage: React.FC = () => {
                 >
                   {img.startsWith('data:video/') || img.endsWith('.mp4') || img.endsWith('.mov') || img.endsWith('.webm') ? (
                     <div className="relative h-full w-full bg-black">
-                      <video src={img} className="w-full h-full object-cover" muted playsInline />
+                      <video src={img} className={cn("w-full h-full object-cover", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")} muted playsInline />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
                         <span className="font-mono text-[8px] font-bold text-white uppercase tracking-widest bg-primary px-2 py-1 rounded-sm">VIDEO</span>
                       </div>
@@ -257,7 +257,7 @@ export const PropertyDetailsPage: React.FC = () => {
                     <img 
                       src={img} 
                       alt={`${property.title} - ${idx + 1}`} 
-                      className="w-full h-full object-cover"
+                      className={cn("w-full h-full object-cover", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")}
                     />
                   )}
                   {idx === 0 && property.videoUrl && (
