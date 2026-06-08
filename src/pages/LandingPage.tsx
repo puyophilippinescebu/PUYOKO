@@ -92,6 +92,11 @@ export const LandingPage: React.FC = () => {
 
       {/* Schedule / Contact 2-Column Promo Section */}
       <section className="py-24 bg-white jade-wash-bg border-b border-outline/10 select-none overflow-hidden relative">
+        {/* Faded Jade Landscape Background Image */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50"
+          style={{ backgroundImage: `url('/jade-bg.jpg')` }}
+        />
         <div className="mx-auto max-w-container-max px-gutter grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
           {/* Column 1: Schedule Tour */}
           <div 
