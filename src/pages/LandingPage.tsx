@@ -61,17 +61,17 @@ export const LandingPage: React.FC = () => {
             <p className="mb-6 md:mb-12 max-w-xs md:max-w-md font-sans text-[9px] md:text-lg text-on-surface-variant leading-relaxed">
               Experience the architectural beauty of local housing & real estate with the soft, ethereal brushstrokes of modern minimalist design.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2.5 md:gap-6 w-full">
+            <div className="flex flex-col sm:flex-row gap-4 md:gap-6 w-full">
               <button 
                 onClick={() => navigate('/properties')}
-                className="group relative overflow-hidden bg-primary text-white px-4 md:px-12 py-3 md:py-5 font-mono text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press text-center shrink-0 w-full md:w-auto"
+                className="group relative overflow-hidden bg-primary text-white px-6 md:px-12 py-4 md:py-5 font-mono text-[11px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press text-center shrink-0 w-full md:w-auto"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-light via-primary to-primary-light opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 bg-[length:200%_auto] group-hover:animate-gradient-x" />
                 <span className="relative z-10">Check Properties</span>
               </button>
               <button 
                 onClick={() => navigate('/contact')}
-                className="px-3 md:px-8 py-3 md:py-5 border border-primary/20 font-mono text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-primary hover:bg-primary/5 transition-all active:scale-95 text-center shrink-0 w-full md:w-auto"
+                className="px-6 md:px-8 py-4 md:py-5 border border-primary/20 font-mono text-[11px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-primary hover:bg-primary/5 transition-all active:scale-95 text-center shrink-0 w-full md:w-auto"
               >
                 Contact Us
               </button>

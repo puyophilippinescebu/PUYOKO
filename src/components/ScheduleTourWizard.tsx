@@ -379,11 +379,23 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                   }`}
                 >
                   <div className="relative h-48 w-full overflow-hidden bg-black/10">
-                    <img 
-                      src={p.images[0]} 
-                      alt={p.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                    />
+                    {p.images[0]?.startsWith('data:video/') || 
+                    p.images[0]?.endsWith('.mp4') || 
+                    p.images[0]?.endsWith('.mov') || 
+                    p.images[0]?.endsWith('.webm') ? (
+                      <video 
+                        src={p.images[0]} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                        muted 
+                        playsInline 
+                      />
+                    ) : (
+                      <img 
+                        src={p.images[0]} 
+                        alt={p.title} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                      />
+                    )}
                     <div className="absolute top-3 left-3">
                       <span className="text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded shadow-sm border bg-green-500/90 text-white border-green-400">
                         Ready to Tour
@@ -433,7 +445,14 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
           {/* Selected Property Details */}
           <div className="p-4 bg-white border border-outline/35 rounded-2xl flex flex-col sm:flex-row gap-4 items-center shadow-sm relative">
             <div className="w-full sm:w-32 h-20 rounded-xl overflow-hidden bg-black/10 shrink-0">
-              <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
+              {selectedProperty.images[0]?.startsWith('data:video/') || 
+              selectedProperty.images[0]?.endsWith('.mp4') || 
+              selectedProperty.images[0]?.endsWith('.mov') || 
+              selectedProperty.images[0]?.endsWith('.webm') ? (
+                <video src={selectedProperty.images[0]} className="w-full h-full object-cover" muted playsInline />
+              ) : (
+                <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
+              )}
             </div>
             <div className="flex-1 text-center sm:text-left pr-4">
               <span className="font-mono text-[8px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full select-none font-display">
@@ -683,7 +702,14 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                 {/* Visual Listing */}
                 <div className="rounded-xl overflow-hidden bg-white border border-outline/20 shadow-sm">
                   <div className="h-32 w-full bg-black/10">
-                    <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
+                    {selectedProperty.images[0]?.startsWith('data:video/') || 
+                    selectedProperty.images[0]?.endsWith('.mp4') || 
+                    selectedProperty.images[0]?.endsWith('.mov') || 
+                    selectedProperty.images[0]?.endsWith('.webm') ? (
+                      <video src={selectedProperty.images[0]} className="w-full h-full object-cover" muted playsInline />
+                    ) : (
+                      <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
+                    )}
                   </div>
                   <div className="p-4">
                     <span className="font-mono text-[7px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full select-none font-display">

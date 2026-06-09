@@ -215,7 +215,13 @@ export const PropertyDetailsPage: React.FC = () => {
         {/* Header */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (window.history.state && window.history.state.idx > 0) {
+                navigate(-1);
+              } else {
+                navigate('/properties');
+              }
+            }}
             className="flex items-center gap-2 rounded-full bg-surface-muted px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-widest text-primary transition-all hover:bg-outline-variant/30"
           >
             <ArrowLeft className="h-4 w-4" /> Back

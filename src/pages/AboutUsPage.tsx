@@ -32,15 +32,13 @@ export const AboutUsPage: React.FC = () => {
           <div className="bg-white/50 backdrop-blur-md p-8 border border-outline/20 shadow-lg">
             <h3 className="font-display text-2xl text-primary mb-4">Our Vision</h3>
             <p className="font-sans text-on-surface-variant leading-relaxed">
-              To be the premier curator of heritage and modern real estate in the Philippines, 
-              connecting individuals with properties that reflect their values, history, and aspirations for the future.
+              To shape the future of Philippine real estate by cultivating a globally competitive landscape where rich Filipino heritage meets modern innovation, connecting people to properties that truly reflect their identity and values.
             </p>
           </div>
           <div className="bg-white/50 backdrop-blur-md p-8 border border-outline/20 shadow-lg">
             <h3 className="font-display text-2xl text-primary mb-4">Our Mission</h3>
             <p className="font-sans text-on-surface-variant leading-relaxed">
-              To provide unparalleled service in the real estate market by blending modern efficiency 
-              with a deep appreciation for architectural beauty and cultural heritage. We strive to build lasting legacies for our clients.
+              To develop advanced marketing capabilities through online collaboration, AI integration, and the delivery of high-quality services. We merge cutting-edge market efficiency with an appreciation for architectural artistry, ensuring every transaction builds a lasting legacy for families and communities.
             </p>
           </div>
         </div>

@@ -180,7 +180,14 @@ export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) 
           
           <div className="w-full sm:w-32 h-20 rounded-xl overflow-hidden bg-black/10 shrink-0">
             {selectedProperty.images && selectedProperty.images[0] ? (
-              <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
+              selectedProperty.images[0].startsWith('data:video/') || 
+              selectedProperty.images[0].endsWith('.mp4') || 
+              selectedProperty.images[0].endsWith('.mov') || 
+              selectedProperty.images[0].endsWith('.webm') ? (
+                <video src={selectedProperty.images[0]} className="w-full h-full object-cover" muted playsInline />
+              ) : (
+                <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
+              )
             ) : (
               <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold font-mono">
                 NO IMAGE

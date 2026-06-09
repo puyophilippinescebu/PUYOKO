@@ -166,19 +166,26 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     if (!files) return;
     
     Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/')) {
-        alert(`File "${file.name}" is not an image. Please upload images only.`);
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      if (!isImage && !isVideo) {
+        alert(`File "${file.name}" is not an image or video. Please upload images or videos only.`);
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`File "${file.name}" is too large. Max allowed size is 5MB.`);
+      const maxSize = isVideo ? 30 * 1024 * 1024 : 10 * 1024 * 1024;
+      const sizeLimitText = isVideo ? '30MB' : '10MB';
+      if (file.size > maxSize) {
+        alert(`File "${file.name}" is too large. Max allowed size is ${sizeLimitText}.`);
         return;
       }
       const reader = new FileReader();
       reader.onloadend = async () => {
         const resultStr = reader.result as string;
-        const compressed = await compressImage(resultStr);
-        setImageUrls(prev => [...prev, compressed]);
+        let finalUrl = resultStr;
+        if (isImage) {
+          finalUrl = await compressImage(resultStr);
+        }
+        setImageUrls(prev => [...prev, finalUrl]);
       };
       reader.readAsDataURL(file);
     });
@@ -222,19 +229,26 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     if (!files) return;
     
     Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/')) {
-        alert(`File "${file.name}" is not an image. Please upload images only.`);
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      if (!isImage && !isVideo) {
+        alert(`File "${file.name}" is not an image or video. Please upload images or videos only.`);
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`File "${file.name}" is too large. Max allowed size is 5MB.`);
+      const maxSize = isVideo ? 30 * 1024 * 1024 : 10 * 1024 * 1024;
+      const sizeLimitText = isVideo ? '30MB' : '10MB';
+      if (file.size > maxSize) {
+        alert(`File "${file.name}" is too large. Max allowed size is ${sizeLimitText}.`);
         return;
       }
       const reader = new FileReader();
       reader.onloadend = async () => {
         const resultStr = reader.result as string;
-        const compressed = await compressImage(resultStr);
-        setAmenitiesImages(prev => [...prev, compressed]);
+        let finalUrl = resultStr;
+        if (isImage) {
+          finalUrl = await compressImage(resultStr);
+        }
+        setAmenitiesImages(prev => [...prev, finalUrl]);
       };
       reader.readAsDataURL(file);
     });
@@ -503,10 +517,10 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className={labelClass}>Images</label>
+                <label className={labelClass}>Images & Videos</label>
                 <input 
                   type="file" 
-                  accept="image/*" 
+                  accept="image/*,video/*" 
                   multiple
                   className={inputClass + " file:mr-4 file:rounded-sm file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-mono file:uppercase file:tracking-widest file:text-primary hover:file:bg-primary/20"} 
                   onChange={handleImageUpload} 
@@ -566,10 +580,10 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
 
               {/* Amenities Images & Video Section */}
               <div className="md:col-span-2">
-                <label className={labelClass}>Amenities Images</label>
+                <label className={labelClass}>Amenities Images & Videos</label>
                 <input 
                   type="file" 
-                  accept="image/*" 
+                  accept="image/*,video/*" 
                   multiple
                   className={inputClass + " file:mr-4 file:rounded-sm file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-mono file:uppercase file:tracking-widest file:text-primary hover:file:bg-primary/20"} 
                   onChange={handleAmenitiesImageUpload} 
