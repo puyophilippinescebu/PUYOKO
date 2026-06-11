@@ -374,9 +374,6 @@ export const LandingPage: React.FC = () => {
                 />
               ))}
             </div>
-            <div className="absolute -bottom-6 -right-6 bg-primary text-white p-6 font-serif italic text-xl shadow-lg z-20">
-              "Building Legacies."
-            </div>
           </div>
           <div className="lg:col-span-8 lg:pl-12">
             <div className="mb-6 flex items-center gap-3">
