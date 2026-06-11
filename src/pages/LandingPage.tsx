@@ -93,7 +93,7 @@ export const LandingPage: React.FC = () => {
             <div className="hidden md:flex gap-6">
               <button 
                 onClick={() => navigate('/properties')}
-                className="group relative overflow-hidden bg-gradient-to-r from-primary-light via-primary to-primary-light bg-[length:200%_auto] text-white px-8 py-4 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press animate-gradient-x"
+                className="group relative overflow-hidden bg-gradient-to-r from-primary-light via-primary to-primary-light text-white px-8 py-4 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press"
               >
                 Check Properties
               </button>
@@ -120,7 +120,7 @@ export const LandingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 md:gap-6 w-full md:hidden">
             <button 
               onClick={() => navigate('/properties')}
-              className="group relative overflow-hidden bg-gradient-to-r from-primary-light via-primary to-primary-light bg-[length:200%_auto] text-white px-6 py-4 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press text-center shrink-0 w-full animate-gradient-x"
+              className="group relative overflow-hidden bg-gradient-to-r from-primary-light via-primary to-primary-light text-white px-6 py-4 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 btn-press text-center shrink-0 w-full"
             >
               <span className="relative z-10">Check Properties</span>
             </button>
