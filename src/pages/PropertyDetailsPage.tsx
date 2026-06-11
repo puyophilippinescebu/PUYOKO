@@ -332,18 +332,23 @@ export const PropertyDetailsPage: React.FC = () => {
             </h1>
             <div className="mb-4 flex items-baseline gap-3 flex-wrap">
               {property.originalPrice != null && property.originalPrice > 0 && property.originalPrice > property.price && (
-                <span className="font-sans text-sm font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
-                  {new Intl.NumberFormat(
-                    property.currency === 'USD' ? 'en-US' :
-                    property.currency === 'EUR' ? 'de-DE' :
-                    property.currency === 'JPY' ? 'ja-JP' : 'en-PH',
-                    {
-                      style: 'currency',
-                      currency: property.currency || 'PHP',
-                      maximumFractionDigits: 0,
-                    }
-                  ).format(property.originalPrice)}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-sans text-sm font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
+                    {new Intl.NumberFormat(
+                      property.currency === 'USD' ? 'en-US' :
+                      property.currency === 'EUR' ? 'de-DE' :
+                      property.currency === 'JPY' ? 'ja-JP' : 'en-PH',
+                      {
+                        style: 'currency',
+                        currency: property.currency || 'PHP',
+                        maximumFractionDigits: 0,
+                      }
+                    ).format(property.originalPrice)}
+                  </span>
+                  <span className="font-mono text-xs font-extrabold text-red-600 bg-red-50 px-1.5 py-0.5 rounded leading-none">
+                    -{Math.round(((property.originalPrice - property.price) / property.originalPrice) * 100)}%
+                  </span>
+                </div>
               )}
               <p className="font-display text-2xl font-extrabold text-on-surface tracking-tight">
                 {formattedPrice}

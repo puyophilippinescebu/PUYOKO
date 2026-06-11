@@ -103,18 +103,23 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
 
         <div className="mb-4 flex items-baseline gap-2 flex-wrap min-h-[32px]">
           {property.originalPrice != null && property.originalPrice > 0 && property.originalPrice > property.price && (
-            <span className="font-sans text-xs font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
-              {new Intl.NumberFormat(
-                property.currency === 'USD' ? 'en-US' :
-                property.currency === 'EUR' ? 'de-DE' :
-                property.currency === 'JPY' ? 'ja-JP' : 'en-PH',
-                {
-                  style: 'currency',
-                  currency: property.currency || 'PHP',
-                  maximumFractionDigits: 0,
-                }
-              ).format(property.originalPrice)}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-sans text-xs font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
+                {new Intl.NumberFormat(
+                  property.currency === 'USD' ? 'en-US' :
+                  property.currency === 'EUR' ? 'de-DE' :
+                  property.currency === 'JPY' ? 'ja-JP' : 'en-PH',
+                  {
+                    style: 'currency',
+                    currency: property.currency || 'PHP',
+                    maximumFractionDigits: 0,
+                  }
+                ).format(property.originalPrice)}
+              </span>
+              <span className="font-mono text-[10px] font-extrabold text-red-600 bg-red-50 px-1 py-0.5 rounded leading-none">
+                -{Math.round(((property.originalPrice - property.price) / property.originalPrice) * 100)}%
+              </span>
+            </div>
           )}
           <div className="font-display text-[22px] font-extrabold text-primary tracking-tight">
             {formattedPrice}
