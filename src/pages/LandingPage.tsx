@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bed, Bath, Square, BookOpen, ArrowRight, User, Clock, Check, Copy } from 'lucide-react';
 import { cn, getVideoEmbedUrl } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useMedia } from '../contexts/MediaContext';
 import { ContactForm } from '../components/ContactForm';
-import { QRCodeCanvas } from 'qrcode.react';
+
 import janEricImg1 from '../../Puyoko Team Pictures/Jan Eric Profile.jpeg';
 import janEricImg2 from '../../Puyoko Team Pictures/Jan Eric Profile 2.jpeg';
 import mainPhotoImg from '../../Puyo Main Photo.jpg';
@@ -22,8 +22,6 @@ export const LandingPage: React.FC = () => {
   const janEricPhotos = [janEricImg1, janEricImg2];
   const [qrValue, setQrValue] = useState('https://puyoko.com');
   const [copied, setCopied] = useState(false);
-  const [qrImageUrl, setQrImageUrl] = useState('');
-  const canvasRef = useRef<HTMLDivElement>(null);
  
   useEffect(() => {
     const interval = setInterval(() => {
@@ -45,16 +43,6 @@ export const LandingPage: React.FC = () => {
       setQrValue(window.location.origin);
     }
   }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const canvas = canvasRef.current?.querySelector('canvas');
-      if (canvas) {
-        setQrImageUrl(canvas.toDataURL('image/png'));
-      }
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [qrValue]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(qrValue).then(() => {
@@ -467,37 +455,13 @@ export const LandingPage: React.FC = () => {
               <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-primary/20 group-hover:border-primary-light/50 transition-colors" />
               <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-primary/20 group-hover:border-primary-light/50 transition-colors" />
               
-              {/* Hidden canvas used to generate the image */}
-              <div ref={canvasRef} className="hidden">
-                <QRCodeCanvas
-                  value={qrValue}
-                  size={256}
-                  level="H"
-                  bgColor="#ffffff"
-                  fgColor="#1b4332"
-                  includeMargin={true}
-                  imageSettings={{
-                    src: "/puyoko-simplified-logo.png",
-                    x: undefined,
-                    y: undefined,
-                    height: 56,
-                    width: 56,
-                    excavate: true,
-                  }}
-                />
-              </div>
-
               {/* Visible right-clickable image */}
               <div className="bg-[#E8F3EF]/30 p-4 rounded-md border border-[#a5c1b5]/15 mb-4 group-hover:scale-[1.02] transition-transform duration-500 min-w-[212px] min-h-[212px] flex items-center justify-center">
-                {qrImageUrl ? (
-                  <img
-                    src={qrImageUrl}
-                    alt="Puyoko QR Code"
-                    className="w-[180px] h-[180px] object-contain rounded-md"
-                  />
-                ) : (
-                  <div className="w-[180px] h-[180px] bg-white animate-pulse rounded-md" />
-                )}
+                <img
+                  src="/puyoko-qr.png"
+                  alt="Puyoko QR Code"
+                  className="w-[180px] h-[180px] object-contain rounded-md"
+                />
               </div>
               
               <span className="font-mono text-[9px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-1">
