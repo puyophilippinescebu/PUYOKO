@@ -204,10 +204,10 @@ export const LandingPage: React.FC = () => {
             <h2 className="font-display text-5xl font-light mb-8 text-white">Our Core <span className="italic-serif text-primary-neon">Services</span></h2>
             <div className="space-y-6 font-sans text-lg text-white/80 leading-relaxed max-w-md">
               <p>
-                Puyoko Premium Estates offers a comprehensive suite of real estate solutions. From lease properties and contractual operations to strategic advertising and alliances, we ensure seamless transactions and preservation.
+                Puyoko offers high quality real estate solutions. From buying properties, renting a place, contractual operations to strategic advertising and alliances, Puyoko ensures transparent transactions and legal systems.
               </p>
               <p>
-                We collaborate with Cebu's top-tier accredited brokers and design visionaries to deliver high-production results that honor Visayan heritage.
+                We collaborate with Cebu's top-tier accredited realtors to deliver high-production results that honor Visayan legacy.
               </p>
             </div>
             <button 
