@@ -331,7 +331,7 @@ export const PropertyDetailsPage: React.FC = () => {
               {property.title}
             </h1>
             <div className="mb-4 flex items-baseline gap-3 flex-wrap">
-              {property.originalPrice && property.originalPrice > property.price && (
+              {property.originalPrice != null && property.originalPrice > 0 && property.originalPrice > property.price && (
                 <span className="font-sans text-sm font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
                   {new Intl.NumberFormat(
                     property.currency === 'USD' ? 'en-US' :

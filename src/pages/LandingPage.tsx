@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bed, Bath, Square, BookOpen, ArrowRight, User, Clock } from 'lucide-react';
+import { Bed, Bath, Square, BookOpen, ArrowRight, User, Clock, Check, Copy } from 'lucide-react';
 import { cn, getVideoEmbedUrl } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useMedia } from '../contexts/MediaContext';
 import { ContactForm } from '../components/ContactForm';
+import { QRCodeCanvas } from 'qrcode.react';
 import janEricImg1 from '../../Puyoko Team Pictures/Jan Eric Profile.jpeg';
 import janEricImg2 from '../../Puyoko Team Pictures/Jan Eric Profile 2.jpeg';
 import mainPhotoImg from '../../Puyo Main Photo.jpg';
@@ -16,17 +17,21 @@ export const LandingPage: React.FC = () => {
   const { blogs, loading: mediaLoading } = useMedia();
 
   const latestBlog = blogs && blogs.length > 0 ? blogs[0] : null;
-
+ 
   const [currentJanEricPhoto, setCurrentJanEricPhoto] = useState(0);
   const janEricPhotos = [janEricImg1, janEricImg2];
-
+  const [qrValue, setQrValue] = useState('https://puyoko.com');
+  const [copied, setCopied] = useState(false);
+  const [qrImageUrl, setQrImageUrl] = useState('');
+  const canvasRef = useRef<HTMLDivElement>(null);
+ 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentJanEricPhoto((prev) => (prev + 1) % janEricPhotos.length);
     }, 10000);
     return () => clearInterval(interval);
   }, []);
-
+ 
   useEffect(() => {
     const handleStorage = () => {
       setVideoUrl(localStorage.getItem('puyoko_homepage_video_url') || '');
@@ -34,6 +39,29 @@ export const LandingPage: React.FC = () => {
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setQrValue(window.location.origin);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const canvas = canvasRef.current?.querySelector('canvas');
+      if (canvas) {
+        setQrImageUrl(canvas.toDataURL('image/png'));
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [qrValue]);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(qrValue).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   const videoEmbedData = getVideoEmbedUrl(videoUrl);
 
@@ -372,7 +400,103 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+ 
+      {/* QR Code Section */}
+      <section className="py-20 px-gutter border-t border-outline/20 bg-[#E8F3EF]/20 relative overflow-hidden select-none">
+        <div className="absolute -right-16 -bottom-16 w-64 h-64 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+        <div className="absolute -left-16 -top-16 w-64 h-64 rounded-full bg-primary-light/5 blur-3xl pointer-events-none" />
+        
+        <div className="mx-auto max-w-container-max grid md:grid-cols-2 gap-12 items-center">
+          {/* Left Column: Context */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <span className="text-primary-light text-xs font-mono tracking-widest uppercase">Puyoko Mobile / 手机浏览</span>
+              <div className="h-[1px] w-12 bg-primary/20" />
+            </div>
+            
+            <h2 className="font-display text-4xl font-light text-primary leading-tight">
+              Scan to Explore on <span className="italic-serif text-primary-light">Mobile</span>
+            </h2>
+            
+            <p className="font-sans text-on-surface-variant text-base leading-relaxed max-w-lg">
+              Take the Puyoko experience with you. Scan the QR code to open this website on your mobile device. Easily browse premium Cebu estates, coordinate schedules, and share curated listings with family or clients on the go.
+            </p>
+            
+            <div className="flex flex-wrap gap-4 pt-2">
+              <button
+                onClick={handleCopyLink}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-3.5 border border-primary/20 font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-300 btn-press cursor-pointer rounded-sm",
+                  copied ? "bg-primary text-white border-primary" : "text-primary hover:bg-primary/5"
+                )}
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    Link Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    Copy Website Link
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {/* Right Column: QR Code mockup */}
+          <div className="flex justify-center md:justify-end">
+            <div className="bg-white border border-[#a5c1b5]/35 p-8 rounded-lg shadow-xl hover:shadow-2xl transition-shadow duration-500 flex flex-col items-center max-w-[280px] w-full text-center relative group">
+              <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-primary/20 group-hover:border-primary-light/50 transition-colors" />
+              <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-primary/20 group-hover:border-primary-light/50 transition-colors" />
+              <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-primary/20 group-hover:border-primary-light/50 transition-colors" />
+              <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-primary/20 group-hover:border-primary-light/50 transition-colors" />
+              
+              {/* Hidden canvas used to generate the image */}
+              <div ref={canvasRef} className="hidden">
+                <QRCodeCanvas
+                  value={qrValue}
+                  size={256}
+                  level="H"
+                  bgColor="#ffffff"
+                  fgColor="#1b4332"
+                  includeMargin={true}
+                  imageSettings={{
+                    src: "/puyoko-simplified-logo.png",
+                    x: undefined,
+                    y: undefined,
+                    height: 56,
+                    width: 56,
+                    excavate: true,
+                  }}
+                />
+              </div>
 
+              {/* Visible right-clickable image */}
+              <div className="bg-[#E8F3EF]/30 p-4 rounded-md border border-[#a5c1b5]/15 mb-4 group-hover:scale-[1.02] transition-transform duration-500 min-w-[212px] min-h-[212px] flex items-center justify-center">
+                {qrImageUrl ? (
+                  <img
+                    src={qrImageUrl}
+                    alt="Puyoko QR Code"
+                    className="w-[180px] h-[180px] object-contain rounded-md"
+                  />
+                ) : (
+                  <div className="w-[180px] h-[180px] bg-white animate-pulse rounded-md" />
+                )}
+              </div>
+              
+              <span className="font-mono text-[9px] font-bold text-primary/60 uppercase tracking-[0.2em] mb-1">
+                Scan to Visit
+              </span>
+              <span className="font-serif italic text-sm text-primary font-bold">
+                puyoko.com
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+ 
     </div>
   );
 };

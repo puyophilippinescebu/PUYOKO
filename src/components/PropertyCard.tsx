@@ -102,7 +102,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
         </div>
 
         <div className="mb-4 flex items-baseline gap-2 flex-wrap min-h-[32px]">
-          {property.originalPrice && property.originalPrice > property.price && (
+          {property.originalPrice != null && property.originalPrice > 0 && property.originalPrice > property.price && (
             <span className="font-sans text-xs font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
               {new Intl.NumberFormat(
                 property.currency === 'USD' ? 'en-US' :

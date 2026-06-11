@@ -27,34 +27,12 @@ export const Navigation: React.FC = () => {
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setProfileOpen(false);
-        setEditingName(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  // Sync name input when displayName changes
-  useEffect(() => {
-    setNameInput(displayName);
-  }, [displayName]);
-
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileMenuOpen(false);
-    setMobileDropdownOpen(null);
-  }, [location.pathname]);
-
-  const handleSaveName = () => {
-    const trimmed = nameInput.trim();
-    if (trimmed) updateDisplayName(trimmed);
-    setEditingName(false);
-  };
+  // Dynamic layout collapse state & refs
+  const [menuCollapsed, setMenuCollapsed] = useState(true);
+  const navContainerRef = useRef<HTMLElement>(null);
+  const logoRef = useRef<HTMLAnchorElement>(null);
+  const rightSectionRef = useRef<HTMLDivElement>(null);
+  const ghostLinksRef = useRef<HTMLDivElement>(null);
 
   const publicLinks: NavLink[] = [
     { name: 'Home', path: '/' },
@@ -102,19 +80,76 @@ export const Navigation: React.FC = () => {
 
   const navLinks = isAuthenticated ? adminLinks : publicLinks;
 
+  // Measure dynamic width and collapse menu if it overflows
+  useEffect(() => {
+    const checkCollapse = () => {
+      if (!navContainerRef.current || !ghostLinksRef.current) return;
+
+      const navWidth = navContainerRef.current.clientWidth;
+      const logoWidth = logoRef.current ? logoRef.current.offsetWidth : 220;
+      const rightWidth = rightSectionRef.current ? rightSectionRef.current.offsetWidth : 100;
+      const linksWidth = ghostLinksRef.current.offsetWidth;
+
+      // Available width is total nav width minus logo, right actions, and margin safety space (80px)
+      const availableWidth = navWidth - logoWidth - rightWidth - 80;
+
+      if (availableWidth < linksWidth) {
+        setMenuCollapsed(true);
+      } else {
+        setMenuCollapsed(false);
+      }
+    };
+
+    const timer = setTimeout(checkCollapse, 50);
+    window.addEventListener('resize', checkCollapse);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkCollapse);
+    };
+  }, [navLinks, isAuthenticated]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+        setEditingName(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Sync name input when displayName changes
+  useEffect(() => {
+    setNameInput(displayName);
+  }, [displayName]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setMobileDropdownOpen(null);
+  }, [location.pathname]);
+
+  const handleSaveName = () => {
+    const trimmed = nameInput.trim();
+    if (trimmed) updateDisplayName(trimmed);
+    setEditingName(false);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-outline/30 bg-white/70 backdrop-blur-md">
-      <nav className="mx-auto flex max-w-container-max items-center justify-between px-gutter py-4 relative">
-        <Link to="/" className="flex items-center gap-3">
-          <img src="/puyoko-logo.png" alt="PUYOKO Logo" className="h-12 w-12 object-contain" />
+      <nav ref={navContainerRef} className="mx-auto flex max-w-container-max items-center justify-between px-gutter py-4 relative">
+        <Link ref={logoRef} to="/" className="flex items-center gap-2 sm:gap-3">
+          <img src="/puyoko-logo.png" alt="PUYOKO Logo" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
           <div className="flex flex-col">
-            <span className="font-display text-xl font-bold tracking-[0.2em] uppercase text-primary leading-none">PUYOKO</span>
-            <span className="font-mono text-[8px] tracking-[0.4em] text-primary-light uppercase pt-1">Premium Estates</span>
+            <span className="font-display text-lg sm:text-xl font-bold tracking-[0.2em] uppercase text-primary leading-none">PUYOKO</span>
+            <span className="font-mono text-[7px] sm:text-[8px] tracking-[0.4em] text-primary-light uppercase pt-1">Premium Estates</span>
           </div>
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-10">
+        <div className={cn("hidden items-center lg:gap-5 xl:gap-10", !menuCollapsed && "lg:flex")}>
           {navLinks.map((link) => {
             if (link.dropdown) {
               const isAboutActive = link.name === 'About Us' && (location.pathname === '/about' || location.pathname === '/about/services');
@@ -172,7 +207,7 @@ export const Navigation: React.FC = () => {
         </div>
 
         {/* Right Section controls (Admin Badge, Sign Out, Hamburger Menu) */}
-        <div className="flex items-center gap-4">
+        <div ref={rightSectionRef} className="flex items-center gap-4">
           {isAuthenticated && (
             <div ref={dropdownRef} className="relative flex items-center gap-2 sm:gap-3 border-l border-outline/30 pl-3 sm:pl-6">
               {/* ADMIN Badge — click to open profile */}
@@ -276,10 +311,10 @@ export const Navigation: React.FC = () => {
             </div>
           )}
 
-          {/* Hamburger Menu (Mobile Only) */}
+          {/* Hamburger Menu (Mobile/Tablet Only) */}
           <button
             onClick={() => setMobileMenuOpen(o => !o)}
-            className="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none"
+            className={cn("p-2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none", menuCollapsed ? "block" : "hidden")}
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -287,8 +322,8 @@ export const Navigation: React.FC = () => {
         </div>
 
         {/* Mobile Dropdown Menu Drawer */}
-        {mobileMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-outline/20 shadow-xl py-6 px-gutter z-[90] md:hidden animate-in slide-in-from-top-2 duration-200">
+        {menuCollapsed && mobileMenuOpen && (
+          <div className="absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-outline/20 shadow-xl py-6 px-gutter z-[90] animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => {
                 if (link.dropdown) {
@@ -388,6 +423,20 @@ export const Navigation: React.FC = () => {
           </div>
         )}
       </nav>
+
+      {/* Ghost Links for measurement */}
+      <div 
+        ref={ghostLinksRef} 
+        className="absolute flex items-center lg:gap-5 xl:gap-10 pointer-events-none invisible whitespace-nowrap font-sans text-xs font-bold uppercase tracking-widest"
+        style={{ position: 'absolute', top: -9999, left: -9999 }}
+      >
+        {navLinks.map((link) => (
+          <span key={link.name} className="flex items-center gap-1">
+            {link.name}
+            {link.dropdown && <span className="w-3.5 h-3.5" />}
+          </span>
+        ))}
+      </div>
     </header>
   );
 };

@@ -177,7 +177,7 @@ export const ListingModal: React.FC<ListingModalProps> = ({ property, isOpen, on
                   </div>
                   <h2 className="mb-2 font-serif text-3xl lg:text-4xl font-bold text-primary leading-tight tracking-wide">{property.title}</h2>
                   <div className="mb-2 flex items-baseline gap-3 flex-wrap">
-                    {property.originalPrice && property.originalPrice > property.price && (
+                    {property.originalPrice != null && property.originalPrice > 0 && property.originalPrice > property.price && (
                       <span className="font-sans text-xs font-normal text-on-surface-variant/50 line-through decoration-red-500/30">
                         {new Intl.NumberFormat(
                           property.currency === 'USD' ? 'en-US' :
