@@ -133,13 +133,13 @@ export const LandingPage: React.FC = () => {
           >
             {/* Animated Gradient Icon Container */}
             <div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 shadow-md group-hover:scale-110 group-hover:shadow-primary/20 mb-6">
-              {/* Default background (soft jade tint) */}
-              <div className="absolute inset-0 bg-[#E8F3EF] border border-primary/10 transition-opacity duration-500 group-hover:opacity-0" />
-              {/* Hover gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-light via-primary to-primary-neon opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              {/* Default gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-light via-primary to-primary-neon transition-opacity duration-500 group-hover:opacity-0" />
+              {/* Hover background (soft jade tint) */}
+              <div className="absolute inset-0 bg-[#E8F3EF] border border-primary/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               
               {/* Icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="relative z-10 w-7 h-7 text-primary transition-colors duration-500 group-hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="relative z-10 w-7 h-7 text-white transition-colors duration-500 group-hover:text-primary">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
             </div>
@@ -162,13 +162,13 @@ export const LandingPage: React.FC = () => {
           >
             {/* Animated Gradient Icon Container */}
             <div className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500 shadow-md group-hover:scale-110 group-hover:shadow-primary/20 mb-6">
-              {/* Default background (soft jade tint) */}
-              <div className="absolute inset-0 bg-[#E8F3EF] border border-primary/10 transition-opacity duration-500 group-hover:opacity-0" />
-              {/* Hover gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-light via-primary to-primary-neon opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              {/* Default gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-light via-primary to-primary-neon transition-opacity duration-500 group-hover:opacity-0" />
+              {/* Hover background (soft jade tint) */}
+              <div className="absolute inset-0 bg-[#E8F3EF] border border-primary/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               
               {/* Icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="relative z-10 w-7 h-7 text-primary transition-colors duration-500 group-hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="relative z-10 w-7 h-7 text-white transition-colors duration-500 group-hover:text-primary">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
               </svg>
             </div>
