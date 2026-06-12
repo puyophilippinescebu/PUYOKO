@@ -19,13 +19,6 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Dynamic layout collapse state & refs
-  const [menuCollapsed, setMenuCollapsed] = useState(true);
-  const navContainerRef = useRef<HTMLElement>(null);
-  const logoRef = useRef<HTMLDivElement>(null);
-  const rightSectionRef = useRef<HTMLDivElement>(null);
-  const ghostLinksRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -60,41 +53,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     adminLinks.push({ name: 'Approvals', path: '/admin/approvals', icon: ShieldCheck });
   }
 
-  // Measure dynamic width and collapse menu if it overflows
-  useEffect(() => {
-    const checkCollapse = () => {
-      if (!navContainerRef.current || !ghostLinksRef.current) return;
-
-      const navWidth = navContainerRef.current.clientWidth;
-      const logoWidth = logoRef.current ? logoRef.current.offsetWidth : 220;
-      const rightWidth = rightSectionRef.current ? rightSectionRef.current.offsetWidth : 120;
-      const linksWidth = ghostLinksRef.current.offsetWidth;
-
-      // Available width is total nav width minus logo, right actions, and margin safety space (80px)
-      const availableWidth = navWidth - logoWidth - rightWidth - 80;
-
-      if (availableWidth < linksWidth) {
-        setMenuCollapsed(true);
-      } else {
-        setMenuCollapsed(false);
-      }
-    };
-
-    const timer = setTimeout(checkCollapse, 50);
-    window.addEventListener('resize', checkCollapse);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', checkCollapse);
-    };
-  }, [adminLinks]);
-
   return (
     <div className="min-h-screen bg-[#f4f6f4] flex flex-col">
       {/* Admin Top Bar */}
       <header className="sticky top-0 z-50 w-full bg-jade-deep border-b border-white/10 shadow-md">
-        <nav ref={navContainerRef} className="mx-auto flex max-w-container-max items-center justify-between px-gutter py-3">
-          {/* Logo + Admin Label */}
-          <div ref={logoRef} className="flex items-center gap-4">
+        <nav className="mx-auto flex max-w-container-max items-center justify-between px-gutter py-3">
+          {/* Left: Logo + Desktop Links */}
+          <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 shrink-0">
             <Link to="/admin/properties" className="flex items-center gap-3">
               <img src="/puyoko-logo.png" alt="PUYOKO" className="h-9 w-9 object-contain brightness-0 invert" />
               <div className="flex flex-col">
@@ -103,8 +68,9 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
               </div>
             </Link>
             <div className="hidden lg:block h-6 w-px bg-white/20 mx-2" />
-            {/* Nav Links */}
-            <div className={cn("hidden items-center lg:gap-4 xl:gap-6", !menuCollapsed && "lg:flex")}>
+            
+            {/* Desktop Nav Links */}
+            <div className="hidden lg:flex items-center lg:gap-4 xl:gap-6">
               {adminLinks.map(({ name, path, icon: Icon }) => {
                 const isApprovals = name === 'Approvals';
                 const hasPending = isApprovals && pendingRequestsCount > 0;
@@ -133,9 +99,8 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             </div>
           </div>
 
-          {/* Right: Profile */}
-          <div ref={rightSectionRef} className="flex items-center gap-4">
-
+          {/* Right: Profile + Mobile Menu Hamburger */}
+          <div className="flex items-center gap-4 shrink-0">
             {/* Profile dropdown */}
             <div ref={dropdownRef} className="relative">
               <button
@@ -202,7 +167,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             {/* Hamburger Menu (Mobile/Tablet Only) */}
             <button
               onClick={() => setMobileMenuOpen(o => !o)}
-              className={cn("p-2 text-white/80 hover:text-white transition-colors focus:outline-none", menuCollapsed ? "block" : "hidden")}
+              className="p-2 text-white/80 hover:text-white transition-colors focus:outline-none lg:hidden"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -211,8 +176,8 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         </nav>
 
         {/* Mobile Dropdown Menu Drawer */}
-        {menuCollapsed && mobileMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-jade-deep border-t border-white/10 shadow-xl py-5 px-gutter z-[90] animate-in slide-in-from-top-2 duration-200">
+        {mobileMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 w-full bg-jade-deep border-t border-white/10 shadow-xl py-5 px-gutter z-[90] animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col gap-3">
               {adminLinks.map(({ name, path, icon: Icon }) => {
                 const isApprovals = name === 'Approvals';
@@ -243,20 +208,6 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             </div>
           </div>
         )}
-
-      {/* Ghost Links for measurement */}
-      <div 
-        ref={ghostLinksRef} 
-        className="absolute flex items-center lg:gap-4 xl:gap-6 pointer-events-none invisible whitespace-nowrap font-mono text-[10px] font-bold uppercase tracking-widest"
-        style={{ position: 'absolute', top: -9999, left: -9999 }}
-      >
-        {adminLinks.map(({ name }) => (
-          <span key={name} className="flex items-center gap-2">
-            <span className="h-3.5 w-3.5" />
-            <span>{name}</span>
-          </span>
-        ))}
-      </div>
       </header>
 
       {/* Page Content */}

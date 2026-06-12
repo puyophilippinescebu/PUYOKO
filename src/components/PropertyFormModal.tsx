@@ -91,6 +91,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
     pricePeriod: '',
     originalPrice: 0,
     accommodatedBy: '',
+    accommodatedByPhone: '',
     createdBy: ''
   });
 
@@ -114,6 +115,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
         pricePeriod: initialData.pricePeriod || '',
         originalPrice: initialData.originalPrice || 0,
         accommodatedBy: initialData.accommodatedBy || '',
+        accommodatedByPhone: initialData.accommodatedByPhone || '',
         createdBy: initialData.createdBy || ''
       });
       setImageUrls(initialData.images || []);
@@ -130,7 +132,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
       setFormData({
         title: '', price: 0, currency: 'PHP', status: 'Active', city: '', address: '',
         type: 'For Sale', bedrooms: 0, bathrooms: 0, area: 0, description: '', landmarks: '', mapsLink: '', images: [], tags: [], videoUrl: '', pricePeriod: '', originalPrice: 0,
-        accommodatedBy: '', createdBy: ''
+        accommodatedBy: '', accommodatedByPhone: '', createdBy: ''
       });
       setImageUrls([]);
       setAmenitiesImages([]);
@@ -458,6 +460,16 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ isOpen, on
                     <option key={agent} value={agent} />
                   ))}
                 </datalist>
+              </div>
+              <div>
+                <label className={labelClass}>Agent Phone Number</label>
+                <input 
+                  type="tel" 
+                  placeholder="e.g. +63 916 210 8479"
+                  className={inputClass} 
+                  value={formData.accommodatedByPhone || ''} 
+                  onChange={e => setFormData({...formData, accommodatedByPhone: e.target.value})} 
+                />
               </div>
               
               <div className="md:col-span-2">

@@ -410,6 +410,9 @@ export const PropertyDetailsPage: React.FC = () => {
                 <div>
                   <h4 className="font-display text-[9px] font-bold uppercase tracking-widest text-on-surface-variant/50 leading-none mb-1">Accommodated By</h4>
                   <p className="font-sans text-sm font-bold text-primary leading-none">{property.accommodatedBy}</p>
+                  {property.accommodatedByPhone && (
+                    <p className="font-mono text-xs text-on-surface-variant mt-1.5">{property.accommodatedByPhone}</p>
+                  )}
                 </div>
               </div>
             )}

@@ -58,7 +58,7 @@ export const PendingApprovalsPage: React.FC = () => {
       'title', 'price', 'currency', 'status', 'city', 'address', 
       'landmarks', 'mapsLink', 'bedrooms', 'bathrooms', 'area', 
       'description', 'type', 'videoUrl', 'pricePeriod', 'originalPrice',
-      'accommodatedBy'
+      'accommodatedBy', 'accommodatedByPhone'
     ];
 
     keysToCompare.forEach(key => {
@@ -74,6 +74,7 @@ export const PendingApprovalsPage: React.FC = () => {
         
         // Custom formatting for specific fields
         if (key === 'accommodatedBy') fieldName = 'Accommodating Agent';
+        if (key === 'accommodatedByPhone') fieldName = 'Agent Phone Number';
         if (key === 'pricePeriod') fieldName = 'Price Period';
         if (key === 'originalPrice') fieldName = 'Original Price';
         if (key === 'mapsLink') fieldName = 'Google Maps Link';
@@ -262,7 +263,10 @@ export const PendingApprovalsPage: React.FC = () => {
                       <div className="space-y-2">
                         <div>
                           <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Accommodating Agent</span>
-                          <span className="font-sans font-bold text-primary">{req.proposedData.accommodatedBy || 'Not Assigned'}</span>
+                          <span className="font-sans font-bold text-primary">
+                            {req.proposedData.accommodatedBy || 'Not Assigned'}
+                            {req.proposedData.accommodatedByPhone ? ` (${req.proposedData.accommodatedByPhone})` : ''}
+                          </span>
                         </div>
                         <div>
                           <span className="block text-[9px] font-mono text-outline uppercase tracking-wider">Specs</span>

@@ -21,6 +21,7 @@ export interface Property {
   pricePeriod?: string;
   originalPrice?: number;
   accommodatedBy?: string;
+  accommodatedByPhone?: string;
   createdBy?: string;
   amenities?: string[];
   amenitiesImages?: string[];

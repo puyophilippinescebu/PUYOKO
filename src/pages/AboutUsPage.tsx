@@ -124,9 +124,9 @@ export const AboutUsPage: React.FC = () => {
             <p className="font-sans text-on-surface-variant max-w-sm mx-auto mb-4">
               With over a decade of experience in property management, Malou ensures every project is executed with precision and care, maintaining the high standards of Puyoko.
             </p>
-            <a href="tel:+639913189665" className="inline-flex items-center gap-2 font-mono text-xs text-primary-light hover:text-primary transition-colors">
+            <a href="tel:+639162108479" className="inline-flex items-center gap-2 font-mono text-xs text-primary-light hover:text-primary transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.4a16 16 0 0 0 6.29 6.29l.89-.89a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              +63 991 318 9665
+              +63 9162108479
             </a>
           </div>
 
