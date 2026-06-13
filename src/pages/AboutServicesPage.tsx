@@ -24,7 +24,7 @@ export const AboutServicesPage: React.FC = () => {
       chineseTranslation: '',
       tagline: 'Accredited Expertise for Discerning Transactions',
       icon: Award,
-      description: 'We partner exclusively with Cebu’s most prestigious, accredited realtors to guarantee security and elite-level expertise. Whether you are acquiring a permanent estate, finding a temporary sanctuary, or listing your own property, our job is to connect you with the region\'s most coveted spaces and quality services.',
+      description: 'Whether you are acquiring a permanent estate, finding a temporary place, or listing your own property, our job is to connect you with one of Cebu’s most trusted, accredited real estate salespersons to guarantee security and elite-level expertise.',
       highlights: [
         'Exclusive partnerships with verified, accredited local brokers',
         'Tailored market valuations and deep local architectural insights',
