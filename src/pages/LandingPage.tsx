@@ -365,8 +365,8 @@ export const LandingPage: React.FC = () => {
       {/* Footer Biography Section */}
       <section className="py-24 px-gutter border-t border-outline/20 bg-background-warm/50">
         <div className="mx-auto max-w-container-max grid lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-4 max-w-sm mx-auto lg:mx-0 relative z-10">
-            <div className="aspect-[3/4] overflow-hidden border border-outline shadow-xl relative min-h-[400px] bg-[#E8F3EF]">
+          <div className="lg:col-span-3 max-w-[280px] mx-auto lg:mx-0 relative z-10">
+            <div className="aspect-[3/4] overflow-hidden border border-outline shadow-xl relative min-h-[320px] bg-[#E8F3EF]">
               {janEricPhotos.map((img, idx) => (
                 <img 
                   key={idx}
@@ -380,7 +380,7 @@ export const LandingPage: React.FC = () => {
               ))}
             </div>
           </div>
-          <div className="lg:col-span-8 lg:pl-12">
+          <div className="lg:col-span-9 lg:pl-12">
             <div className="mb-6 flex items-center gap-3">
               <span className="text-primary-light text-xs font-mono tracking-widest uppercase">Founder & Visionary</span>
             </div>
@@ -388,9 +388,6 @@ export const LandingPage: React.FC = () => {
             <div className="space-y-6 font-sans text-on-surface-variant text-lg leading-relaxed">
               <p>
                 Started building his brand at 22 while on his internship, his journey into real estate began with a profound appreciation for the local spaces in Cebu. Starting as a visionary looking to bridge the gap between historic Filipino homes and modern living, he founded Puyoko to redefine what a luxury real estate experience should be.
-              </p>
-              <p>
-                His philosophy is simple: a home is not just a structure, but a canvas for life's most important moments. Under his guidance, Puyoko has grown into a trusted name for discerning clients seeking properties that offer both heritage and modernity.
               </p>
             </div>
             <button 

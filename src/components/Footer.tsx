@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { MapPin, Mail, Phone, Facebook, Instagram } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -21,8 +21,10 @@ export const Footer: React.FC = () => {
             <a href="https://instagram.com/puyoko_official" target="_blank" rel="noopener noreferrer">
               <Instagram className="h-5 w-5 text-white/50 hover:text-white transition-colors cursor-pointer" />
             </a>
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <Linkedin className="h-5 w-5 text-white/50 hover:text-white transition-colors cursor-pointer" />
+            <a href="https://www.tiktok.com/@puyoko_official" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+              </svg>
             </a>
           </div>
         </div>
