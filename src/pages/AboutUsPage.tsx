@@ -105,7 +105,7 @@ export const AboutUsPage: React.FC = () => {
             <span className="text-primary-light text-xs font-mono tracking-widest uppercase">Our People / 团队</span>
           </div>
           <h2 className="font-display text-4xl font-light text-primary">
-            Project <span className="italic-serif text-primary-light">Managers</span>
+            Accredited <span className="italic-serif text-primary-light">Salespersons</span>
           </h2>
         </div>
         
@@ -120,9 +120,12 @@ export const AboutUsPage: React.FC = () => {
               />
             </div>
             <h3 className="font-display text-2xl text-primary mb-2">Marilou 'Malou' Janson</h3>
-            <p className="font-mono text-xs uppercase tracking-widest text-primary-light mb-4">Project Manager</p>
+            <p className="font-mono text-[9px] uppercase tracking-widest text-primary-light mb-4">Accredited Real Estate Salesperson</p>
             <p className="font-sans text-on-surface-variant max-w-sm mx-auto mb-4">
               With over a decade of experience in property management, Malou ensures every project is executed with precision and care, maintaining the high standards of Puyoko.
+              <span className="block mt-3 text-[9px] font-mono opacity-80 leading-relaxed text-primary-light/95">
+                DHSUD REG: # CVRO-A-09/19-1861<br />PRC RESOLUTION: #13 series of 2017
+              </span>
             </p>
             <a href="tel:+639162108479" className="inline-flex items-center gap-2 font-mono text-xs text-primary-light hover:text-primary transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.4a16 16 0 0 0 6.29 6.29l.89-.89a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -140,9 +143,12 @@ export const AboutUsPage: React.FC = () => {
               />
             </div>
             <h3 className="font-display text-2xl text-primary mb-2">Jane Claire Barcenas</h3>
-            <p className="font-mono text-xs uppercase tracking-widest text-primary-light mb-4">Project Manager</p>
+            <p className="font-mono text-[9px] uppercase tracking-widest text-primary-light mb-4">Accredited Real Estate Salesperson</p>
             <p className="font-sans text-on-surface-variant max-w-sm mx-auto mb-4">
               Jane's expertise in architectural coordination and client relations brings a seamless experience to our clients, turning complex visions into reality.
+              <span className="block mt-3 text-[9px] font-mono opacity-80 leading-relaxed text-primary-light/95">
+                DHSUD: CVRFO-A-03/19-1862<br />PRC RESOLUTION: #13 SERIES OF 2017
+              </span>
             </p>
             <a href="tel:+639942041835" className="inline-flex items-center gap-2 font-mono text-xs text-primary-light hover:text-primary transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.4a16 16 0 0 0 6.29 6.29l.89-.89a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
