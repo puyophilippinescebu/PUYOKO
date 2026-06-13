@@ -54,7 +54,7 @@ export const AboutServicesPage: React.FC = () => {
       chineseTranslation: '',
       tagline: 'Elevating Properties into Coveted Narratives',
       icon: Megaphone,
-      description: 'We transform real estate assets into compelling lifestyle stories. Through professional high-production visuals, immersive digital media, and strategic target market positioning, we showcase Cebu’s premier developments to local and international connoisseurs.',
+      description: 'We transform real estate assets into lifestyle stories. Through our media, we provide professional high-production visuals, immersive digital media, and targeted market positioning to showcase Cebu’s premier developments to local and international audiences.',
       highlights: [
         'Premium architectural photography and cinematic videography',
         'Immersive virtual tours and detailed digital walkthroughs',
