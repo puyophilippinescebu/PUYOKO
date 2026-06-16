@@ -46,36 +46,40 @@ export default async function handler(req: any, res: any) {
     let propertiesText = "";
 
     // Load data from Supabase if keys are available
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      
-      // Load settings
-      const { data: settings } = await supabase
-        .from('chatbot_settings')
-        .select('*')
-        .eq('id', 1)
-        .maybeSingle();
-        
-      if (settings) {
-        chatbotSettings = settings;
-      }
-      
-      // If chatbot is disabled, reject requests
-      if (!chatbotSettings.is_enabled) {
-        return res.status(200).json({ text: "The assistant is currently offline." });
-      }
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(200).json({
+        text: "Database configuration error: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is not configured in Vercel settings."
+      });
+    }
 
-      // Load active properties
-      const { data: properties } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('status', 'Active');
-        
-      if (properties && properties.length > 0) {
-        propertiesText = properties.map(p => 
-          `- ID: ${p.id}, Title: ${p.title}, Price: ₱${new Intl.NumberFormat('en-PH').format(p.price)}, Type: ${p.type}, Bedrooms: ${p.bedrooms}, Bathrooms: ${p.bathrooms}, Location: ${p.address}, ${p.city}`
-        ).join('\n');
-      }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Load settings
+    const { data: settings } = await supabase
+      .from('chatbot_settings')
+      .select('*')
+      .eq('id', 1)
+      .maybeSingle();
+      
+    if (settings) {
+      chatbotSettings = settings;
+    }
+    
+    // If chatbot is disabled, reject requests
+    if (!chatbotSettings.is_enabled) {
+      return res.status(200).json({ text: "The assistant is currently offline." });
+    }
+
+    // Load active properties
+    const { data: properties } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('status', 'Active');
+      
+    if (properties && properties.length > 0) {
+      propertiesText = properties.map(p => 
+        `- ID: ${p.id}, Title: ${p.title}, Price: ₱${new Intl.NumberFormat('en-PH').format(p.price)}, Type: ${p.type}, Bedrooms: ${p.bedrooms}, Bathrooms: ${p.bathrooms}, Location: ${p.address}, ${p.city}`
+      ).join('\n');
     }
 
     // Build system instructions with safety blocks (no password leaks)
