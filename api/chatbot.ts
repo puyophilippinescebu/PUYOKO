@@ -122,7 +122,7 @@ export default async function handler(req: any, res: any) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents,
-        systemInstruction: {
+        system_instruction: {
           parts: [{ text: systemInstructionText }]
         },
         generationConfig: {
