@@ -139,7 +139,7 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({ text: botText });
     } else {
       console.error("Gemini API error payload:", data);
-      return res.status(502).json({ error: "Invalid response from Gemini AI service." });
+      return res.status(502).json({ error: "Invalid response from Gemini AI service.", details: data });
     }
   } catch (err: any) {
     console.error("Serverless chatbot handler failed:", err);
