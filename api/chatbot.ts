@@ -116,13 +116,13 @@ export default async function handler(req: any, res: any) {
     });
 
     // Request Gemini API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
     const response = await fetch(geminiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents,
-        systemInstruction: {
+        system_instruction: {
           parts: [{ text: systemInstructionText }]
         },
         generationConfig: {
