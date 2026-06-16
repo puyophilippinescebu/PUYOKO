@@ -30,6 +30,7 @@ import { AdminSchedule } from './pages/AdminSchedule';
 import { PendingApprovalsPage } from './pages/PendingApprovalsPage';
 import { LeadsPage } from './pages/LeadsPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ChatbotWidget } from './components/ChatbotWidget';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -117,6 +118,7 @@ function PublicLayout() {
             </Routes>
           </main>
           <Footer />
+          <ChatbotWidget />
         </>
       </FirstTimeAnimation>
     </div>

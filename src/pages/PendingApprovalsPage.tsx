@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useProperties } from '../contexts/PropertiesContext';
 import { Check, X, ShieldAlert, Clock, User, ClipboardList, CheckCircle2, AlertTriangle, Eye, ShieldCheck } from 'lucide-react';
 import { Property } from '../types';
+import { ChatbotConfigCard } from '../components/ChatbotConfigCard';
 
 interface DiffItem {
   field: string;
@@ -141,6 +142,9 @@ export const PendingApprovalsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Gemini AI Chatbot Config */}
+      <ChatbotConfigCard />
 
       {/* Homepage Video Showcase Config */}
       <div className="bg-white border border-outline/25 rounded-2xl p-6 shadow-sm">
