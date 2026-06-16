@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useProperties } from '../contexts/PropertiesContext';
-import { Check, X, ShieldAlert, Clock, User, ClipboardList, CheckCircle2, AlertTriangle, Eye } from 'lucide-react';
+import { Check, X, ShieldAlert, Clock, User, ClipboardList, CheckCircle2, AlertTriangle, Eye, ShieldCheck } from 'lucide-react';
 import { Property } from '../types';
 
 interface DiffItem {
@@ -12,14 +12,22 @@ interface DiffItem {
 }
 
 export const PendingApprovalsPage: React.FC = () => {
-  const { isAuthenticated, userEmail } = useAuth();
+  const { isAuthenticated, userEmail, role } = useAuth();
   const { properties, requests, approvePropertyRequest, rejectPropertyRequest } = useProperties();
   const [processingId, setProcessingId] = useState<string | null>(null);
+
+  const [videoUrlInput, setVideoUrlInput] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
+
+  const handleSaveVideoUrl = () => {
+    localStorage.setItem('puyoko_homepage_video_url', videoUrlInput.trim());
+    window.dispatchEvent(new Event('storage'));
+    alert('Homepage video URL successfully updated!');
+  };
 
   const pendingRequests = requests.filter(r => r.status === 'PENDING');
 
   // Secure Guard: Direct redirect to properties if not director
-  if (!isAuthenticated || userEmail !== 'puyophilippinescebu@gmail.com') {
+  if (!isAuthenticated || role !== 'director') {
     return <Navigate to="/admin/properties" replace />;
   }
 
@@ -130,6 +138,35 @@ export const PendingApprovalsPage: React.FC = () => {
               <span className="block font-mono text-[8px] uppercase tracking-wider text-on-surface-variant/70 leading-none">Queue Size</span>
               <span className="font-sans text-xs font-bold text-primary">{pendingRequests.length} Pending Actions</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Homepage Video Showcase Config */}
+      <div className="bg-white border border-outline/25 rounded-2xl p-6 shadow-sm">
+        <div className="max-w-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <h3 className="font-display text-sm font-bold text-primary uppercase tracking-wider">Homepage Video Showcase Config</h3>
+          </div>
+          <p className="font-sans text-xs text-on-surface-variant mb-4 leading-relaxed">
+            Paste a video URL from **YouTube**, **TikTok**, or **Facebook** to dynamically feature a video player on your homepage. 
+            Leave the field completely empty to hide the homepage video section.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="url"
+              placeholder="e.g. https://www.youtube.com/watch?v=..."
+              value={videoUrlInput}
+              onChange={e => setVideoUrlInput(e.target.value)}
+              className="flex-grow border-b border-outline/30 bg-transparent py-2.5 px-3 focus:border-primary outline-none text-xs font-sans transition-colors"
+            />
+            <button
+              onClick={handleSaveVideoUrl}
+              className="bg-primary text-white px-6 py-3.5 rounded-xl font-mono text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-primary-light active:scale-95 shrink-0 cursor-pointer"
+            >
+              Update Video URL
+            </button>
           </div>
         </div>
       </div>
@@ -306,7 +343,7 @@ export const PendingApprovalsPage: React.FC = () => {
                     <div className="space-y-1 leading-relaxed">
                       <span className="font-mono text-[8.5px] uppercase tracking-wider font-extrabold text-red-700 block">Deletion Request</span>
                       <p>
-                        Approval will **permanently delete** this property listing and remove it from Google Sheets, the Supabase database, and the public portfolio.
+                        Approval will **permanently delete** this property listing and remove it from the Supabase database and the public portfolio.
                       </p>
                     </div>
                   </div>

@@ -37,7 +37,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
       )}
       onClick={() => onClick?.(property)}
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className="relative aspect-[16/10] overflow-hidden bg-primary/[0.03]">
         {property.images[0]?.startsWith('data:video/') || property.images[0]?.endsWith('.mp4') || property.images[0]?.endsWith('.mov') || property.images[0]?.endsWith('.webm') ? (
           <video
             src={property.images[0]}
@@ -55,6 +55,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           <img
             src={property.images[0]}
             alt={property.title}
+            loading="lazy"
             className={cn(
               "h-full w-full object-cover transition-transform duration-1000", 
               onClick && "group-hover:scale-110",

@@ -28,6 +28,8 @@ import { ProjectsPage } from './pages/ProjectsPage';
 import { MediaPage } from './pages/MediaPage';
 import { AdminSchedule } from './pages/AdminSchedule';
 import { PendingApprovalsPage } from './pages/PendingApprovalsPage';
+import { LeadsPage } from './pages/LeadsPage';
+import { DashboardPage } from './pages/DashboardPage';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -65,8 +67,10 @@ export default function App() {
                         <Route path="media" element={<PageTransition><MediaPage /></PageTransition>} />
                         <Route path="schedule" element={<PageTransition><AdminSchedule /></PageTransition>} />
                         <Route path="approvals" element={<PageTransition><PendingApprovalsPage /></PageTransition>} />
-                        <Route path="" element={<Navigate to="properties" replace />} />
-                        <Route path="*" element={<Navigate to="properties" replace />} />
+                        <Route path="leads" element={<PageTransition><LeadsPage /></PageTransition>} />
+                        <Route path="dashboard" element={<PageTransition><DashboardPage /></PageTransition>} />
+                        <Route path="" element={<Navigate to="dashboard" replace />} />
+                        <Route path="*" element={<Navigate to="dashboard" replace />} />
                       </Routes>
                     </AdminLayout>
                   </RequireAuth>
@@ -89,7 +93,7 @@ function PublicLayout() {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    return <Navigate to="/admin/properties" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return (

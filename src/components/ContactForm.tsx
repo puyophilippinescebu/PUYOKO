@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader2, X } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
+import { supabase } from '../lib/supabaseClient';
 
 interface ContactFormProps {
   standalone?: boolean;
@@ -124,23 +125,37 @@ export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) 
 
       const data = await res.json();
       if (data.success) {
-        // Send to Google Sheets if URL is configured
-        const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
-        console.log("VITE_GOOGLE_SCRIPT_URL read from env:", googleScriptUrl);
-        if (googleScriptUrl) {
-          try {
-            console.log("Attempting to send payload to Google Sheets...");
-            const sheetRes = await fetch(googleScriptUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain' },
-              body: JSON.stringify({ ...payload, formType: 'Contact Inquiry' }),
-            });
-            console.log("Google Sheets response status:", sheetRes.status);
-          } catch (err) {
-            console.error('Failed to log to Google Sheets:', err);
+        // Save to Supabase inquiries table
+        try {
+          const inquiryId = `INQ-${Math.floor(Math.random() * 90000) + 10000}`;
+          const dbPayload = {
+            id: inquiryId,
+            name: `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`,
+            email: formData.email,
+            phone: `${selectedCountry?.dial ?? ''} ${formData.phone}`,
+            message: formData.message || '(No message provided)',
+            property_title: selectedProperty?.title || null,
+            property_price: selectedProperty ? new Intl.NumberFormat('en-PH', {
+              style: 'currency',
+              currency: selectedProperty.currency || 'PHP',
+              maximumFractionDigits: 0
+            }).format(selectedProperty.price) : null,
+            property_address: selectedProperty ? `${selectedProperty.address}, ${selectedProperty.city}` : null,
+            form_type: 'Contact Inquiry',
+            status: 'New'
+          };
+          console.log("Inserting contact inquiry into Supabase...");
+          const { error: dbError } = await supabase
+            .from('inquiries')
+            .insert([dbPayload]);
+          
+          if (dbError) {
+            console.error("Supabase inquiries insertion failed:", dbError);
+          } else {
+            console.log("Successfully inserted contact inquiry into Supabase!");
           }
-        } else {
-          console.warn("VITE_GOOGLE_SCRIPT_URL is not defined in the environment!");
+        } catch (dbErr) {
+          console.error("Error preparing/inserting inquiry to Supabase:", dbErr);
         }
 
         setStatus('success');

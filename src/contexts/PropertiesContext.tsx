@@ -70,7 +70,6 @@ interface PropertiesContextType {
   addProperty: (prop: Omit<Property, 'id'> & { id?: string }) => Promise<void>;
   updateProperty: (prop: Property) => Promise<void>;
   deleteProperty: (id: string) => Promise<void>;
-  syncAllPropertiesToSheets: () => Promise<void>;
   requests: PropertyRequest[];
   submitPropertyRequest: (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>) => Promise<boolean>;
   approvePropertyRequest: (requestId: string) => Promise<void>;
@@ -102,59 +101,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     setUnsyncedPropertiesCount(getUnsyncedIds().length);
   };
 
-  // Helper to sync property change with Google Sheets via script URL
-  const syncWithGoogleSheets = async (action: 'CREATE' | 'UPDATE' | 'DELETE', property: Property) => {
-    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
-    if (!googleScriptUrl) {
-      console.warn("VITE_GOOGLE_SCRIPT_URL is not defined in the environment!");
-      return;
-    }
 
-    try {
-      console.log(`Attempting to sync property (${action}) to Google Sheets...`);
-      const res = await fetch(googleScriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-          formType: 'Property Sync',
-          action,
-          property
-        }),
-      });
-      console.log("Google Sheets property sync response status:", res.status);
-    } catch (err) {
-      console.error('Failed to sync property to Google Sheets:', err);
-    }
-  };
-
-  // Function to sync all properties to Google Sheets
-  const syncAllPropertiesToSheets = async () => {
-    const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
-    if (!googleScriptUrl) {
-      console.warn("VITE_GOOGLE_SCRIPT_URL is not defined in the environment!");
-      throw new Error("VITE_GOOGLE_SCRIPT_URL is not configured in your environment!");
-    }
-
-    try {
-      console.log("Attempting to sync all properties to Google Sheets...");
-      const res = await fetch(googleScriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-          formType: 'Property Sync',
-          action: 'SYNC_ALL',
-          properties: properties
-        }),
-      });
-      console.log("Google Sheets sync all response status:", res.status);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-    } catch (err) {
-      console.error('Failed to sync all properties to Google Sheets:', err);
-      throw err;
-    }
-  };
 
   const fetchPropertiesFromServer = async () => {
     try {
@@ -324,8 +271,6 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     // 3. Force re-fetch from server
     await fetchPropertiesFromServer();
 
-    // 4. Sync sheets
-    syncWithGoogleSheets('CREATE', propertyToInsert);
     removeUnsyncedId(propertyId);
   };
 
@@ -359,8 +304,6 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     // 3. Force re-fetch from server
     await fetchPropertiesFromServer();
 
-    // 4. Sync sheets
-    syncWithGoogleSheets('UPDATE', normalizedProp);
     removeUnsyncedId(updatedProp.id);
   };
 
@@ -391,11 +334,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     // 3. Force re-fetch from server
     await fetchPropertiesFromServer();
 
-    // 4. Sync sheets
     removeUnsyncedId(id);
-    if (propertyToDelete) {
-      syncWithGoogleSheets('DELETE', propertyToDelete);
-    }
   };
 
   const submitPropertyRequest = async (req: Omit<PropertyRequest, 'id' | 'requestedAt' | 'status'>): Promise<boolean> => {
@@ -693,7 +632,6 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
       addProperty, 
       updateProperty, 
       deleteProperty, 
-      syncAllPropertiesToSheets,
       requests,
       submitPropertyRequest,
       approvePropertyRequest,

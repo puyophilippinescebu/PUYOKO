@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, LogOut, User, LayoutGrid, Check, X, Calendar, Hammer, BookOpen, Menu } from 'lucide-react';
+import { ShieldCheck, LogOut, User, LayoutGrid, Check, X, Calendar, Hammer, BookOpen, Menu, Mail, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useState, useRef, useEffect } from 'react';
@@ -9,7 +9,7 @@ import { cn } from '../lib/utils';
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, userEmail, displayName, updateDisplayName } = useAuth();
+  const { logout, userEmail, displayName, updateDisplayName, role } = useAuth();
   const { requests } = useProperties();
   const pendingRequestsCount = requests.filter(r => r.status === 'PENDING').length;
 
@@ -43,13 +43,15 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const adminLinks = [
+    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Properties', path: '/admin/properties', icon: LayoutGrid },
     { name: 'Projects', path: '/admin/projects', icon: Hammer },
     { name: 'Blogs & Events', path: '/admin/media', icon: BookOpen },
     { name: 'Schedule', path: '/admin/schedule', icon: Calendar },
+    { name: 'Leads', path: '/admin/leads', icon: Mail },
   ];
 
-  if (userEmail === 'puyophilippinescebu@gmail.com') {
+  if (role === 'director') {
     adminLinks.push({ name: 'Approvals', path: '/admin/approvals', icon: ShieldCheck });
   }
 
@@ -60,7 +62,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         <nav className="mx-auto flex max-w-container-max items-center justify-between px-gutter py-3">
           {/* Left: Logo + Desktop Links */}
           <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 shrink-0">
-            <Link to="/admin/properties" className="flex items-center gap-3">
+            <Link to="/admin/dashboard" className="flex items-center gap-3">
               <img src="/puyoko-logo.png" alt="PUYOKO" className="h-9 w-9 object-contain brightness-0 invert" />
               <div className="flex flex-col">
                 <span className="font-display text-base font-bold tracking-[0.2em] uppercase text-white leading-none">PUYOKO</span>

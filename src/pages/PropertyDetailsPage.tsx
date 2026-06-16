@@ -161,7 +161,7 @@ export const PropertyDetailsPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <img src={img} alt={`${property.title} - ${idx + 1}`} className={cn("h-full w-full object-cover transition-transform hover:scale-105 duration-300", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")} />
+          <img src={img} alt={`${property.title} - ${idx + 1}`} loading="lazy" className={cn("h-full w-full object-cover transition-transform hover:scale-105 duration-300", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")} />
         )}
       </div>
     );
@@ -190,6 +190,7 @@ export const PropertyDetailsPage: React.FC = () => {
           <img 
             src={firstImg} 
             alt={property.title} 
+            loading="lazy"
             className={cn("h-full w-full object-cover transition-transform hover:scale-[1.02] duration-500", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")} 
           />
         )}
@@ -263,6 +264,7 @@ export const PropertyDetailsPage: React.FC = () => {
                     <img 
                       src={img} 
                       alt={`${property.title} - ${idx + 1}`} 
+                      loading="lazy"
                       className={cn("w-full h-full object-cover", property.status === 'Unavailable' && "grayscale-[80%] opacity-90")}
                     />
                   )}

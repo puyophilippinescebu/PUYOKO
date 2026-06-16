@@ -7,6 +7,7 @@ interface AuthContextType {
   isLoading: boolean;
   userEmail: string | null;
   displayName: string;
+  role: 'director' | 'agent' | null;
   updateDisplayName: (name: string) => void;
   login: () => void;
   logout: (reason?: string) => void;
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   userEmail: null,
   displayName: 'Admin',
+  role: null,
   updateDisplayName: () => {},
   login: () => {},
   logout: () => {},
@@ -34,6 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>('Admin');
+  const [role, setRole] = useState<'director' | 'agent' | null>(null);
 
   // Inactivity session timeout configuration (Secure Defaults)
   const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
@@ -52,23 +55,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setDisplayName(getStoredName(userEmail));
   }, [userEmail]);
 
+  const determineAndSetRole = useCallback(async (email: string | null) => {
+    if (!email) {
+      setRole(null);
+      return;
+    }
+    if (email === 'puyophilippinescebu@gmail.com') {
+      setRole('director');
+      return;
+    }
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (data && data.role) {
+        setRole(data.role as 'director' | 'agent');
+      } else {
+        setRole('agent');
+      }
+    } catch (err) {
+      console.warn("Failed to fetch user role, defaulting to agent:", err);
+      setRole('agent');
+    }
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const email = session?.user?.email ?? null;
       setIsAuthenticated(!!session);
       setUserEmail(email);
-      setIsLoading(false);
+      determineAndSetRole(email).then(() => {
+        setIsLoading(false);
+      });
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const email = session?.user?.email ?? null;
       setIsAuthenticated(!!session);
       setUserEmail(email);
-      setIsLoading(false);
+      determineAndSetRole(email).then(() => {
+        setIsLoading(false);
+      });
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [determineAndSetRole]);
 
   const updateDisplayName = (name: string) => {
     setDisplayName(name);
@@ -87,6 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     setUserEmail(null);
+    setRole(null);
     setDisplayName('Admin');
     setShowTimeoutWarning(false);
     if (checkIntervalRef.current) {
@@ -155,7 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isAuthenticated, resetActivity]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, userEmail, displayName, updateDisplayName, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, userEmail, displayName, role, updateDisplayName, login, logout }}>
       {children}
       <InactivityTimeoutModal
         isOpen={showTimeoutWarning}

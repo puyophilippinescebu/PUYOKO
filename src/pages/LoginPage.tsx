@@ -19,7 +19,7 @@ export const LoginPage: React.FC = () => {
   // Redirect to admin portal if already authenticated
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/admin/properties', { replace: true });
+      navigate('/admin/dashboard', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -41,7 +41,7 @@ export const LoginPage: React.FC = () => {
     }
 
     login();
-    navigate('/admin/properties');
+    navigate('/admin/dashboard');
   };
 
   return (

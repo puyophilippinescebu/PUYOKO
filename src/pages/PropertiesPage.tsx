@@ -10,15 +10,12 @@ import {
   Search, 
   Plus, 
   ChevronDown, 
-  ShieldCheck, 
   ChevronLeft, 
   ChevronRight,
   MapPin,
   Home,
   RotateCcw,
   SlidersHorizontal,
-  RefreshCw,
-  Check,
   AlertTriangle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -103,17 +100,35 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, 
   );
 };
 
+const SkeletonCard: React.FC = () => {
+  return (
+    <div className="overflow-hidden rounded-sm border border-outline/25 bg-white shadow-sm flex flex-col h-[380px] animate-pulse">
+      <div className="aspect-[16/10] bg-outline/10 w-full animate-shimmer" />
+      <div className="p-5 flex-grow flex flex-col justify-between">
+        <div className="space-y-3">
+          <div className="h-4 bg-outline/10 rounded w-2/3" />
+          <div className="h-3 bg-outline/10 rounded w-1/3" />
+          <div className="space-y-2 pt-2">
+            <div className="h-3 bg-outline/10 rounded w-full" />
+            <div className="h-3 bg-outline/10 rounded w-5/6" />
+          </div>
+        </div>
+        <div className="h-4 bg-outline/15 rounded w-1/4 mt-4" />
+      </div>
+    </div>
+  );
+};
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export const PropertiesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, userEmail } = useAuth();
+  const { isAuthenticated, userEmail, role } = useAuth();
   const { 
     properties, 
     loading, 
     addProperty, 
     updateProperty, 
     deleteProperty, 
-    syncAllPropertiesToSheets, 
     submitPropertyRequest,
     requests,
     rejectPropertyRequest,
@@ -156,7 +171,7 @@ export const PropertiesPage: React.FC = () => {
 
   const isAllowedToEdit = (property: Property) => {
     if (!isAuthenticated || !userEmail) return false;
-    if (userEmail === 'puyophilippinescebu@gmail.com') return true;
+    if (role === 'director') return true;
     if ((property as any).isPendingCreation) return true;
     return property.createdBy === userEmail;
   };
@@ -165,38 +180,18 @@ export const PropertiesPage: React.FC = () => {
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
+  const [activeTab, setActiveTab] = useState<'Active' | 'Sold' | 'Archived'>('Active');
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Reset page when filters change
+  // Reset page when filters or tab changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [listingType, selectedCity, searchQuery]);
+  }, [listingType, selectedCity, searchQuery, activeTab]);
 
-  const [videoUrlInput, setVideoUrlInput] = useState(localStorage.getItem('puyoko_homepage_video_url') || '');
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const handleSaveVideoUrl = () => {
-    localStorage.setItem('puyoko_homepage_video_url', videoUrlInput.trim());
-    // Dispatch storage event so LandingPage (same window) can react immediately if opened
-    window.dispatchEvent(new Event('storage'));
-    alert('Homepage video URL successfully updated!');
-  };
-
-  const handleSyncAll = async () => {
-    setSyncStatus('loading');
-    try {
-      await syncAllPropertiesToSheets();
-      setSyncStatus('success');
-      setTimeout(() => setSyncStatus('idle'), 5000);
-    } catch (err) {
-      setSyncStatus('error');
-      setTimeout(() => setSyncStatus('idle'), 5000);
-      alert('Failed to sync properties to Google Sheets. Check your VITE_GOOGLE_SCRIPT_URL deployment.');
-    }
-  };
 
   const agentPendingCreations = useMemo(() => {
     if (!isAuthenticated || !userEmail) return [];
@@ -218,7 +213,17 @@ export const PropertiesPage: React.FC = () => {
 
   const filteredProperties = useMemo(() => {
     return mergedProperties.filter(p => {
-      if (!isAuthenticated && p.status === 'Archived') return false;
+      if (!isAuthenticated) {
+        if (p.status === 'Archived' || p.status === 'Sold') return false;
+      } else {
+        if (activeTab === 'Active') {
+          if (p.status === 'Sold' || p.status === 'Archived') return false;
+        } else if (activeTab === 'Sold') {
+          if (p.status !== 'Sold') return false;
+        } else if (activeTab === 'Archived') {
+          if (p.status !== 'Archived') return false;
+        }
+      }
       const matchesType = listingType === 'All Properties' || p.type === listingType;
       const matchesCity = selectedCity === 'All Cities' || normalizeLocation(p.city) === selectedCity;
       const matchesSearch =
@@ -226,7 +231,7 @@ export const PropertiesPage: React.FC = () => {
         p.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesType && matchesCity && matchesSearch;
     });
-  }, [mergedProperties, listingType, selectedCity, searchQuery, isAuthenticated]);
+  }, [mergedProperties, listingType, selectedCity, searchQuery, isAuthenticated, activeTab]);
 
   const paginatedProperties = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -284,79 +289,33 @@ export const PropertiesPage: React.FC = () => {
           </div>
         </div>
       )}
-      {/* Admin Control Panel Card */}
-      {isAuthenticated && (
-        <div className="mb-10 rounded-sm border border-outline/30 bg-white/95 frosted-jade p-6 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8 divide-y md:divide-y-0 md:divide-x divide-outline/20">
-          {/* Section 1: Video Config */}
-          <div className="pb-6 md:pb-0 md:pr-8">
-            <div className="flex items-center gap-2 mb-3">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <h3 className="font-display text-sm font-bold text-primary uppercase tracking-wider">Homepage Video Showcase Config</h3>
-            </div>
-            <p className="font-sans text-xs text-on-surface-variant mb-4 leading-relaxed">
-              Paste a video URL from **YouTube**, **TikTok**, or **Facebook** to dynamically feature a video player on your homepage. 
-              Leave the field completely empty to hide the homepage video section.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="url"
-                placeholder="e.g. https://www.youtube.com/watch?v=..."
-                value={videoUrlInput}
-                onChange={e => setVideoUrlInput(e.target.value)}
-                className="flex-grow border-b border-outline/30 bg-transparent py-2.5 px-3 focus:border-primary outline-none text-xs font-sans transition-colors"
-              />
-              <button
-                onClick={handleSaveVideoUrl}
-                className="bg-primary text-white px-6 py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-primary-light active:scale-95 shrink-0"
-              >
-                Update Video URL
-              </button>
-            </div>
-          </div>
 
-          {/* Section 2: Google Sheets Sync */}
-          <div className="pt-6 md:pt-0 md:pl-8 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <RefreshCw className="h-5 w-5 text-primary" />
-                <h3 className="font-display text-sm font-bold text-primary uppercase tracking-wider">Google Sheets Property Sync</h3>
-              </div>
-              <p className="font-sans text-xs text-on-surface-variant mb-4 leading-relaxed">
-                Sync all properties in the database to the Google Sheet tab (**Property Update**). 
-                Future creations, modifications, and deletions will sync automatically in the background.
-              </p>
-            </div>
-            <div className="flex items-center gap-4 flex-wrap mt-2">
-              <button
-                onClick={handleSyncAll}
-                disabled={syncStatus === 'loading'}
-                className={cn(
-                  "bg-primary text-white px-6 py-3.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 shrink-0 disabled:opacity-60 flex items-center gap-2",
-                  syncStatus === 'loading' ? 'cursor-wait' : 'hover:bg-primary-light'
-                )}
-              >
-                {syncStatus === 'loading' && <RefreshCw className="h-3 w-3 animate-spin" />}
-                {syncStatus === 'loading' ? 'Syncing...' : 'Sync All Properties'}
-              </button>
-              
-              {syncStatus === 'success' && (
-                <div className="flex items-center gap-1.5 text-green-600 font-mono text-[10px] font-bold uppercase tracking-wider animate-fade-in">
-                  <Check className="h-4 w-4" />
-                  Synced Successfully
-                </div>
+
+
+
+      {/* Admin Status Tabs */}
+      {isAuthenticated && (
+        <div className="flex border-b border-outline/20 mb-8 overflow-x-auto gap-8 scrollbar-none">
+          {(['Active', 'Sold', 'Archived'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={cn(
+                "pb-4 font-mono text-[10px] font-bold uppercase tracking-widest border-b-2 outline-none transition-all cursor-pointer whitespace-nowrap",
+                activeTab === tab
+                  ? "border-primary text-primary"
+                  : "border-transparent text-outline/65 hover:text-primary hover:border-outline/40"
               )}
-              {syncStatus === 'error' && (
-                <div className="flex items-center gap-1.5 text-red-600 font-mono text-[10px] font-bold uppercase tracking-wider animate-fade-in">
-                  <AlertTriangle className="h-4 w-4" />
-                  Sync Failed
-                </div>
-              )}
-            </div>
-          </div>
+            >
+              {tab} Listings ({
+                tab === 'Active'
+                  ? mergedProperties.filter(p => p.status !== 'Sold' && p.status !== 'Archived').length
+                  : mergedProperties.filter(p => p.status === tab).length
+              })
+            </button>
+          ))}
         </div>
       )}
-
-
 
       {/* Filter Engine */}
       <section className="mb-10 md:mb-16">
@@ -461,44 +420,48 @@ export const PropertiesPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
-        {paginatedProperties.map(prop => {
-          const isPending = (prop as any).isPendingCreation;
-          const matchingReq = isPending ? requests.find(r => r.propertyId === prop.id && r.type === 'CREATE') : undefined;
-          return (
-            <PropertyCard
-              key={prop.id}
-              property={prop}
-              onClick={isPending ? undefined : () => navigate(`/property/${prop.id}`)}
-              onEdit={isAllowedToEdit(prop) ? p => { setEditingProperty(prop); setIsFormOpen(true); } : undefined}
-              onDelete={isAllowedToEdit(prop) ? (isPending ? (matchingReq?.status === 'ARCHIVED' ? () => setPropertyToDelete(prop) : undefined) : () => setPropertyToDelete(prop)) : undefined}
-              onArchive={isAllowedToEdit(prop) ? (isPending ? async () => {
-                if (matchingReq) {
-                  if (matchingReq.status === 'ARCHIVED') {
-                    await unarchivePropertyRequest(prop.id);
-                    alert('Pending creation restored and submitted to Director for approval.');
+        {loading && paginatedProperties.length === 0 ? (
+          Array.from({ length: 6 }).map((_, idx) => <SkeletonCard key={idx} />)
+        ) : (
+          paginatedProperties.map(prop => {
+            const isPending = (prop as any).isPendingCreation;
+            const matchingReq = isPending ? requests.find(r => r.propertyId === prop.id && r.type === 'CREATE') : undefined;
+            return (
+              <PropertyCard
+                key={prop.id}
+                property={prop}
+                onClick={isPending ? undefined : () => navigate(`/property/${prop.id}`)}
+                onEdit={isAllowedToEdit(prop) ? p => { setEditingProperty(prop); setIsFormOpen(true); } : undefined}
+                onDelete={isAllowedToEdit(prop) ? (isPending ? (matchingReq?.status === 'ARCHIVED' ? () => setPropertyToDelete(prop) : undefined) : () => setPropertyToDelete(prop)) : undefined}
+                onArchive={isAllowedToEdit(prop) ? (isPending ? async () => {
+                  if (matchingReq) {
+                    if (matchingReq.status === 'ARCHIVED') {
+                      await unarchivePropertyRequest(prop.id);
+                      alert('Pending creation restored and submitted to Director for approval.');
+                    } else {
+                      await archivePropertyRequest(prop.id);
+                      alert('Pending creation archived on your dashboard. Removed from Director approvals queue.');
+                    }
+                  }
+                } : async () => {
+                  if (role === 'director') {
+                    updateProperty({ ...prop, status: prop.status === 'Archived' ? 'Active' : 'Archived' });
                   } else {
-                    await archivePropertyRequest(prop.id);
-                    alert('Pending creation archived on your dashboard. Removed from Director approvals queue.');
+                    const success = await submitPropertyRequest({
+                      type: 'ARCHIVE',
+                      propertyId: prop.id,
+                      propertyName: prop.title,
+                      requestedBy: userEmail || 'unknown-agent'
+                    });
+                    if (success) {
+                      alert('Request Submitted: Your request to archive this listing has been submitted to the Director.');
+                    }
                   }
-                }
-              } : async () => {
-                if (userEmail === 'puyophilippinescebu@gmail.com') {
-                  updateProperty({ ...prop, status: prop.status === 'Archived' ? 'Active' : 'Archived' });
-                } else {
-                  const success = await submitPropertyRequest({
-                    type: 'ARCHIVE',
-                    propertyId: prop.id,
-                    propertyName: prop.title,
-                    requestedBy: userEmail || 'unknown-agent'
-                  });
-                  if (success) {
-                    alert('Request Submitted: Your request to archive this listing has been submitted to the Director.');
-                  }
-                }
-              }) : undefined}
-            />
-          );
-        })}
+                }) : undefined}
+              />
+            );
+          })
+        )}
       </div>
 
       {/* Pagination UI */}
@@ -571,7 +534,7 @@ export const PropertiesPage: React.FC = () => {
               if (success) {
                 alert('Request Updated: Your pending property creation details have been updated.');
               }
-            } else if (userEmail === 'puyophilippinescebu@gmail.com') {
+            } else if (role === 'director') {
               await updateProperty({ ...editingProperty, ...data });
             } else {
               const success = await submitPropertyRequest({
@@ -586,7 +549,7 @@ export const PropertiesPage: React.FC = () => {
               }
             }
           } else {
-            if (userEmail === 'puyophilippinescebu@gmail.com') {
+            if (role === 'director') {
               await addProperty(data);
             } else {
               const propertyId = `PK-${Math.floor(Math.random() * 9000) + 1000}`;
@@ -623,7 +586,7 @@ export const PropertiesPage: React.FC = () => {
                 await rejectPropertyRequest(req.id);
                 alert('Pending creation deleted successfully.');
               }
-            } else if (userEmail === 'puyophilippinescebu@gmail.com') {
+            } else if (role === 'director') {
               deleteProperty(propertyToDelete.id);
             } else {
               const success = await submitPropertyRequest({

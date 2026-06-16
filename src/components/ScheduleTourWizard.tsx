@@ -20,6 +20,7 @@ import {
 import { useProperties } from '../contexts/PropertiesContext';
 import { useBlockedDates } from '../hooks/useBlockedDates';
 import { normalizeLocation } from '../lib/utils';
+import { supabase } from '../lib/supabaseClient';
 
 interface ScheduleTourWizardProps {
   standalone?: boolean;
@@ -195,23 +196,38 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
 
       const data = await res.json();
       if (data.success) {
-        // Send to Google Sheets if URL is configured
-        const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
-        console.log("VITE_GOOGLE_SCRIPT_URL read from env:", googleScriptUrl);
-        if (googleScriptUrl) {
-          try {
-            console.log("Attempting to send payload to Google Sheets...");
-            const sheetRes = await fetch(googleScriptUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain' },
-              body: JSON.stringify({ ...payload, formType: 'Tour Booking' }),
-            });
-            console.log("Google Sheets response status:", sheetRes.status);
-          } catch (err) {
-            console.error('Failed to log to Google Sheets:', err);
+        // Save to Supabase inquiries table
+        try {
+          const inquiryId = `INQ-${Math.floor(Math.random() * 90000) + 10000}`;
+          const dbPayload = {
+            id: inquiryId,
+            name: `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`,
+            email: formData.email,
+            phone: `${selectedCountry?.dial ?? ''} ${formData.phone}`,
+            message: '(Tour Booking Inquiry)',
+            property_title: selectedProperty?.title || null,
+            property_price: selectedProperty ? new Intl.NumberFormat('en-PH', { style: 'currency', currency: selectedProperty.currency || 'PHP', maximumFractionDigits: 0 }).format(selectedProperty.price) : null,
+            property_address: selectedProperty ? `${selectedProperty.address}, ${selectedProperty.city}` : null,
+            tour_date: selectedDateStr || null,
+            tour_mode: tourType || null,
+            tour_time: selectedTime || null,
+            assigned_agent: agentName || null,
+            agent_contact: agentPhone || null,
+            form_type: 'Tour Booking',
+            status: 'New'
+          };
+          console.log("Inserting tour booking into Supabase...");
+          const { error: dbError } = await supabase
+            .from('inquiries')
+            .insert([dbPayload]);
+          
+          if (dbError) {
+            console.error("Supabase inquiries insertion failed:", dbError);
+          } else {
+            console.log("Successfully inserted tour booking into Supabase!");
           }
-        } else {
-          console.warn("VITE_GOOGLE_SCRIPT_URL is not defined in the environment!");
+        } catch (dbErr) {
+          console.error("Error preparing/inserting inquiry to Supabase:", dbErr);
         }
 
         setStatus('success');
