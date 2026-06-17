@@ -2,7 +2,10 @@ import React from 'react';
 
 export const HeritageBackground: React.FC = () => {
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 select-none print:hidden overflow-hidden bg-gradient-to-br from-white via-[#f3faf6] to-[#faf9f4]">
+    <div 
+      className="fixed inset-0 pointer-events-none z-0 select-none print:hidden overflow-hidden"
+      style={{ background: 'radial-gradient(circle at center, #ffffff 35%, #f6fbf8 75%, #e8f3ec 100%)' }}
+    >
       {/* Watercolor Wash Splashes */}
       <svg width="100%" height="100%" className="absolute inset-0 opacity-[0.45]" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -10,8 +13,6 @@ export const HeritageBackground: React.FC = () => {
             <feGaussianBlur stdDeviation="35" />
           </filter>
         </defs>
-        {/* Soft light green splash at top left */}
-        <circle cx="150" cy="150" r="220" fill="#e2f3e8" filter="url(#watercolorBlur)" />
         {/* Soft pale green splash at bottom left */}
         <circle cx="200" cy="700" r="300" fill="#eef7f2" filter="url(#watercolorBlur)" />
         {/* Soft light sage green splash at center right */}
@@ -49,12 +50,6 @@ export const HeritageBackground: React.FC = () => {
             <feGaussianBlur stdDeviation="8" />
           </filter>
         </defs>
-        
-        {/* Top Left Cloud cluster */}
-        <g transform="translate(80, 50) scale(1.1)">
-          <path d="M 30 60 C 40 40, 70 30, 100 40 C 120 20, 160 20, 180 40 C 200 30, 230 40, 240 60 C 255 70, 255 90, 240 100 C 220 110, 50 110, 30 100 C 15 90, 15 70, 30 60 Z" fill="#40916c" filter="url(#softBlur)" />
-          <path d="M 60 70 C 70 55, 90 50, 110 55 C 120 45, 140 45, 150 55 C 160 50, 180 55, 190 70 C 200 75, 200 85, 190 90 C 180 95, 80 95, 60 90 C 50 85, 50 75, 60 70 Z" fill="#95d5b2" filter="url(#softBlur)" />
-        </g>
 
         {/* Top Right Cloud cluster */}
         <g transform="translate(900, 100) scale(1.4)">
