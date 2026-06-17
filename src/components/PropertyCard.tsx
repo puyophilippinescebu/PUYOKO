@@ -21,6 +21,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
 
   const [images, setImages] = React.useState<string[]>([]);
   const [loadingImg, setLoadingImg] = React.useState(true);
+  const [isInViewport, setIsInViewport] = React.useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (property.images && property.images.length > 0) {
@@ -28,6 +30,33 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
       setLoadingImg(false);
       return;
     }
+
+    if (!window.IntersectionObserver) {
+      setIsInViewport(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [property.images]);
+
+  React.useEffect(() => {
+    if (!isInViewport) return;
 
     let active = true;
     const loadImages = async () => {
@@ -50,7 +79,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
     return () => {
       active = false;
     };
-  }, [property.id, property.images]);
+  }, [isInViewport, property.id]);
 
   const formattedPrice = new Intl.NumberFormat(
     property.currency === 'USD' ? 'en-US' :
@@ -65,6 +94,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
 
   return (
     <div
+      ref={cardRef}
       className={cn(
         "group overflow-hidden rounded-sm border border-outline/30 bg-white shadow-sm transition-all duration-500",
         onClick ? "cursor-pointer hover:shadow-2xl hover:border-primary/20" : "cursor-default"
