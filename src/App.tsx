@@ -31,6 +31,7 @@ import { PendingApprovalsPage } from './pages/PendingApprovalsPage';
 import { LeadsPage } from './pages/LeadsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ChatbotWidget } from './components/ChatbotWidget';
+import { TermsPage } from './pages/TermsPage';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -111,6 +112,7 @@ function PublicLayout() {
               <Route path="/media" element={<PageTransition><MediaPage /></PageTransition>} />
               <Route path="/property/:id" element={<PageTransition><PropertyDetailsPage /></PageTransition>} />
               <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
+              <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
               <Route path="/about" element={<PageTransition><AboutUsPage /></PageTransition>} />
               <Route path="/about/services" element={<PageTransition><AboutServicesPage /></PageTransition>} />
               <Route path="/contact" element={<PageTransition><ContactForm standalone={true} /></PageTransition>} />

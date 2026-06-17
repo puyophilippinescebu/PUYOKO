@@ -62,6 +62,7 @@ export const Footer: React.FC = () => {
           <h4 className="font-mono text-xs font-bold uppercase tracking-widest text-primary-light">Legal</h4>
           <ul className="flex flex-col gap-3 font-sans text-sm text-white/70">
             <li><Link to="/privacy" className="transition-colors hover:text-white">Privacy Policy</Link></li>
+            <li><Link to="/terms" className="transition-colors hover:text-white">Terms of Service</Link></li>
           </ul>
         </div>
       </div>
