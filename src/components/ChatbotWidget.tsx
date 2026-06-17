@@ -47,6 +47,7 @@ const renderMessageText = (text: string) => {
 export const ChatbotWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
+  const [showBubble, setShowBubble] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -85,6 +86,14 @@ export const ChatbotWidget: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  // Hide the "Need help?" bubble after 10 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowBubble(false);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Session limit check (Max 8 queries to prevent spamming/cost drain)
   const MAX_QUERIES = 8;
@@ -164,27 +173,25 @@ export const ChatbotWidget: React.FC = () => {
     <div className="fixed bottom-6 right-6 z-50 font-sans select-none">
       {/* Floating Action Button */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="w-14 h-14 rounded-full bg-primary hover:bg-primary-light text-white flex items-center justify-center shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer relative overflow-hidden group animate-bounce"
-          style={{ animationDuration: '3s' }}
-        >
-          {/* Ripple overlay */}
-          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="flex items-center gap-2.5">
+          {/* "Need help? Ask AI" Bubble */}
+          {showBubble && (
+            <div className="bg-jade-deep text-white text-[10px] sm:text-[11px] font-sans font-semibold px-3.5 py-1.5 rounded-xl shadow-xl border border-white/5 select-none relative whitespace-nowrap animate-in fade-in slide-in-from-right-3 duration-300">
+              Need help? Ask AI
+              <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2.5 h-2.5 bg-jade-deep rotate-45" />
+            </div>
+          )}
           
-          {/* Avatar Picture if exists, otherwise Bot Icon */}
-          <img 
-            src="/Jade AI bot.jpg" 
-            alt="Jade Assistant" 
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Fallback to Icon if image fails to load
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-          {/* Fallback Icon overlay */}
-          <MessageSquare className="w-6 h-6 absolute text-white" />
-        </button>
+          {/* Button */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="w-14 h-14 rounded-full bg-jade-deep hover:bg-primary text-white flex items-center justify-center shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer relative overflow-hidden group"
+          >
+            {/* Ripple overlay */}
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <MessageSquare className="w-6 h-6 text-white animate-pulse" />
+          </button>
+        </div>
       )}
 
       {/* Chat Window Drawer */}
@@ -195,7 +202,7 @@ export const ChatbotWidget: React.FC = () => {
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-white/10 border border-white/20 overflow-hidden shrink-0 flex items-center justify-center">
                 <img 
-                  src="/Jade AI bot.jpg" 
+                  src="/New Jade AI.png" 
                   alt="Jade" 
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -239,7 +246,7 @@ export const ChatbotWidget: React.FC = () => {
                   {isBot && (
                     <div className="w-6 h-6 rounded-full bg-primary/10 overflow-hidden shrink-0 flex items-center justify-center border border-primary/15">
                       <img 
-                        src="/Jade AI bot.jpg" 
+                        src="/New Jade AI.png" 
                         alt="Jade" 
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -268,7 +275,7 @@ export const ChatbotWidget: React.FC = () => {
               <div className="flex gap-2 max-w-[85%] items-end mr-auto">
                 <div className="w-6 h-6 rounded-full bg-primary/10 overflow-hidden shrink-0 flex items-center justify-center border border-primary/15">
                   <img 
-                    src="/Jade AI bot.jpg" 
+                    src="/New Jade AI.png" 
                     alt="Jade" 
                     className="w-full h-full object-cover animate-pulse"
                   />
