@@ -26,7 +26,7 @@ export const AboutServicesPage: React.FC = () => {
       icon: Award,
       description: 'Whether you are acquiring a permanent estate, finding a temporary place, or listing your own property, our job is to connect you with one of Cebu’s most trusted, accredited real estate salespersons to guarantee security and elite-level expertise.',
       highlights: [
-        'Exclusive partnerships with verified, accredited local brokers',
+        'Exclusive partnerships with verified, accredited real estate salespersons',
         'Tailored market valuations and deep local architectural insights',
         'End-to-end legal verification and compliance assurance',
         'Comprehensive curation of premium residential sales & rentals'
