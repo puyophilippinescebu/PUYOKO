@@ -6,6 +6,7 @@ import { Property } from '../types';
 import { cn, normalizeLocation } from '../lib/utils';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 import { 
   Search, 
   Plus, 
@@ -13,6 +14,7 @@ import {
   ChevronLeft, 
   ChevronRight,
   MapPin,
+  Loader2,
   Home,
   RotateCcw,
   SlidersHorizontal,
@@ -166,9 +168,29 @@ export const PropertiesPage: React.FC = () => {
     }
   };
 
+  const [loadingEdit, setLoadingEdit] = useState<string | null>(null);
   const [editingProperty, setEditingProperty] = useState<Property | undefined>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
+
+  const handleEditClick = async (prop: Property) => {
+    setLoadingEdit(prop.id);
+    try {
+      const { data } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', prop.id)
+        .single();
+      setEditingProperty(data || prop);
+      setIsFormOpen(true);
+    } catch (err) {
+      console.error("Failed to fetch full property details:", err);
+      setEditingProperty(prop);
+      setIsFormOpen(true);
+    } finally {
+      setLoadingEdit(null);
+    }
+  };
 
   const isAllowedToEdit = (property: Property) => {
     if (!isAuthenticated || !userEmail) return false;
@@ -415,7 +437,7 @@ export const PropertiesPage: React.FC = () => {
                 key={prop.id}
                 property={prop}
                 onClick={isPending ? undefined : () => navigate(`/property/${prop.id}`)}
-                onEdit={isAllowedToEdit(prop) ? p => { setEditingProperty(prop); setIsFormOpen(true); } : undefined}
+                onEdit={isAllowedToEdit(prop) ? () => handleEditClick(prop) : undefined}
                 onDelete={isAllowedToEdit(prop) ? (isPending ? (matchingReq?.status === 'ARCHIVED' ? () => setPropertyToDelete(prop) : undefined) : () => setPropertyToDelete(prop)) : undefined}
                 onArchive={isAllowedToEdit(prop) ? (isPending ? async () => {
                   if (matchingReq) {

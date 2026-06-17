@@ -4,6 +4,7 @@ import { Property } from '../types';
 import { cn, normalizeLocation } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 import { useProperties } from '../contexts/PropertiesContext';
+import { supabase } from '../lib/supabaseClient';
 
 interface PropertyCardProps {
   property: Property;
@@ -17,6 +18,39 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
   const { isAuthenticated } = useAuth();
   const { requests } = useProperties();
   const pendingReq = requests.find(r => r.propertyId === property.id);
+
+  const [images, setImages] = React.useState<string[]>([]);
+  const [loadingImg, setLoadingImg] = React.useState(true);
+
+  React.useEffect(() => {
+    if (property.images && property.images.length > 0) {
+      setImages(property.images);
+      setLoadingImg(false);
+      return;
+    }
+
+    let active = true;
+    const loadImages = async () => {
+      try {
+        const { data } = await supabase
+          .from('properties')
+          .select('images')
+          .eq('id', property.id)
+          .single();
+        if (active && data && data.images) {
+          setImages(data.images);
+        }
+      } catch (e) {
+        console.error("Failed to load property images:", e);
+      } finally {
+        if (active) setLoadingImg(false);
+      }
+    };
+    loadImages();
+    return () => {
+      active = false;
+    };
+  }, [property.id, property.images]);
 
   const formattedPrice = new Intl.NumberFormat(
     property.currency === 'USD' ? 'en-US' :
@@ -38,9 +72,13 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
       onClick={() => onClick?.(property)}
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-primary/[0.03]">
-        {property.images[0]?.startsWith('data:video/') || property.images[0]?.endsWith('.mp4') || property.images[0]?.endsWith('.mov') || property.images[0]?.endsWith('.webm') ? (
+        {loadingImg ? (
+          <div className="h-full w-full bg-outline/10 animate-pulse flex items-center justify-center">
+            <span className="text-[10px] font-mono tracking-widest text-primary/30 uppercase animate-shimmer">Loading media...</span>
+          </div>
+        ) : images[0]?.startsWith('data:video/') || images[0]?.endsWith('.mp4') || images[0]?.endsWith('.mov') || images[0]?.endsWith('.webm') ? (
           <video
-            src={property.images[0]}
+            src={images[0]}
             className={cn(
               "h-full w-full object-cover transition-transform duration-1000", 
               onClick && "group-hover:scale-105",
@@ -53,7 +91,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick, o
           />
         ) : (
           <img
-            src={property.images[0]}
+            src={images[0]}
             alt={property.title}
             loading="lazy"
             className={cn(

@@ -63,6 +63,15 @@ const safeSetItem = (key: string, value: string) => {
   }
 };
 
+const prunePropertiesForCache = (props: Property[]): Property[] => {
+  return props.map(p => ({
+    ...p,
+    // Keep only the first image to fit within localStorage's 5MB quota
+    images: p.images && p.images.length > 0 ? [p.images[0]] : []
+  }));
+};
+
+
 interface PropertiesContextType {
   properties: Property[];
   loading: boolean;
@@ -107,7 +116,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select('id, created_at, title, price, status, city, address, mapsLink, landmarks, tags, bedrooms, bathrooms, area, description, type, currency, videoUrl, pricePeriod, originalPrice, accommodatedBy, accommodatedByPhone, createdBy, amenities, amenitiesVideoUrl')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -119,13 +128,18 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
           try { localProperties = JSON.parse(savedCache) || []; } catch(e){}
         }
         
+        const formattedData = data.map(p => ({
+          ...p,
+          images: []
+        })) as Property[];
+
         // Smart Merge: Keep any locally created listings that failed to sync to the cloud database
         const unsyncedIds = getUnsyncedIds();
         const localUnsynced = localProperties.filter(p => unsyncedIds.includes(p.id) && !data.some(d => d.id === p.id));
-        const merged = [...localUnsynced, ...data];
+        const merged = [...localUnsynced, ...formattedData];
 
         setProperties(merged);
-        safeSetItem('puyoko_properties', JSON.stringify(merged));
+        safeSetItem('puyoko_properties', JSON.stringify(prunePropertiesForCache(merged)));
       }
     } catch (err: any) {
       console.error("Failed to fetch properties from server:", err);
@@ -235,7 +249,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
   // Helper to persist state
   const persistState = (newProperties: Property[]) => {
     setProperties(newProperties);
-    safeSetItem('puyoko_properties', JSON.stringify(newProperties));
+    safeSetItem('puyoko_properties', JSON.stringify(prunePropertiesForCache(newProperties)));
   };
 
   const addProperty = async (newProp: Omit<Property, 'id'> & { id?: string }) => {
