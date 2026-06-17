@@ -295,9 +295,9 @@ export const ChatbotWidget: React.FC = () => {
 
           {/* Session Limit Banner */}
           {queryCount >= MAX_QUERIES && (
-            <div className="px-4 py-2 bg-amber-50 border-t border-b border-amber-100 text-[9.5px] text-amber-700 font-mono uppercase tracking-wide flex items-center gap-1.5 shrink-0 select-none">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>Session limits reached ({queryCount}/{MAX_QUERIES})</span>
+            <div className="px-4 py-2 bg-amber-50 border-t border-b border-amber-100 text-[9.5px] text-amber-700 font-sans tracking-wide flex items-center gap-1.5 shrink-0 select-none">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+              <span>Limit reached. Refresh the page to reset, or contact us!</span>
             </div>
           )}
 
@@ -308,7 +308,7 @@ export const ChatbotWidget: React.FC = () => {
               required
               disabled={loading || queryCount >= MAX_QUERIES}
               maxLength={300}
-              placeholder={queryCount >= MAX_QUERIES ? "Limit reached..." : "Ask Jade something... (Max 300 chars)"}
+              placeholder={queryCount >= MAX_QUERIES ? "Limit reached. Refresh to reset..." : "Ask Jade something... (Max 300 chars)"}
               className="flex-1 bg-surface-muted border border-outline/25 rounded-xl px-4 py-2.5 text-xs font-sans outline-none focus:border-primary focus:bg-white transition-all disabled:opacity-55 disabled:cursor-not-allowed"
               value={input}
               onChange={(e) => setInput(e.target.value)}
