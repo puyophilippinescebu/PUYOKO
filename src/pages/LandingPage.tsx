@@ -101,7 +101,7 @@ export const LandingPage: React.FC = () => {
               alt="Cebu Luxury Estate" 
               className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
-            <div className="absolute bottom-2 right-2 md:bottom-6 md:right-6 text-lg md:text-5xl text-white/40 font-serif leading-none italic select-none hidden md:block">山水</div>
+            <div className="absolute bottom-2 right-2 md:bottom-6 md:right-6 text-sm md:text-5xl text-white/40 font-serif leading-none italic select-none">山水</div>
           </div>
 
           {/* Buttons (below photo on mobile) */}
@@ -199,7 +199,7 @@ export const LandingPage: React.FC = () => {
             <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
           </svg>
         </div>
-        <div className="absolute top-10 right-10 text-9xl opacity-5 font-serif select-none hidden md:block">和</div>
+        <div className="absolute top-4 right-4 text-5xl md:text-9xl opacity-5 font-serif select-none">和</div>
         <div className="mx-auto max-w-container-max px-gutter grid lg:grid-cols-2 gap-20 items-center">
           <div>
             <div className="mb-8 flex items-center gap-4">
@@ -315,7 +315,7 @@ export const LandingPage: React.FC = () => {
             {/* Content & Details Column */}
             <div className="p-8 md:p-12 flex flex-col justify-center relative">
               {/* Decorative Chinese character in background */}
-              <div className="absolute right-8 bottom-4 text-[120px] font-serif text-primary/5 select-none pointer-events-none group-hover:text-primary/10 transition-colors duration-500 hidden md:block">
+              <div className="absolute right-4 bottom-2 text-6xl md:text-[120px] font-serif text-primary/5 select-none pointer-events-none group-hover:text-primary/10 transition-colors duration-500">
                 墨
               </div>
 

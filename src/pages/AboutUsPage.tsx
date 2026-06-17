@@ -48,7 +48,7 @@ export const AboutUsPage: React.FC = () => {
       <section className="mb-32 max-w-4xl mx-auto px-8 py-16 bg-primary text-white relative overflow-hidden shadow-2xl">
         <div className="absolute inset-0 bg-jade-deep opacity-40"></div>
         <div className="absolute inset-0 heritage-pattern opacity-20 pointer-events-none mix-blend-overlay"></div>
-        <div className="absolute top-10 right-10 text-9xl opacity-5 font-serif select-none hidden md:block">住</div>
+        <div className="absolute top-4 right-4 text-5xl md:text-9xl opacity-5 font-serif select-none">住</div>
         <div className="relative z-10 text-center">
           <div className="mb-6 flex items-center justify-center gap-3">
             <span className="text-primary-neon text-xs font-mono tracking-widest uppercase">The Etymology / 词源</span>

@@ -230,7 +230,7 @@ export const AboutServicesPage: React.FC = () => {
       <section className="mt-32 max-w-5xl mx-auto px-8 py-16 bg-primary text-white relative overflow-hidden shadow-2xl rounded-sm">
         <div className="absolute inset-0 bg-jade-deep opacity-40"></div>
         <div className="absolute inset-0 heritage-pattern opacity-20 pointer-events-none mix-blend-overlay"></div>
-        <div className="absolute top-8 right-8 text-8xl opacity-5 font-serif select-none pointer-events-none hidden md:block">合</div>
+        <div className="absolute top-4 right-4 text-5xl md:text-8xl opacity-5 font-serif select-none pointer-events-none">合</div>
         <div className="relative z-10 text-center max-w-2xl mx-auto">
           <div className="mb-4 flex items-center justify-center gap-3">
             <span className="text-primary-neon text-xs font-mono tracking-widest uppercase">Custom Consultations / 业务咨询</span>
