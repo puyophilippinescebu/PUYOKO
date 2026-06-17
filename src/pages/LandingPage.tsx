@@ -427,64 +427,21 @@ export const LandingPage: React.FC = () => {
         <ScrollReveal>
           <div className="mx-auto max-w-container-max grid lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-3 max-w-[280px] mx-auto lg:mx-0 relative z-10">
-              {/* Cute Polaroid-style frame with floral corner accents */}
-              <div className="relative">
-                {/* Soft white mat border mimicking a polaroid */}
-                <div className="relative bg-white p-3 pb-6 shadow-[0_8px_32px_rgba(27,67,50,0.18)] rounded-sm rotate-[-1deg] hover:rotate-0 transition-transform duration-500">
-                  <div className="aspect-[3/4] overflow-hidden relative min-h-[300px] bg-[#E8F3EF]">
-                    {janEricPhotos.map((img, idx) => (
-                      <img 
-                        key={idx}
-                        src={img} 
-                        alt="Jan Eric Saladaga" 
-                        className={cn(
-                          "absolute inset-0 w-full h-full object-cover transition-opacity duration-1500 ease-in-out",
-                          currentJanEricPhoto === idx ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
-                        )}
-                      />
-                    ))}
-                  </div>
+              {/* Clean Polaroid-style frame */}
+              <div className="relative bg-white p-3 pb-3 shadow-[0_8px_32px_rgba(27,67,50,0.18)] rounded-sm rotate-[-1deg] hover:rotate-0 transition-transform duration-500">
+                <div className="aspect-[3/4] overflow-hidden relative min-h-[300px] bg-[#E8F3EF]">
+                  {janEricPhotos.map((img, idx) => (
+                    <img 
+                      key={idx}
+                      src={img} 
+                      alt="Jan Eric Saladaga" 
+                      className={cn(
+                        "absolute inset-0 w-full h-full object-cover transition-opacity duration-1500 ease-in-out",
+                        currentJanEricPhoto === idx ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
+                      )}
+                    />
+                  ))}
                 </div>
-
-                {/* Cute small cherry blossom SVG — top-left corner */}
-                <svg className="absolute -top-4 -left-4 w-10 h-10 pointer-events-none z-20 drop-shadow-sm" viewBox="0 0 40 40" fill="none">
-                  {/* 5-petal blossom */}
-                  {[0,72,144,216,288].map((angle, i) => (
-                    <ellipse
-                      key={i}
-                      cx={20 + 7 * Math.cos((angle - 90) * Math.PI / 180)}
-                      cy={20 + 7 * Math.sin((angle - 90) * Math.PI / 180)}
-                      rx="5" ry="3.2"
-                      transform={`rotate(${angle}, ${20 + 7 * Math.cos((angle - 90) * Math.PI / 180)}, ${20 + 7 * Math.sin((angle - 90) * Math.PI / 180)})`}
-                      fill="#f9d0e0" stroke="#e8a0b8" strokeWidth="0.5"
-                    />
-                  ))}
-                  <circle cx="20" cy="20" r="2.5" fill="#f7b8c8" stroke="#d4789a" strokeWidth="0.5" />
-                  {/* Tiny stamens */}
-                  {[0,72,144,216,288].map((angle, i) => (
-                    <circle
-                      key={`s${i}`}
-                      cx={20 + 3.5 * Math.cos((angle - 90) * Math.PI / 180)}
-                      cy={20 + 3.5 * Math.sin((angle - 90) * Math.PI / 180)}
-                      r="0.7" fill="#f4c2d5"
-                    />
-                  ))}
-                </svg>
-
-                {/* Cute small cherry blossom SVG — bottom-right corner */}
-                <svg className="absolute -bottom-3 -right-3 w-8 h-8 pointer-events-none z-20 drop-shadow-sm opacity-80" viewBox="0 0 40 40" fill="none">
-                  {[0,72,144,216,288].map((angle, i) => (
-                    <ellipse
-                      key={i}
-                      cx={20 + 7 * Math.cos((angle - 90) * Math.PI / 180)}
-                      cy={20 + 7 * Math.sin((angle - 90) * Math.PI / 180)}
-                      rx="5" ry="3.2"
-                      transform={`rotate(${angle}, ${20 + 7 * Math.cos((angle - 90) * Math.PI / 180)}, ${20 + 7 * Math.sin((angle - 90) * Math.PI / 180)})`}
-                      fill="#d4ede0" stroke="#95d5b2" strokeWidth="0.5"
-                    />
-                  ))}
-                  <circle cx="20" cy="20" r="2.5" fill="#b7e5cc" stroke="#74c99a" strokeWidth="0.5" />
-                </svg>
               </div>
             </div>
             <div className="lg:col-span-9 lg:pl-12">
