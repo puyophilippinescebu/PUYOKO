@@ -176,20 +176,20 @@ export const ChatbotWidget: React.FC = () => {
         <div className="flex items-center gap-2.5">
           {/* "Need help? Ask AI" Bubble */}
           {showBubble && (
-            <div className="bg-jade-deep text-white text-[10px] sm:text-[11px] font-sans font-semibold px-3.5 py-1.5 rounded-xl shadow-xl border border-white/5 select-none relative whitespace-nowrap animate-in fade-in slide-in-from-right-3 duration-300">
+            <div className="bg-gradient-to-r from-primary to-primary-light text-white text-[10px] sm:text-[11px] font-sans font-semibold px-3.5 py-1.5 rounded-xl shadow-xl border border-white/5 select-none relative whitespace-nowrap animate-in fade-in slide-in-from-right-3 duration-300">
               Need help? Ask AI
-              <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2.5 h-2.5 bg-jade-deep rotate-45" />
+              <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2.5 h-2.5 bg-primary-light rotate-45" />
             </div>
           )}
           
           {/* Button */}
           <button
             onClick={() => setIsOpen(true)}
-            className="w-14 h-14 rounded-full bg-jade-deep hover:bg-primary text-white flex items-center justify-center shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer relative overflow-hidden group"
+            className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary-light text-white flex items-center justify-center shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer relative overflow-hidden group"
           >
             {/* Ripple overlay */}
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <MessageSquare className="w-6 h-6 text-white animate-pulse" />
+            <MessageSquare className="w-6 h-6 text-white" />
           </button>
         </div>
       )}

@@ -28,9 +28,10 @@ interface FilterDropdownProps {
   onChange: (v: string) => void;
   icon?: React.ReactNode;
   className?: string;
+  light?: boolean;
 }
 
-const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, onChange, icon, className }) => {
+const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, onChange, icon, className, light }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -46,17 +47,17 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ label, value, options, 
     <div ref={ref} className={cn('relative group', className)}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-3 px-6 py-[16px] text-left outline-none hover:bg-primary/[0.02] transition-colors duration-300"
+        className="w-full flex items-center gap-3 px-6 py-[16px] text-left outline-none hover:bg-white/5 transition-colors duration-300"
       >
-        {icon && <div className="text-primary/60 group-hover:text-primary transition-colors shrink-0">{icon}</div>}
+        {icon && <div className={cn(light ? "text-white/80 group-hover:text-white" : "text-primary/60 group-hover:text-primary", "transition-colors shrink-0")}>{icon}</div>}
         <div className="flex flex-col flex-1 min-w-0">
-          <span className="text-[8px] font-mono text-outline uppercase tracking-[0.2em] mb-0.5">{label}</span>
-          <span className="font-sans text-[11px] font-bold text-primary truncate">
+          <span className={cn(light ? "text-white/60" : "text-outline", "text-[8px] font-mono uppercase tracking-[0.2em] mb-0.5")}>{label}</span>
+          <span className={cn(light ? "text-white" : "text-primary", "font-sans text-[11px] font-bold truncate")}>
             {value}
           </span>
         </div>
         <ChevronDown
-          className={cn('h-3.5 w-3.5 text-outline/50 transition-transform duration-300 shrink-0', open && 'rotate-180')}
+          className={cn('h-3.5 w-3.5 transition-transform duration-300 shrink-0', light ? 'text-white/60' : 'text-outline/50', open && 'rotate-180')}
         />
       </button>
 
@@ -322,16 +323,16 @@ export const PropertiesPage: React.FC = () => {
         <div className="border border-outline/35 bg-white/90 backdrop-blur-md rounded-lg shadow-lg shadow-primary/5 transition-all duration-300 relative z-30">
           <div className="grid grid-cols-1 md:grid-cols-4 items-center">
             {/* Search (Always visible, spans 1 grid column on desktop) */}
-            <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[16px] md:col-span-1 group bg-gradient-to-r from-primary to-primary-light transition-colors duration-300 flex items-center gap-3 rounded-l-lg">
-              <Search className="h-4 w-4 text-white transition-colors shrink-0" />
+            <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[16px] md:col-span-1 group hover:bg-primary/[0.02] transition-colors duration-300 flex items-center gap-3 rounded-l-lg">
+              <Search className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors shrink-0" />
               <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-[8px] font-mono text-white/70 uppercase tracking-[0.2em] mb-0.5">Search Keyword</span>
+                <span className="text-[8px] font-mono text-outline uppercase tracking-[0.2em] mb-0.5">Search Keyword</span>
                 <input
                   type="text"
                   placeholder="Search Archive..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent font-sans text-[11px] font-bold text-white placeholder-white/50 outline-none"
+                  className="w-full bg-transparent font-sans text-[11px] font-bold text-primary placeholder-outline/40 outline-none"
                 />
               </div>
             </div>
@@ -352,7 +353,7 @@ export const PropertiesPage: React.FC = () => {
 
             {/* Collapsible Filters Container (City, Type, Reset) */}
             <div className={cn(
-              "grid grid-cols-1 md:grid-cols-3 md:col-span-3 items-center",
+              "grid grid-cols-1 md:grid-cols-3 md:col-span-3 items-center bg-gradient-to-r from-primary to-primary-light text-white rounded-r-lg",
               !showFiltersMobile && "hidden md:grid"
             )}>
               {/* City */}
@@ -361,8 +362,9 @@ export const PropertiesPage: React.FC = () => {
                 value={selectedCity}
                 options={cities}
                 onChange={setSelectedCity}
-                icon={<MapPin className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors" />}
-                className="border-b md:border-b-0 md:border-r border-outline/10"
+                icon={<MapPin className="h-4 w-4 text-white/80 group-hover:text-white transition-colors" />}
+                className="border-b md:border-b-0 md:border-r border-white/10"
+                light={true}
               />
 
               {/* Type */}
@@ -371,8 +373,9 @@ export const PropertiesPage: React.FC = () => {
                 value={listingType}
                 options={types}
                 onChange={setListingType}
-                icon={<Home className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors" />}
-                className="border-b md:border-b-0 md:border-r border-outline/10"
+                icon={<Home className="h-4 w-4 text-white/80 group-hover:text-white transition-colors" />}
+                className="border-b md:border-b-0 md:border-r border-white/10"
+                light={true}
               />
 
               {/* Reset / Status Button */}
@@ -380,9 +383,8 @@ export const PropertiesPage: React.FC = () => {
                 {searchQuery !== '' || selectedCity !== 'All Cities' || listingType !== 'All Properties' ? (
                   <button
                     onClick={() => { setSearchQuery(''); setSelectedCity('All Cities'); setListingType('All Properties'); }}
-                    className="group relative w-full overflow-hidden bg-primary text-white py-3.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.2em] transition-all duration-500 hover:shadow-lg hover:shadow-primary/30 btn-press active:scale-95 cursor-pointer rounded-sm border-0 outline-none flex items-center justify-center gap-1.5"
+                    className="group relative w-full overflow-hidden bg-white text-primary py-3.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.2em] transition-all duration-300 hover:bg-white/90 hover:shadow-lg hover:shadow-white/10 btn-press active:scale-95 cursor-pointer rounded-sm border-0 outline-none flex items-center justify-center gap-1.5"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary-light via-primary to-primary-light opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 bg-[length:200%_auto] group-hover:animate-gradient-x" />
                     <span className="relative z-10 flex items-center gap-1.5">
                       <RotateCcw className="w-3.5 h-3.5" />
                       Reset Filters
@@ -391,9 +393,9 @@ export const PropertiesPage: React.FC = () => {
                 ) : (
                   <button
                     disabled
-                    className="w-full border border-outline/20 bg-primary/[0.02] text-outline/50 py-3.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.2em] cursor-not-allowed rounded-sm flex items-center justify-center gap-1.5"
+                    className="w-full border border-white/20 bg-white/5 text-white/50 py-3.5 font-mono text-[9px] font-extrabold uppercase tracking-[0.2em] cursor-not-allowed rounded-sm flex items-center justify-center gap-1.5"
                   >
-                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-white/40" />
                     No Active Filters
                   </button>
                 )}
