@@ -9,6 +9,41 @@ interface Message {
   text: string;
 }
 
+const renderMessageText = (text: string) => {
+  const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = markdownLinkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    const linkText = match[1];
+    const linkUrl = match[2];
+    const isAbsolute = linkUrl.startsWith('http://') || linkUrl.startsWith('https://');
+    
+    parts.push(
+      <a 
+        key={match.index}
+        href={linkUrl}
+        target={isAbsolute ? "_blank" : undefined}
+        rel={isAbsolute ? "noopener noreferrer" : undefined}
+        className="text-primary hover:text-primary-light font-bold underline transition-colors"
+      >
+        {linkText}
+      </a>
+    );
+    lastIndex = markdownLinkRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+};
+
 export const ChatbotWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -222,7 +257,7 @@ export const ChatbotWidget: React.FC = () => {
                         : "bg-primary text-white rounded-br-none"
                     )}
                   >
-                    {msg.text}
+                    {renderMessageText(msg.text)}
                   </div>
                 </div>
               );
