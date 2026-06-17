@@ -180,7 +180,6 @@ export const PropertiesPage: React.FC = () => {
   const [listingType, setListingType] = useState<string>('All Properties');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const [activeTab, setActiveTab] = useState<'Active' | 'Sold' | 'Archived'>('Active');
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -337,25 +336,8 @@ export const PropertiesPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Mobile Filter Toggle Button (Hidden on desktop) */}
-            <div className="flex md:hidden items-center justify-between px-6 py-[18px] border-b border-outline/10 bg-primary/[0.01]">
-              <button
-                onClick={() => setShowFiltersMobile(s => !s)}
-                className="w-full flex items-center justify-between text-left font-mono text-[9px] font-extrabold uppercase tracking-widest text-primary outline-none"
-              >
-                <span className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-3.5 w-3.5 text-primary/60" />
-                  {showFiltersMobile ? "Hide Filter Options" : "Show Filter Options (City, Type)"}
-                </span>
-                <ChevronDown className={cn("h-4 w-4 text-primary/50 transition-transform duration-300", showFiltersMobile && "rotate-180")} />
-              </button>
-            </div>
-
-            {/* Collapsible Filters Container (City, Type, Reset) */}
-            <div className={cn(
-              "grid grid-cols-1 md:grid-cols-3 md:col-span-3 items-center bg-gradient-to-r from-primary to-primary-light text-white rounded-r-lg",
-              !showFiltersMobile && "hidden md:grid"
-            )}>
+            {/* Filters Container (City, Type, Reset) - Always visible */}
+            <div className="grid grid-cols-1 md:grid-cols-3 md:col-span-3 items-center bg-gradient-to-r from-primary to-primary-light text-white rounded-r-lg">
               {/* City */}
               <FilterDropdown
                 label="City"
