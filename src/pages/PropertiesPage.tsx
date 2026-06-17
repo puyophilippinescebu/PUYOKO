@@ -322,16 +322,16 @@ export const PropertiesPage: React.FC = () => {
         <div className="border border-outline/35 bg-white/90 backdrop-blur-md rounded-lg shadow-lg shadow-primary/5 transition-all duration-300 relative z-30">
           <div className="grid grid-cols-1 md:grid-cols-4 items-center">
             {/* Search (Always visible, spans 1 grid column on desktop) */}
-            <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[16px] md:col-span-1 group hover:bg-primary/[0.02] transition-colors duration-300 flex items-center gap-3">
-              <Search className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors shrink-0" />
+            <div className="relative border-b md:border-b-0 md:border-r border-outline/10 px-6 py-[16px] md:col-span-1 group bg-gradient-to-r from-primary to-primary-light transition-colors duration-300 flex items-center gap-3 rounded-l-lg">
+              <Search className="h-4 w-4 text-white transition-colors shrink-0" />
               <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-[8px] font-mono text-outline uppercase tracking-[0.2em] mb-0.5">Search Keyword</span>
+                <span className="text-[8px] font-mono text-white/70 uppercase tracking-[0.2em] mb-0.5">Search Keyword</span>
                 <input
                   type="text"
                   placeholder="Search Archive..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent font-sans text-[11px] font-bold text-primary placeholder-outline/40 outline-none"
+                  className="w-full bg-transparent font-sans text-[11px] font-bold text-white placeholder-white/50 outline-none"
                 />
               </div>
             </div>
