@@ -427,112 +427,72 @@ export const LandingPage: React.FC = () => {
         <ScrollReveal>
           <div className="mx-auto max-w-container-max grid lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-3 max-w-[280px] mx-auto lg:mx-0 relative z-10">
-              <div className="relative p-4">
-                <div className="aspect-[3/4] overflow-hidden border border-[#5c8065]/35 shadow-xl relative min-h-[320px] bg-[#E8F3EF] rounded-sm">
-                  {janEricPhotos.map((img, idx) => (
-                    <img 
-                      key={idx}
-                      src={img} 
-                      alt="Jan Eric Saladaga" 
-                      className={cn(
-                        "absolute inset-0 w-full h-full object-cover transition-opacity duration-1500 ease-in-out",
-                        currentJanEricPhoto === idx ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
-                      )}
+              {/* Cute Polaroid-style frame with floral corner accents */}
+              <div className="relative">
+                {/* Soft white mat border mimicking a polaroid */}
+                <div className="relative bg-white p-3 pb-6 shadow-[0_8px_32px_rgba(27,67,50,0.18)] rounded-sm rotate-[-1deg] hover:rotate-0 transition-transform duration-500">
+                  <div className="aspect-[3/4] overflow-hidden relative min-h-[300px] bg-[#E8F3EF]">
+                    {janEricPhotos.map((img, idx) => (
+                      <img 
+                        key={idx}
+                        src={img} 
+                        alt="Jan Eric Saladaga" 
+                        className={cn(
+                          "absolute inset-0 w-full h-full object-cover transition-opacity duration-1500 ease-in-out",
+                          currentJanEricPhoto === idx ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
+                        )}
+                      />
+                    ))}
+                  </div>
+                  {/* Subtle caption strip at bottom of polaroid */}
+                  <div className="pt-2 pb-1 text-center">
+                    <span className="font-mono text-[9px] tracking-[0.25em] text-primary/40 uppercase">Jan Eric ✦ Puyoko</span>
+                  </div>
+                </div>
+
+                {/* Cute small cherry blossom SVG — top-left corner */}
+                <svg className="absolute -top-4 -left-4 w-10 h-10 pointer-events-none z-20 drop-shadow-sm" viewBox="0 0 40 40" fill="none">
+                  {/* 5-petal blossom */}
+                  {[0,72,144,216,288].map((angle, i) => (
+                    <ellipse
+                      key={i}
+                      cx={20 + 7 * Math.cos((angle - 90) * Math.PI / 180)}
+                      cy={20 + 7 * Math.sin((angle - 90) * Math.PI / 180)}
+                      rx="5" ry="3.2"
+                      transform={`rotate(${angle}, ${20 + 7 * Math.cos((angle - 90) * Math.PI / 180)}, ${20 + 7 * Math.sin((angle - 90) * Math.PI / 180)})`}
+                      fill="#f9d0e0" stroke="#e8a0b8" strokeWidth="0.5"
                     />
                   ))}
-                </div>
-                {/* Cute Classic Bamboo Frame SVG Overlay */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible" viewBox="0 0 100 133" preserveAspectRatio="none">
-                  <defs>
-                    {/* Vertical Bamboo Pole Gradient (horizontal light source) */}
-                    <linearGradient id="bambooVert" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#2c5e3b" />
-                      <stop offset="30%" stopColor="#4f9e60" />
-                      <stop offset="60%" stopColor="#7ec48f" />
-                      <stop offset="85%" stopColor="#3d824d" />
-                      <stop offset="100%" stopColor="#1a3f25" />
-                    </linearGradient>
-                    {/* Horizontal Bamboo Pole Gradient (vertical light source) */}
-                    <linearGradient id="bambooHoriz" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#2c5e3b" />
-                      <stop offset="30%" stopColor="#4f9e60" />
-                      <stop offset="60%" stopColor="#7ec48f" />
-                      <stop offset="85%" stopColor="#3d824d" />
-                      <stop offset="100%" stopColor="#1a3f25" />
-                    </linearGradient>
-                  </defs>
-                  {/* Top & Bottom Poles */}
-                  <rect x="-4" y="2" width="108" height="4.5" rx="1.5" fill="url(#bambooHoriz)" />
-                  <rect x="-4" y="126.5" width="108" height="4.5" rx="1.5" fill="url(#bambooHoriz)" />
-                  {/* Left & Right Poles */}
-                  <rect x="2" y="-4" width="4.5" height="141" rx="1.5" fill="url(#bambooVert)" />
-                  <rect x="93.5" y="-4" width="4.5" height="141" rx="1.5" fill="url(#bambooVert)" />
-
-                  {/* Bamboo Joints (Nodes) */}
-                  {/* Left Pole Joints */}
-                  <path d="M2,25 Q4.25,24 6.5,25" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M2,25.6 Q4.25,24.6 6.5,25.6" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-                  <path d="M2,55 Q4.25,54 6.5,55" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M2,55.6 Q4.25,54.6 6.5,55.6" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-                  <path d="M2,85 Q4.25,84 6.5,85" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M2,85.6 Q4.25,84.6 6.5,85.6" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-                  <path d="M2,110 Q4.25,109 6.5,110" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M2,110.6 Q4.25,109.6 6.5,110.6" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-
-                  {/* Right Pole Joints */}
-                  <path d="M93.5,30 Q95.75,29 98,30" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M93.5,30.6 Q95.75,29.6 98,30.6" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-                  <path d="M93.5,60 Q95.75,59 98,60" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M93.5,60.6 Q95.75,59.6 98,60.6" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-                  <path d="M93.5,90 Q95.75,89 98,90" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M93.5,90.6 Q95.75,89.6 98,90.6" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-                  <path d="M93.5,115 Q95.75,114 98,115" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M93.5,115.6 Q95.75,114.6 98,115.6" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-
-                  {/* Top Pole Joints */}
-                  <path d="M30,2 Q29,4.25 30,6.5" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M30.6,2 Q29.6,4.25 30.6,6.5" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-                  <path d="M70,2 Q69,4.25 70,6.5" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M70.6,2 Q69.6,4.25 70.6,6.5" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-
-                  {/* Bottom Pole Joints */}
-                  <path d="M35,126.5 Q34,128.75 35,131" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M35.6,126.5 Q34.6,128.75 35.6,131" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-                  <path d="M75,126.5 Q74,128.75 75,131" stroke="#1a3f25" strokeWidth="0.6" fill="none" />
-                  <path d="M75.6,126.5 Q74.6,128.75 75.6,131" stroke="#7ec48f" strokeWidth="0.4" fill="none" opacity="0.6" />
-
-                  {/* Twine/Rope Ties at Intersections */}
-                  <circle cx="4.25" cy="4.25" r="1.8" fill="none" stroke="#6f4e37" strokeWidth="0.6" />
-                  <line x1="2.5" y1="2.5" x2="6" y2="6" stroke="#6f4e37" strokeWidth="0.8" />
-                  <line x1="6" y1="2.5" x2="2.5" y2="6" stroke="#6f4e37" strokeWidth="0.8" />
-
-                  <circle cx="95.75" cy="4.25" r="1.8" fill="none" stroke="#6f4e37" strokeWidth="0.6" />
-                  <line x1="94" y1="2.5" x2="97.5" y2="6" stroke="#6f4e37" strokeWidth="0.8" />
-                  <line x1="97.5" y1="2.5" x2="94" y2="6" stroke="#6f4e37" strokeWidth="0.8" />
-
-                  <circle cx="4.25" cy="128.75" r="1.8" fill="none" stroke="#6f4e37" strokeWidth="0.6" />
-                  <line x1="2.5" y1="127" x2="6" y2="130.5" stroke="#6f4e37" strokeWidth="0.8" />
-                  <line x1="6" y1="127" x2="2.5" y2="130.5" stroke="#6f4e37" strokeWidth="0.8" />
-
-                  <circle cx="95.75" cy="128.75" r="1.8" fill="none" stroke="#6f4e37" strokeWidth="0.6" />
-                  <line x1="94" y1="127" x2="97.5" y2="130.5" stroke="#6f4e37" strokeWidth="0.8" />
-                  <line x1="97.5" y1="127" x2="94" y2="130.5" stroke="#6f4e37" strokeWidth="0.8" />
-
-                  {/* Sprouting Bamboo Leaves */}
-                  <g transform="translate(6.5, 35) scale(0.6)">
-                    <path d="M0,0 C8,-8 18,-6 26,-12 C18,-3 8,0 0,0 Z" fill="#4f9e60" stroke="#1a3f25" strokeWidth="0.3" />
-                    <path d="M0,0 C10,0 20,8 28,6 C18,4 8,-2 0,0 Z" fill="#7ec48f" stroke="#1a3f25" strokeWidth="0.3" />
-                  </g>
-                  {/* Additional sprouting leaves on top-right */}
-                  <g transform="translate(93.5, 20) scale(0.5) rotate(-45)">
-                    <path d="M0,0 C8,-8 18,-6 26,-12 C18,-3 8,0 0,0 Z" fill="#4f9e60" stroke="#1a3f25" strokeWidth="0.3" />
-                    <path d="M0,0 C10,0 20,8 28,6 C18,4 8,-2 0,0 Z" fill="#7ec48f" stroke="#1a3f25" strokeWidth="0.3" />
-                  </g>
-                  <g transform="translate(93.5, 100) scale(0.6) rotate(180)">
-                    <path d="M0,0 C8,-8 18,-6 26,-12 C18,-3 8,0 0,0 Z" fill="#4f9e60" stroke="#1a3f25" strokeWidth="0.3" />
-                    <path d="M0,0 C10,0 20,8 28,6 C18,4 8,-2 0,0 Z" fill="#7ec48f" stroke="#1a3f25" strokeWidth="0.3" />
-                  </g>
+                  <circle cx="20" cy="20" r="2.5" fill="#f7b8c8" stroke="#d4789a" strokeWidth="0.5" />
+                  {/* Tiny stamens */}
+                  {[0,72,144,216,288].map((angle, i) => (
+                    <circle
+                      key={`s${i}`}
+                      cx={20 + 3.5 * Math.cos((angle - 90) * Math.PI / 180)}
+                      cy={20 + 3.5 * Math.sin((angle - 90) * Math.PI / 180)}
+                      r="0.7" fill="#f4c2d5"
+                    />
+                  ))}
                 </svg>
+
+                {/* Cute small cherry blossom SVG — bottom-right corner */}
+                <svg className="absolute -bottom-3 -right-3 w-8 h-8 pointer-events-none z-20 drop-shadow-sm opacity-80" viewBox="0 0 40 40" fill="none">
+                  {[0,72,144,216,288].map((angle, i) => (
+                    <ellipse
+                      key={i}
+                      cx={20 + 7 * Math.cos((angle - 90) * Math.PI / 180)}
+                      cy={20 + 7 * Math.sin((angle - 90) * Math.PI / 180)}
+                      rx="5" ry="3.2"
+                      transform={`rotate(${angle}, ${20 + 7 * Math.cos((angle - 90) * Math.PI / 180)}, ${20 + 7 * Math.sin((angle - 90) * Math.PI / 180)})`}
+                      fill="#d4ede0" stroke="#95d5b2" strokeWidth="0.5"
+                    />
+                  ))}
+                  <circle cx="20" cy="20" r="2.5" fill="#b7e5cc" stroke="#74c99a" strokeWidth="0.5" />
+                </svg>
+
+                {/* Small falling petals */}
+                <div className="absolute -top-1 -right-2 text-[#f4c2d5] text-xs select-none opacity-70 rotate-[20deg]">✿</div>
+                <div className="absolute top-1/3 -left-3 text-[#b7e5cc] text-[10px] select-none opacity-60 rotate-[-15deg]">✾</div>
               </div>
             </div>
             <div className="lg:col-span-9 lg:pl-12">
