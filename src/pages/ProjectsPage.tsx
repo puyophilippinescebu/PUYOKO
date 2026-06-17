@@ -1,12 +1,86 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bed, Bath, Square, ChevronRight, Hammer, Flame, LayoutGrid, Heart, Edit2, Trash2, Archive, ArchiveRestore, Plus } from 'lucide-react';
+import { Bed, Bath, Square, ChevronRight, Hammer, Flame, LayoutGrid, Heart, Edit2, Trash2, Archive, ArchiveRestore, Plus, Loader2 } from 'lucide-react';
 import { useProperties } from '../contexts/PropertiesContext';
 import { useAuth } from '../contexts/AuthContext';
 import { PropertyFormModal } from '../components/PropertyFormModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
 import { Property } from '../types';
 import { cn } from '../lib/utils';
+import { supabase } from '../lib/supabaseClient';
+
+const ProjectCardImage: React.FC<{ propertyId: string; title: string }> = ({ propertyId, title }) => {
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [loadingImg, setLoadingImg] = useState(true);
+  const [isInViewport, setIsInViewport] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!window.IntersectionObserver) {
+      setIsInViewport(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isInViewport) return;
+    let active = true;
+    const loadImages = async () => {
+      try {
+        const { data } = await supabase
+          .from('properties')
+          .select('images')
+          .eq('id', propertyId)
+          .single();
+        if (active && data && data.images && data.images.length > 0) {
+          setImageUrl(data.images[0]);
+        }
+      } catch (e) {
+        console.error("Failed to load project image:", e);
+      } finally {
+        if (active) setLoadingImg(false);
+      }
+    };
+    loadImages();
+    return () => { active = false; };
+  }, [isInViewport, propertyId]);
+
+  return (
+    <div ref={ref} className="h-full w-full bg-primary/[0.03]">
+      {loadingImg ? (
+        <div className="h-full w-full bg-outline/10 animate-pulse flex items-center justify-center">
+          <span className="text-[10px] font-mono tracking-widest text-primary/30 uppercase">Loading media...</span>
+        </div>
+      ) : imageUrl.startsWith('data:video/') || imageUrl.endsWith('.mp4') || imageUrl.endsWith('.mov') || imageUrl.endsWith('.webm') ? (
+        <video
+          src={imageUrl}
+          className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+          muted
+          playsInline
+          autoPlay
+          loop
+        />
+      ) : (
+        <img
+          src={imageUrl}
+          alt={title}
+          className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+        />
+      )}
+    </div>
+  );
+};
 
 export const ProjectsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,9 +88,29 @@ export const ProjectsPage: React.FC = () => {
   const { properties, loading, addProperty, updateProperty, deleteProperty } = useProperties();
   const [activeTab, setActiveTab] = useState<'All' | 'Under Construction' | 'Preselling'>('All');
 
+  const [loadingEdit, setLoadingEdit] = useState<string | null>(null);
   const [editingProperty, setEditingProperty] = useState<Property | undefined>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
+
+  const handleEditClick = async (project: Property) => {
+    setLoadingEdit(project.id);
+    try {
+      const { data } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', project.id)
+        .single();
+      setEditingProperty(data || project);
+      setIsFormOpen(true);
+    } catch (err) {
+      console.error("Failed to fetch project details:", err);
+      setEditingProperty(project);
+      setIsFormOpen(true);
+    } finally {
+      setLoadingEdit(null);
+    }
+  };
 
   // Filter properties to only show projects ("Under Construction" or "Preselling")
   const projectList = useMemo(() => {
@@ -153,11 +247,7 @@ export const ProjectsPage: React.FC = () => {
               >
                 {/* Image & Badge */}
                 <div className="relative aspect-[16/10] overflow-hidden">
-                  <img
-                    src={project.images[0]}
-                    alt={project.title}
-                    className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                  />
+                  <ProjectCardImage propertyId={project.id} title={project.title} />
                   {/* Status Badge */}
                   <div className={cn(
                     "absolute left-6 top-6 backdrop-blur-md px-3 py-1.5 font-display text-[9px] font-extrabold uppercase tracking-[0.25em] border shadow-sm text-white",
@@ -177,11 +267,16 @@ export const ProjectsPage: React.FC = () => {
                         {project.status === 'Archived' ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); setEditingProperty(project); setIsFormOpen(true); }}
+                        onClick={(e) => { e.stopPropagation(); handleEditClick(project); }}
                         title="Edit Project"
-                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-primary hover:bg-primary hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer"
+                        className="bg-white/90 backdrop-blur-md p-2 rounded-full text-primary hover:bg-primary hover:text-white transition-colors shadow-lg active:scale-95 cursor-pointer flex items-center justify-center"
+                        disabled={loadingEdit === project.id}
                       >
-                        <Edit2 className="w-4 h-4" />
+                        {loadingEdit === project.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        ) : (
+                          <Edit2 className="w-4 h-4" />
+                        )}
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setPropertyToDelete(project); }}
