@@ -444,10 +444,6 @@ export const LandingPage: React.FC = () => {
                       />
                     ))}
                   </div>
-                  {/* Subtle caption strip at bottom of polaroid */}
-                  <div className="pt-2 pb-1 text-center">
-                    <span className="font-mono text-[9px] tracking-[0.25em] text-primary/40 uppercase">Jan Eric ✦ Puyoko</span>
-                  </div>
                 </div>
 
                 {/* Cute small cherry blossom SVG — top-left corner */}
@@ -489,10 +485,6 @@ export const LandingPage: React.FC = () => {
                   ))}
                   <circle cx="20" cy="20" r="2.5" fill="#b7e5cc" stroke="#74c99a" strokeWidth="0.5" />
                 </svg>
-
-                {/* Small falling petals */}
-                <div className="absolute -top-1 -right-2 text-[#f4c2d5] text-xs select-none opacity-70 rotate-[20deg]">✿</div>
-                <div className="absolute top-1/3 -left-3 text-[#b7e5cc] text-[10px] select-none opacity-60 rotate-[-15deg]">✾</div>
               </div>
             </div>
             <div className="lg:col-span-9 lg:pl-12">
