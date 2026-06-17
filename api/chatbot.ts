@@ -73,7 +73,7 @@ export default async function handler(req: any, res: any) {
     // Load active properties
     const { data: properties } = await supabase
       .from('properties')
-      .select('*')
+      .select('id, title, price, type, bedrooms, bathrooms, address, city')
       .eq('status', 'Active');
       
     if (properties && properties.length > 0) {

@@ -27,46 +27,50 @@ export const PropertyDetailsPage: React.FC = () => {
     
     if (found) {
       setLocalProperty(found);
+      // If we have it from cache, don't show the full-page loading spinner, let the user browse details immediately
       setLocalLoading(false);
-    } else if (!contextLoading) {
-      // Fallback: fetch directly from Supabase if not found in cached context properties
-      const fetchSingleProperty = async () => {
-        try {
-          let { data, error } = await supabase
+    } else {
+      setLocalLoading(true);
+    }
+
+    const fetchFullProperty = async () => {
+      try {
+        let { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error || !data) {
+          // Try alternative string pattern if exact match fails (e.g. space vs hyphen mismatch)
+          const altId = id.includes(' ') ? id.replace(' ', '-') : id.replace('-', ' ');
+          const resAlt = await supabase
             .from('properties')
             .select('*')
-            .eq('id', id)
+            .eq('id', altId)
             .single();
-
-          if (error || !data) {
-            // Try alternative string pattern if exact match fails (e.g. space vs hyphen mismatch)
-            const altId = id.includes(' ') ? id.replace(' ', '-') : id.replace('-', ' ');
-            const resAlt = await supabase
-              .from('properties')
-              .select('*')
-              .eq('id', altId)
-              .single();
-            if (!resAlt.error && resAlt.data) {
-              data = resAlt.data;
-            }
+          if (!resAlt.error && resAlt.data) {
+            data = resAlt.data;
           }
-
-          if (data) {
-            setLocalProperty(data);
-          } else {
-            setLocalProperty(null);
-          }
-        } catch (e) {
-          console.error("Direct fetch failed:", e);
-          setLocalProperty(null);
-        } finally {
-          setLocalLoading(false);
         }
-      };
 
-      fetchSingleProperty();
-    }
-  }, [id, properties, contextLoading]);
+        if (data) {
+          setLocalProperty(data);
+        } else if (!found) {
+          setLocalProperty(null);
+        }
+      } catch (e) {
+        console.error("Direct fetch failed:", e);
+        if (!found) {
+          setLocalProperty(null);
+        }
+      } finally {
+        setLocalLoading(false);
+      }
+    };
+
+    fetchFullProperty();
+  }, [id, properties]);
 
   const property = localProperty;
 
