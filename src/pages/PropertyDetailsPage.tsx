@@ -440,6 +440,114 @@ export const PropertyDetailsPage: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* ── Amenities Section ── */}
+            {((property.amenities && property.amenities.length > 0) || (property.amenitiesImages && property.amenitiesImages.length > 0) || property.amenitiesVideoUrl) && (
+              <div className="mt-8 pt-6 border-t border-outline/10">
+                <h4 className="mb-4 font-display text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Amenities & Features</h4>
+
+                {/* Amenity Tags */}
+                {property.amenities && property.amenities.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {property.amenities.map((amenity, idx) => (
+                      <span key={idx} className="inline-flex items-center gap-1.5 bg-primary/8 border border-primary/15 text-primary rounded-full px-3 py-1.5 font-sans text-xs font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Amenities Video */}
+                {property.amenitiesVideoUrl && (
+                  <div className="mb-5 rounded-xl overflow-hidden border border-outline/15 bg-black aspect-video shadow-sm">
+                    {(() => {
+                      const isRawVideo = property.amenitiesVideoUrl.endsWith('.mp4') || property.amenitiesVideoUrl.endsWith('.mov') || property.amenitiesVideoUrl.endsWith('.webm');
+                      if (isRawVideo) {
+                        return (
+                          <video
+                            src={property.amenitiesVideoUrl}
+                            controls
+                            className="w-full h-full object-cover"
+                            playsInline
+                          />
+                        );
+                      }
+                      // Try YouTube/Vimeo embed
+                      const embedData = getVideoEmbedUrl(property.amenitiesVideoUrl);
+                      if (embedData) {
+                        return (
+                          <iframe
+                            src={embedData.embedUrl}
+                            title="Amenities Video"
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        );
+                      }
+                      return (
+                        <video
+                          src={property.amenitiesVideoUrl}
+                          controls
+                          className="w-full h-full"
+                          playsInline
+                        />
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* Amenities Images Gallery */}
+                {property.amenitiesImages && property.amenitiesImages.length > 0 && (
+                  <div className={`grid gap-2 ${
+                    property.amenitiesImages.length === 1 ? 'grid-cols-1' :
+                    property.amenitiesImages.length === 2 ? 'grid-cols-2' :
+                    property.amenitiesImages.length === 3 ? 'grid-cols-3' :
+                    'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+                  }`}>
+                    {property.amenitiesImages.map((img, idx) => {
+                      const isVideo = img.startsWith('data:video/') || img.endsWith('.mp4') || img.endsWith('.mov') || img.endsWith('.webm');
+                      return (
+                        <div
+                          key={idx}
+                          className="relative aspect-square overflow-hidden rounded-xl cursor-pointer group border border-outline/10 bg-surface-muted"
+                          onClick={() => {
+                            // Open in lightbox by setting to current image
+                            setCurrentImage(0);
+                            setIsLightboxOpen(true);
+                          }}
+                        >
+                          {isVideo ? (
+                            <>
+                              <video
+                                src={img}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                muted
+                                playsInline
+                                loop
+                                autoPlay
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                                <span className="font-mono text-[7px] font-bold text-white uppercase tracking-widest bg-primary/80 px-2 py-0.5 rounded-sm">VIDEO</span>
+                              </div>
+                            </>
+                          ) : (
+                            <img
+                              src={img}
+                              alt={`Amenity ${idx + 1}`}
+                              loading="lazy"
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none rounded-xl" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
  
           {/* Sidebar / Map */}

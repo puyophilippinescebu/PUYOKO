@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   CheckCircle, 
@@ -21,6 +21,61 @@ import { useProperties } from '../contexts/PropertiesContext';
 import { useBlockedDates } from '../hooks/useBlockedDates';
 import { normalizeLocation } from '../lib/utils';
 import { supabase } from '../lib/supabaseClient';
+
+/** Lazily loads the first image for a property when the card enters the viewport.
+ *  Falls back to the first image already in the property object if available. */
+const WizardPropertyImage: React.FC<{ propertyId: string; propertyImages: string[]; title: string; className?: string }> = ({ propertyId, propertyImages, title, className = '' }) => {
+  const [imageUrl, setImageUrl] = useState<string>(propertyImages[0] || '');
+  const [loading, setLoading] = useState(!propertyImages[0]);
+  const [inViewport, setInViewport] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (propertyImages[0]) {
+      setImageUrl(propertyImages[0]);
+      setLoading(false);
+      return;
+    }
+    if (!window.IntersectionObserver) { setInViewport(true); return; }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setInViewport(true); observer.disconnect(); }
+    }, { rootMargin: '200px' });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [propertyImages]);
+
+  useEffect(() => {
+    if (!inViewport || propertyImages[0]) return;
+    let active = true;
+    const load = async () => {
+      try {
+        const { data } = await supabase.from('properties').select('images').eq('id', propertyId).single();
+        if (active && data?.images?.[0]) setImageUrl(data.images[0]);
+      } catch {}
+      finally { if (active) setLoading(false); }
+    };
+    load();
+    return () => { active = false; };
+  }, [inViewport, propertyId, propertyImages]);
+
+  const isVideo = imageUrl.startsWith('data:video/') || imageUrl.endsWith('.mp4') || imageUrl.endsWith('.mov') || imageUrl.endsWith('.webm');
+
+  return (
+    <div ref={ref} className={`h-full w-full bg-black/10 ${className}`}>
+      {loading ? (
+        <div className="h-full w-full bg-outline/10 animate-pulse" />
+      ) : isVideo ? (
+        <video src={imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" muted playsInline />
+      ) : imageUrl ? (
+        <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+      ) : (
+        <div className="h-full w-full flex items-center justify-center">
+          <span className="font-mono text-[9px] uppercase tracking-widest text-primary/30">No Photo</span>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface ScheduleTourWizardProps {
   standalone?: boolean;
@@ -395,23 +450,12 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                   }`}
                 >
                   <div className="relative h-48 w-full overflow-hidden bg-black/10">
-                    {p.images[0]?.startsWith('data:video/') || 
-                    p.images[0]?.endsWith('.mp4') || 
-                    p.images[0]?.endsWith('.mov') || 
-                    p.images[0]?.endsWith('.webm') ? (
-                      <video 
-                        src={p.images[0]} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                        muted 
-                        playsInline 
-                      />
-                    ) : (
-                      <img 
-                        src={p.images[0]} 
-                        alt={p.title} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                      />
-                    )}
+                    <WizardPropertyImage
+                      propertyId={p.id}
+                      propertyImages={p.images}
+                      title={p.title}
+                      className="absolute inset-0"
+                    />
                     <div className="absolute top-3 left-3">
                       <span className="text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded shadow-sm border bg-green-500/90 text-white border-green-400">
                         Ready to Tour
@@ -461,14 +505,11 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
           {/* Selected Property Details */}
           <div className="p-4 bg-white border border-outline/35 rounded-2xl flex flex-col sm:flex-row gap-4 items-center shadow-sm relative">
             <div className="w-full sm:w-32 h-20 rounded-xl overflow-hidden bg-black/10 shrink-0">
-              {selectedProperty.images[0]?.startsWith('data:video/') || 
-              selectedProperty.images[0]?.endsWith('.mp4') || 
-              selectedProperty.images[0]?.endsWith('.mov') || 
-              selectedProperty.images[0]?.endsWith('.webm') ? (
-                <video src={selectedProperty.images[0]} className="w-full h-full object-cover" muted playsInline />
-              ) : (
-                <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
-              )}
+              <WizardPropertyImage
+                propertyId={selectedProperty.id}
+                propertyImages={selectedProperty.images}
+                title={selectedProperty.title}
+              />
             </div>
             <div className="flex-1 text-center sm:text-left pr-4">
               <span className="font-mono text-[8px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full select-none font-display">
@@ -718,14 +759,11 @@ export const ScheduleTourWizard: React.FC<ScheduleTourWizardProps> = ({ standalo
                 {/* Visual Listing */}
                 <div className="rounded-xl overflow-hidden bg-white border border-outline/20 shadow-sm">
                   <div className="h-32 w-full bg-black/10">
-                    {selectedProperty.images[0]?.startsWith('data:video/') || 
-                    selectedProperty.images[0]?.endsWith('.mp4') || 
-                    selectedProperty.images[0]?.endsWith('.mov') || 
-                    selectedProperty.images[0]?.endsWith('.webm') ? (
-                      <video src={selectedProperty.images[0]} className="w-full h-full object-cover" muted playsInline />
-                    ) : (
-                      <img src={selectedProperty.images[0]} alt={selectedProperty.title} className="w-full h-full object-cover" />
-                    )}
+                    <WizardPropertyImage
+                      propertyId={selectedProperty.id}
+                      propertyImages={selectedProperty.images}
+                      title={selectedProperty.title}
+                    />
                   </div>
                   <div className="p-4">
                     <span className="font-mono text-[7px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full select-none font-display">

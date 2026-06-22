@@ -116,7 +116,7 @@ export const PropertiesProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const { data, error } = await supabase
         .from('properties')
-        .select('id, created_at, title, price, status, city, address, mapsLink, landmarks, tags, bedrooms, bathrooms, area, description, type, currency, videoUrl, pricePeriod, originalPrice, accommodatedBy, accommodatedByPhone, createdBy, amenities, amenitiesVideoUrl')
+        .select('id, created_at, title, price, status, city, address, mapsLink, landmarks, tags, bedrooms, bathrooms, area, description, type, currency, videoUrl, pricePeriod, originalPrice, accommodatedBy, accommodatedByPhone, createdBy, amenities, amenitiesImages, amenitiesVideoUrl')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
