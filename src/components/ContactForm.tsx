@@ -418,6 +418,16 @@ export const ContactForm: React.FC<ContactFormProps> = ({ standalone = false }) 
           </div>
         )}
       </form>
+      
+      <div className="mt-12 text-center text-xs text-on-surface-variant/70 font-sans">
+        Want to directly schedule a visit?{' '}
+        <Link 
+          to="/schedule" 
+          className="text-primary hover:underline font-semibold transition-colors duration-200"
+        >
+          Click here
+        </Link>
+      </div>
     </div>
   );
 
